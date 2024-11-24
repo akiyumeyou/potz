@@ -5,6 +5,7 @@
         </h2>
     </x-slot>
 
+    <!-- ログインメッセージ -->
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -15,13 +16,28 @@
         </div>
     </div>
 
+    <!-- 依頼登録リンク -->
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-5 text-3xl text-green-900">
-                    <x-nav-link :href="route('events.index')" :active="request()->routeIs('events.index')">
+                    <a href="{{ route('requests.index') }}" class="text-blue-500 hover:underline">
+                        {{ __('ちょっと助けて依頼') }}
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- オンラインイベント -->
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-5 text-3xl text-green-900">
+                    <a href="{{ route('events.index') }}" class="text-blue-500 hover:underline">
                         {{ __('オンラインイベント') }}
-                    </x-nav-link>
+                    </a>
                 </div>
             </div>
         </div>
