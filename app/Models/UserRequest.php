@@ -12,13 +12,17 @@ class Userrequest extends Model
     protected $table = 'requests';
 
     protected $fillable = [
+        'category3_id', // カテゴリ ID
         'contents',
         'date',
+        'time_start',
         'time',
         'spot',
         'address',
         'requester_id',
+        'status_id',
     ];
+
 
     // ユーザーとのリレーション
     public function user()
@@ -37,4 +41,9 @@ class Userrequest extends Model
             default => '不明',
         };
     }
+    public function category3()
+    {
+    return $this->belongsTo(Category3::class, 'category3_id');
+    }
+
 }

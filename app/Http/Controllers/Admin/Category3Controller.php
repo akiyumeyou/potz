@@ -47,13 +47,13 @@ class Category3Controller extends Controller
 
         $category3->update($request->only('category3', 'order_no', 'cost'));
 
-        return redirect()->route('admin.categories.index')->with('success', 'カテゴリを更新しました。');
+        return redirect()->route('admin.category3.index')->with('success', 'カテゴリを更新しました。');
     }
 
     public function destroy(Category3 $category3)
     {
         $category3->delete();
 
-        return redirect()->route('admin.categories.index')->with('success', 'カテゴリを削除しました。');
+        return redirect()->route('admin.category3.index')->with('success', 'カテゴリを削除しました。');
     }
 }

@@ -52,12 +52,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/requests', [RequestController::class, 'store'])->name('requests.store');
 
-
-    Route::get('/meet_rooms/{id}', [MeetRoomController::class, 'show'])->name('meet_rooms.show');
+    Route::get('/meet_rooms/{request_id}', [MeetRoomController::class, 'show'])->name('meet_rooms.show');
     Route::post('/meet_rooms/{id}', [MeetRoomController::class, 'store'])->name('meet_rooms.store');
-
-    Route::get('/meet_rooms/{id}', [MeetRoomController::class, 'show'])->name('meet_rooms.show');
-
 
 });
 
