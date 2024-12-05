@@ -18,13 +18,13 @@
                             <select name="category3_id" id="category3_id" class="form-control text-lg" required>
                                 <option value="">カテゴリを選択</option>
                                 @foreach ($categories as $category)
-                                    <option value="{{ $category->id }}">{{ $category->category3 }}</option> <!-- IDを送信 -->
+                                    <!-- cost値をdata-cost属性に設定 -->
+                                    <option value="{{ $category->id }}" data-cost="{{ $category->cost }}">
+                                        {{ $category->category3 }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
-
-
-
                         <!-- 依頼内容 -->
                         <div class="mb-4">
                             <label for="contents" class="form-label text-lg font-bold">依頼内容</label>
@@ -35,13 +35,10 @@
                         <div class="mb-4">
                             <label for="date" class="form-label text-lg font-bold">希望日時</label>
                             <div class="d-flex align-items-center">
-                                <!-- 日付 -->
                                 <input type="date" name="date" id="date" class="form-control text-lg me-2" required>
-
-                                <!-- 時間 -->
                                 <select name="time_start" id="time_start" class="form-control text-lg" required>
-                                    <option value="">時刻を選択</option>
-                                    @for ($hour = 8; $hour <= 20; $hour++) <!-- 営業可能時間 -->
+                                    <option value="">時刻を選択
+                                @for ($hour = 8; $hour <= 20; $hour++)
                                         <option value="{{ $hour }}:00">{{ $hour }}:00</option>
                                         <option value="{{ $hour }}:30">{{ $hour }}:30</option>
                                     @endfor
@@ -49,27 +46,47 @@
                             </div>
                         </div>
 
-                        <!-- 作業時間 -->
-                        <div class="mb-4">
-                            <label for="time" class="form-label text-lg font-bold">作業時間</label>
-                            <select name="time" id="time" class="form-control text-lg" required>
-                                <option value="">作業時間を選択</option>
-                                @for ($i = 0.5; $i <= 8.0; $i += 0.5) <!-- 30分～8時間 -->
-                                    <option value="{{ $i }}">{{ $i }} 時間</option>
-                                @endfor
-                            </select>
-                        </div>
+                       <!-- 作業時間 -->
+                       <div class="mb-4">
+                        <label for="time" class="form-label text-lg font-bold">作業時間</label>
+                        <select name="time" id="time" class="form-control text-lg" required>
+                            <option value="">作業時間を選択</option>
+                            @for ($i = 0.5; $i <= 8.0; $i += 0.5)
+                                <option value="{{ $i }}">{{ $i }} 時間</option>
+                            @endfor
+                        </select>
+                    </div>
 
                         <!-- 場所 -->
                         <div class="mb-4">
                             <label for="spot" class="form-label text-lg font-bold">場所</label>
-                            <textarea name="spot" id="spot" class="form-control text-lg" rows="2"></textarea>
+                            <select name="spot" id="spot" class="form-control text-lg" required>
+                                <option value="自宅">自宅</option>
+                                <option value="その他">その他</option>
+                            </select>
                         </div>
 
                         <!-- 住所 -->
-                        <div class="mb-4">
+                        <div class="mb-4 d-none" id="address_field">
                             <label for="address" class="form-label text-lg font-bold">住所</label>
                             <input type="text" name="address" id="address" class="form-control text-lg">
+                        </div>
+
+                        <!-- 駐車場 -->
+                        <div class="mb-4">
+                            <label class="form-label text-lg font-bold">駐車場</label>
+                            <div>
+                                <input type="radio" id="parking_1" name="parking" value="1" required>
+                                <label for="parking_1">なし</label>
+                                <input type="radio" id="parking_2" name="parking" value="2" required>
+                                <label for="parking_2">あり</label>
+                            </div>
+                        </div>
+
+                   <!-- 見積もり金額 -->
+                        <div class="mb-4">
+                            <label for="estimate" class="form-label text-lg font-bold">見積もり金額</label>
+                            <input type="text" id="estimate" name="estimate" class="form-control text-lg" readonly>
                         </div>
 
                         <!-- 登録ボタン -->
@@ -80,3 +97,33 @@
         </div>
     </div>
 </x-app-layout>
+
+<script>
+    const categorySelect = document.getElementById('category3_id');
+    const timeInput = document.getElementById('time');
+    const totalCostInput = document.getElementById('total_cost');
+    const spotSelect = document.getElementById('spot');
+    const addressField = document.getElementById('address_field');
+
+    // 場所選択変更時
+    spotSelect.addEventListener('change', (e) => {
+        addressField.classList.toggle('d-none', e.target.value !== 'その他');
+    });
+
+    // コスト計算
+    document.addEventListener('DOMContentLoaded', function () {
+        const categorySelect = document.getElementById('category3_id');
+        const timeInput = document.getElementById('time');
+        const estimateInput = document.getElementById('estimate');
+
+        function updateEstimate() {
+            const cost = parseFloat(categorySelect.selectedOptions[0]?.getAttribute('data-cost') || 0);
+            const time = parseFloat(timeInput.value || 0);
+            const estimate = (cost * time) + 400; // 基本料金 x 時間 + 交通費
+            estimateInput.value = estimate.toFixed(2);
+        }
+
+        categorySelect.addEventListener('change', updateEstimate);
+        timeInput.addEventListener('input', updateEstimate);
+    });
+</script>

@@ -19,7 +19,7 @@ class CreateRequestsTable extends Migration
             $table->text('contents')->nullable(); // 依頼内容
             $table->unsignedBigInteger('category3_id')->nullable(); // カテゴリ3のID
             $table->timestamp('date')->nullable(); // 日付と時刻
-            $table->integer('time')->nullable(); // 時間
+            $table->DECIMAL(4,2)('time')->nullable(); // 時間
             $table->text('spot')->nullable(); // 場所の詳細
             $table->text('address')->nullable(); // 住所
             $table->float('lat')->nullable(); // 緯度
@@ -36,7 +36,7 @@ class CreateRequestsTable extends Migration
             $table->geometry('geom')->nullable(); // ジオメトリ情報 (POINT)
             $table->text('cancel_flag')->nullable(); // キャンセルフラグ
             $table->text('cancel_target')->nullable(); // キャンセル対象
-            $table->integer('money')->nullable(); // 支払い金額
+            $table->integer('estimate')->nullable(); // 支払い金額
             $table->timestamps(); // 作成・更新日時
 
             // 外部キー制約

@@ -14,6 +14,22 @@
             </div>
         </div>
     </div>
+    @if (auth()->check() && isset($membershipId) && $membershipId === 3)
+    <a href="{{ route('supports.index') }}" class="text-blue-500 hover:underline">
+        サポート検索
+    </a>
+    @else
+    <p class="text-gray-500">サポーター区分ではありません。</p>
+    @endif
+
+
+
+    @if (auth()->check() && optional($user->profile)->membership_id === 3)
+    <a href="{{ route('supports.index') }}" class="text-blue-500 hover:underline">
+        サポート検索
+    </a>
+@endif
+
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -69,7 +85,7 @@
                                     <!-- 打ち合わせ -->
                                     <td class="border px-4 py-2 text-center">
                                         <p class="text-sm text-gray-500">ステータス: {{ $request->status_name }}</p>
-                                        @if ($request->status_id === 1)
+                                        @if (in_array($request->status_id, [1, 2, 3]))
                                         <a href="{{ route('meet_rooms.show', $request->id) }}" class="bg-blue-500 text-white px-4 py-2 rounded">
                                             打ち合わせ
                                         </a>

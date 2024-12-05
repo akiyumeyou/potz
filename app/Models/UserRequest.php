@@ -12,16 +12,20 @@ class UserRequest extends Model
     protected $table = 'requests';
 
     protected $fillable = [
-        'category3_id', // カテゴリ ID
+        'category3_id',
         'contents',
         'date',
         'time_start',
-        'time',
+        'time', // 作業時間
         'spot',
         'address',
+        'parking',
+        'cost', // 時間単価
+        'estimate', // 見積もり金額
         'requester_id',
         'status_id',
     ];
+
 
 
     // ユーザーとのリレーション

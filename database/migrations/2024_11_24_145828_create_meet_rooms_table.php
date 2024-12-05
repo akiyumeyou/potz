@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('meet_rooms', function (Blueprint $table) {
             $table->id(); // 主キー
             $table->unsignedBigInteger('request_id'); // 紐づく依頼ID
+            $table->integer('max_supporters')->default(3); // デフォルト値を3に設定
             $table->timestamps();
 
             // 外部キー制約

@@ -7,8 +7,12 @@ use App\Http\Controllers\RequestController;
 use App\Http\Controllers\MeetRoomController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\Category3Controller;
-use App\Http\Controllers\PotzMembershipController;
 use App\Http\Controllers\GoogleLoginController;
+use App\Http\Controllers\SupporterProfileController;
+use App\Http\Controllers\SupportController;
+use App\Http\Controllers\MatchingsController;
+
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -21,14 +25,22 @@ Route::get('/dashboard', function () {
 // 認証が必要なルート
 Route::middleware('auth')->group(function () {
     // プロフィール管理
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    // Potz 会員管理
-    Route::get('/profile/potzs/member', [PotzMembershipController::class, 'edit'])->name('profile.potzs.member.edit');
-    Route::put('/profile/potzs/member', [PotzMembershipController::class, 'update'])->name('profile.potzs.member.update');
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit'); // プロフィール編集画面
+        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update'); // プロフィール更新
+        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy'); // アカウント削除
+        Route::get('/profile/request-submission', [ProfileController::class, 'requestSubmission'])
+             ->name('profile.request_submission');
 });
+
+
+
+Route::middleware('auth')->group(function () {
+    Route::get('/supporter-profile/edit', [SupporterProfileController::class, 'edit'])->name('supporter-profile.edit');
+    Route::patch('/supporter-profile', [SupporterProfileController::class, 'update'])->name('supporter-profile.update');
+});
+
+
+
 
 // 認証と Google ログイン
 Route::get('/auth/google', [GoogleLoginController::class, 'redirectToGoogle'])->name('login.google');
@@ -44,14 +56,30 @@ Route::middleware('auth')->group(function () {
     Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
 });
 
-// リクエスト管理と面談ルーム
+// 認証が必要なルート
 Route::middleware(['auth'])->group(function () {
+    // リクエスト管理
     Route::get('/requests/create', [RequestController::class, 'create'])->name('requests.create');
     Route::get('/requests/index', [RequestController::class, 'index'])->name('requests.index');
-    Route::get('/requests', [RequestController::class, 'index'])->name('index');
     Route::post('/requests', [RequestController::class, 'store'])->name('requests.store');
+
+    // 打ち合わせルーム
     Route::get('/meet_rooms/{request_id}', [MeetRoomController::class, 'show'])->name('meet_rooms.show');
     Route::post('/meet_rooms/{id}', [MeetRoomController::class, 'store'])->name('meet_rooms.store');
+    Route::post('/meet_rooms/{room}/image', [MeetRoomController::class, 'storeImage'])->name('meet_rooms.image');
+    Route::get('/matchings/{id}', [MatchingsController::class, 'show'])->name('matchings.show');
+    Route::post('/matchings/confirm', [MatchingsController::class, 'confirm'])->name('matchings.confirm');
+    Route::get('/requests/{id}', [RequestController::class, 'show'])->name('requests.show');
+
+    // 依頼編集
+    Route::get('/requests/{id}/edit', [RequestController::class, 'edit'])->name('requests.edit');
+    Route::put('/requests/{id}', [RequestController::class, 'update'])->name('requests.update');
+    Route::get('/requests/{id}', [RequestController::class, 'show'])->name('requests.show');
+
+    // サポーター用依頼一覧
+    Route::get('/supports', [SupportController::class, 'index'])->name('supports.index'); // サポーター用依頼一覧
+    Route::post('/supports/join/{requestId}', [SupportController::class, 'joinRoom'])->name('support.joinRoom'); // ルーム参加
+    Route::get('/meet_rooms/{request_id}', [MeetRoomController::class, 'show'])->name('meet_rooms.show'); // チャットルーム表示
 });
 
 // 管理画面用ルート

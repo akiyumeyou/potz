@@ -2,91 +2,84 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\View\View;
-use App\Models\UserProfile;
+use App\Models\User;
 use App\Models\MembershipClass;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the user's profile form.
-     */
-    public function edit(Request $request): View
+    // プロフィール編集画面
+    public function edit()
     {
-        // ユーザー情報とプロファイル情報を取得
-        $user = $request->user();
-        $profile = UserProfile::where('user_id', $user->id)->first();
+        $user = Auth::user(); // ログイン中のユーザー
+        $membership_classes = MembershipClass::all(); // 会員区分を取得
 
-        // プロファイルが存在しない場合、新規作成
-        if (!$profile) {
-            $profile = UserProfile::create(['user_id' => $user->id]);
-        }
-
-        // 会員区分の取得
-        $membership_classes = MembershipClass::all();
-
-        // ビューにデータを渡す
-        return view('profile.edit', [
-            'user' => $user,
-            'profile' => $profile,
-            'membership_classes' => $membership_classes,
-        ]);
+        return view('profile.edit', compact('user', 'membership_classes'));
     }
 
-    /**
-     * Update the user's profile information.
-     */
-    public function update(Request $request): RedirectResponse
+    // プロフィール更新
+    public function update(Request $request)
     {
-        $request->validate([
-            'membership_id' => 'required|exists:membership_classes,id',
+         // 基本のバリデーションルール
+    $rules = [
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|max:255|unique:users,email,' . Auth::id(),
+        'membership_id' => 'required|exists:membership_classes,id',
+    ];
+
+    // 会員区分が「2以上」の場合、追加の必須チェックを設定
+    if ($request->input('membership_id') >= 2) {
+        $rules = array_merge($rules, [
             'name' => 'required|string|max:255',
-            'name_kana' => 'required|string|max:255',
-            'post' => 'required|string|max:8',
-            'address' => 'required|string|max:255',
-            'tel' => 'required|string|max:15',
-            'birthday' => 'required|date',
+            'email' => 'required|email|max:255|unique:users,email,' . Auth::id(),
+            'membership_id' => 'required|exists:membership_classes,id',
+            'gender' => 'required|in:male,female,other',
+            'real_name' => 'nullable|string|max:255',
+            'real_name_kana' => 'nullable|string|max:255',
+            'prefecture'=> 'nullable|string|max:255',
+            'address1' => 'nullable|string|max:255',
+            'address2' => 'nullable|string|max:255',
+            'tel' => 'nullable|string|max:20',
+            'birthday' => 'nullable|date',
         ]);
+    }
+    // バリデーション実行
+    $request->validate($rules);
 
-        $profile = UserProfile::where('user_id', $request->user()->id)->first();
-        if ($profile) {
-            $profile->update([
-                'membership_id' => $request->input('membership_id'),
-                'name' => $request->input('name'),
-                'name_kana' => $request->input('name_kana'),
-                'post' => $request->input('post'),
-                'address' => $request->input('address'),
-                'tel' => $request->input('tel'),
-                'birthday' => $request->input('birthday'),
-            ]);
-        }
+        $user = Auth::user();
+        $user->update($request->only([
+            'name',
+            'email',
+            'real_name',
+            'real_name_kana',
+            'prefecture',
+            'address1',
+            'address2',
+            'tel',
+            'birthday',
+            'membership_id',
+            'gender',
+        ]));
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+    // サポート会員 (membership_id = 3) の場合、自動作成
+    if ($user->membership_id == 3 && !$user->supporterProfile) {
+        $user->supporterProfile()->create();
     }
 
-    /**
-     * Delete the user's account.
-     */
-    public function destroy(Request $request): RedirectResponse
+        return redirect()->route('profile.edit')->with('status', 'profile-updated');
+    }
+
+
+
+    public function requestSubmission()
     {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
-        ]);
+        $user = Auth::user();
 
-        $user = $request->user();
+        // 必要に応じて申請の処理を追加（例: ステータス変更や通知）
 
-        Auth::logout();
-
-        $user->delete();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return Redirect::to('/');
+        return redirect()->route('profile.edit')->with('status', 'request-submitted');
     }
 }
+
+

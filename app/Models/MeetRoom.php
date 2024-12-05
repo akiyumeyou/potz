@@ -30,5 +30,8 @@ class MeetRoom extends Model
     {
         return $this->belongsTo(User::class, 'sender_id'); // sender_id を User にリレーション
     }
-
+    public function members()
+    {
+        return $this->hasMany(MeetRoomMember::class, 'meet_room_id', 'id');
+    }
 }

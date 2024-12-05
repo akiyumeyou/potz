@@ -13,6 +13,7 @@ class Meet extends Model
         'meet_room_id',
         'sender_id',
         'message',
+        'image',
     ];
 
     public function room()

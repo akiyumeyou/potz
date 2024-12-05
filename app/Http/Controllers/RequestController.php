@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request; // HTTPリクエスト
-use App\Models\UserRequest; // モデル名 Userrequest を正しく参照
-use App\Models\MeetRoom; // MeetRoom モデルを参照
-use Illuminate\Support\Facades\DB; // DBファサードを使用
+use Illuminate\Http\Request;
+use App\Models\UserRequest;
+use App\Models\MeetRoom;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Exception;
 
 class RequestController extends Controller
 {
@@ -14,10 +17,15 @@ class RequestController extends Controller
      */
     public function index()
     {
-        // ログインユーザーの依頼を取得
-        $requests = Userrequest::where('requester_id', auth()->id())->get();
+        $user = Auth::user();
 
-        return view('requests.index', compact('requests'));
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'ログインしてください。');
+        }
+
+        $requests = UserRequest::where('requester_id', $user->id)->get();
+
+        return view('requests.index', compact('requests', 'user'));
     }
 
     /**
@@ -25,10 +33,8 @@ class RequestController extends Controller
      */
     public function create()
     {
-        // category3テーブルからカテゴリデータを取得
-        $categories = DB::table('category3')->select('id', 'category3')->get();
+        $categories = DB::table('category3')->select('id', 'category3', 'cost')->get();
 
-        // フォーム表示
         return view('requests.create', compact('categories'));
     }
 
@@ -37,40 +43,108 @@ class RequestController extends Controller
      */
     public function store(Request $request)
     {
-        // バリデーション
-        $validated = $request->validate([
-            'category3_id' => 'required|exists:category3,id',
-            'contents' => 'required|string|max:1000',
-            'date' => 'required|date', // 日付だけを期待
-            'time_start' => 'required|date_format:H:i', // 時刻部分だけを期待
-            'time' => 'required|numeric|min:0.5|max:8.0',
-            'spot' => 'nullable|string|max:255',
-            'address' => 'nullable|string|max:255',
-        ]);
+        try {
+            // バリデーション
+            $validated = $request->validate([
+                'category3_id' => 'required|exists:category3,id',
+                'contents' => 'required|string|max:1000',
+                'date' => 'required|date',
+                'time_start' => 'required|date_format:H:i',
+                'time' => 'required|numeric|min:0.5|max:8.0',
+                'spot' => 'nullable|string|max:255',
+                'address' => 'nullable|string|max:255',
+                'parking' => 'required|integer|in:1,2',
+            ]);
 
-        // 日付と時刻を結合して日時を作成
-        $datetime = \Carbon\Carbon::parse($validated['date'])->format('Y-m-d') . ' ' . $validated['time_start'];
+            $cost = DB::table('category3')->where('id', $validated['category3_id'])->value('cost');
+            if (!$cost) {
+                return back()->withErrors(['category3_id' => 'カテゴリに単価が設定されていません。']);
+            }
 
-        // データを保存
-        $newRequest = Userrequest::create([
-            'category3_id' => $validated['category3_id'],
-            'contents' => $validated['contents'],
-            'date' => $datetime, // 結合した日時を保存
-            'time_start' => $validated['time_start'], // 時刻のみ
-            'time' => $validated['time'],
-            'spot' => $validated['spot'] ?? null,
-            'address' => $validated['address'] ?? null,
-            'requester_id' => auth()->id(),
-            'status_id' => 1, // 準備中に設定
-        ]);
+            $estimate = ($cost * $validated['time']) + 400;
 
-        // MeetRoom 作成
-        MeetRoom::create([
-            'request_id' => $newRequest->id,
-        ]);
+            $datetime = \Carbon\Carbon::parse($validated['date'])->format('Y-m-d') . ' ' . $validated['time_start'];
 
-        return redirect()->route('requests.index')->with('success', '依頼が登録され、チャットルームが作成されました。');
+            $newRequest = UserRequest::create([
+                'category3_id' => $validated['category3_id'],
+                'contents' => $validated['contents'],
+                'date' => $datetime,
+                'time_start' => $validated['time_start'],
+                'time' => $validated['time'],
+                'spot' => $validated['spot'] ?? null,
+                'address' => $validated['spot'] === 'その他' ? $validated['address'] : null,
+                'parking' => $validated['parking'],
+                'cost' => $cost,
+                'estimate' => $estimate,
+                'requester_id' => auth()->id(),
+                'status_id' => 1,
+            ]);
+
+            // MeetRoom 作成
+            MeetRoom::create([
+                'request_id' => $newRequest->id,
+            ]);
+
+            return redirect()->route('requests.index')->with('success', '依頼が登録されました。');
+        } catch (Exception $e) {
+            Log::error('依頼の保存中にエラーが発生しました: ' . $e->getMessage());
+            return back()->with('error', '依頼の保存に失敗しました。もう一度お試しください。');
+        }
+    }
+    public function edit($id)
+    {
+        $userRequest = UserRequest::findOrFail($id);
+
+        // 必要に応じて打ち合わせ中の案件か確認する
+        if ($userRequest->status_id !== 3) {
+            return redirect()->route('requests.index')->withErrors('編集可能な依頼ではありません。');
+        }
+
+        return view('requests.edit', compact('userRequest'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            // バリデーション
+            $validated = $request->validate([
+                'contents' => 'required|string|max:1000',
+                'date' => 'required|date_format:Y-m-d',
+            ]);
+
+            // ログ: バリデーション後のデータ
+            logger()->info('Validated Data:', $validated);
+
+            // データベースからリクエストを取得
+            $userRequest = UserRequest::findOrFail($id);
+
+            // 更新処理
+            $userRequest->contents = $validated['contents'];
+            $userRequest->date = $validated['date'];
+            $userRequest->save();
+
+            // ログ: 更新成功
+            logger()->info('Request updated successfully:', ['id' => $userRequest->id]);
+
+            return redirect()->route('requests.show', $userRequest->id)->with('success', '依頼が更新されました！');
+        } catch (\Exception $e) {
+            // エラーログ
+            logger()->error('Error during request update:', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+
+            return back()->withErrors('更新中にエラーが発生しました。');
+        }
     }
 
 
+
+    /**
+     * リクエスト詳細表示
+     */
+    public function show($id)
+    {
+        $meetRoom = MeetRoom::findOrFail($id);
+        $userRequest = UserRequest::findOrFail($meetRoom->request_id);
+
+        return view('requests.show', compact('meetRoom', 'userRequest'));
+    }
 }
