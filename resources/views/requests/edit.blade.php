@@ -1,14 +1,14 @@
-<div class="py-12">
+<div class="py-12"></div>
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white shadow-sm sm:rounded-lg">
             <div class="p-6 bg-white border-b border-gray-200">
                 <h3 class="text-xl font-bold mb-4">現在の依頼内容：</h3>
 
-                <!-- カテゴリ表示 -->
-                <div class="mb-4">
-                    <label class="font-bold">カテゴリ:</label>
-                    <p class="text-gray-700">{{ $userRequest->category->category3 ?? '未設定' }}</p>
-                </div>
+            <!-- カテゴリ表示 -->
+            <div class="mb-4">
+                <label class="font-bold">カテゴリ:</label>
+                <p class="text-gray-700">{{ $userRequest->category3->category3 ?? '未設定' }}</p>
+            </div>
 
                 <!-- 一覧表示 -->
                 <table class="min-w-full table-auto border-collapse border border-gray-400 mb-6">
@@ -38,14 +38,15 @@
                                 <select class="hidden editable-input w-full form-control" name="time_start">
                                     <option value="">時刻を選択</option>
                                     @for ($hour = 8; $hour <= 20; $hour++)
-                                        <option value="{{ $hour }}:00" {{ $userRequest->time_start == "$hour:00" ? 'selected' : '' }}>
-                                            {{ $hour }}:00
+                                        <option value="{{ sprintf('%02d:00', $hour) }}" {{ $userRequest->time_start == sprintf('%02d:00', $hour) ? 'selected' : '' }}>
+                                            {{ sprintf('%02d:00', $hour) }}
                                         </option>
-                                        <option value="{{ $hour }}:30" {{ $userRequest->time_start == "$hour:30" ? 'selected' : '' }}>
-                                            {{ $hour }}:30
+                                        <option value="{{ sprintf('%02d:30', $hour) }}" {{ $userRequest->time_start == sprintf('%02d:30', $hour) ? 'selected' : '' }}>
+                                            {{ sprintf('%02d:30', $hour) }}
                                         </option>
                                     @endfor
                                 </select>
+
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
                                 <span class="editable-field" data-name="time">{{ number_format($userRequest->time, 1) }} 時間</span>
@@ -96,9 +97,12 @@
 
     // フォーム送信時に値を設定
     document.querySelector('#edit-form').addEventListener('submit', function (event) {
+        const timeStart = document.querySelector('[name="time_start"]').value;
+        console.log('送信される time_start:', timeStart); // 送信前に値を確認
         document.getElementById('form-contents').value = document.querySelector('[name="contents"]').value;
         document.getElementById('form-date').value = document.querySelector('[name="date"]').value;
-        // document.getElementById('form-time_start').value = document.querySelector('[name="time_start"]').value;
-        // document.getElementById('form-time').value = document.querySelector('[name="time"]').value;
+        document.getElementById('form-time_start').value = document.querySelector('[name="time_start"]').value;
+        document.getElementById('form-time').value = document.querySelector('[name="time"]').value;
+
     });
 </script>

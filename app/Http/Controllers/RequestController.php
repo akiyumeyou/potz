@@ -110,10 +110,9 @@ class RequestController extends Controller
             $validated = $request->validate([
                 'contents' => 'required|string|max:1000',
                 'date' => 'required|date_format:Y-m-d',
+                'time_start' => 'nullable|date_format:H:i',
+                'time' => 'nullable|numeric|min:0.5|max:8.0',
             ]);
-
-            // ログ: バリデーション後のデータ
-            logger()->info('Validated Data:', $validated);
 
             // データベースからリクエストを取得
             $userRequest = UserRequest::findOrFail($id);
@@ -121,12 +120,22 @@ class RequestController extends Controller
             // 更新処理
             $userRequest->contents = $validated['contents'];
             $userRequest->date = $validated['date'];
+            $userRequest->time_start = $validated['time_start'];
+            $userRequest->time = $validated['time'];
             $userRequest->save();
 
-            // ログ: 更新成功
-            logger()->info('Request updated successfully:', ['id' => $userRequest->id]);
+            // MeetRoom の ID を取得
+            $meetRoom = MeetRoom::where('request_id', $userRequest->id)->first();
+            if (!$meetRoom) {
+                throw new Exception('関連するMeetRoomが見つかりません');
+            }
 
-            return redirect()->route('requests.show', $userRequest->id)->with('success', '依頼が更新されました！');
+            // ログ: 更新成功
+            // logger()->info('Request updated successfully:', ['id' => $userRequest->id]);
+
+            // 更新後、meet_rooms.show にリダイレクト
+            return redirect()->route('meet_rooms.show', ['request_id' => $userRequest->id])
+            ->with('success', '依頼が更新されました！');
         } catch (\Exception $e) {
             // エラーログ
             logger()->error('Error during request update:', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
@@ -136,7 +145,6 @@ class RequestController extends Controller
     }
 
 
-
     /**
      * リクエスト詳細表示
      */
@@ -144,6 +152,7 @@ class RequestController extends Controller
     {
         $meetRoom = MeetRoom::findOrFail($id);
         $userRequest = UserRequest::findOrFail($meetRoom->request_id);
+        $userRequest = UserRequest::with('category3')->findOrFail($id);
 
         return view('requests.show', compact('meetRoom', 'userRequest'));
     }
