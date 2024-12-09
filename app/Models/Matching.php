@@ -14,12 +14,15 @@ class Matching extends Model
 
     // 書き込み可能な属性を指定
     protected $fillable = [
+        'request_id',
+        'matched_by_user_id',
         'requester_id',
         'supporter_id',
         'meetroom_id',
         'status',
         'cost',
         'time',
+        'distance',
         'transportation_costs',
         'sonotacost1',
         'sonotacost2',

@@ -12,21 +12,22 @@
     <div class="p-4 bg-white shadow sm:rounded-lg">
 
         <!-- <ボタン -->
-        <div class="flex flex-wrap justify-center space-x-4 mb-6">
+        <div class="justify-center space-x-4 mb-6">
             @if ($userRequest->status_id !== 3)
                 <form action="{{ route('matchings.confirm') }}" method="POST" class="inline-block">
                     @csrf
                     <input type="hidden" name="request_id" value="{{ $userRequest->id }}">
                     <input type="hidden" name="supporter_id" value="{{ Auth::id() }}">
                     <button type="submit" class="px-6 py-3 bg-blue-500 text-white text-xl font-bold rounded shadow hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">
-                        マッチング確定
+                        確定する
                     </button>
                 </form>
             @else
-                <span class="px-6 py-3 bg-green-500 text-white text-xl font-bold rounded shadow">
-                    マッチング成立
+                <span class="px-6 py-3 bg-orange-300 text-white text-xl font-bold rounded shadow">
+                    成立中
                 </span>
-            @endif
+                <a href="{{ route('receipts.show', ['request_id' => $userRequest->id]) }}">領収書発行</a>
+                @endif
             <P>マッチング成立後は編集できません</P>
     <!-- 編集部分 -->
     @include('requests.edit')

@@ -25,9 +25,25 @@ class RequestController extends Controller
 
         $requests = UserRequest::where('requester_id', $user->id)->get();
 
-        return view('requests.index', compact('requests', 'user'));
-    }
+        // membership_id を取得
+    $membershipId = $user->membership_id;
 
+    // ac_id を取得
+    $acId = optional($user->supporterProfile)->ac_id;
+
+    // デバッグログ
+    logger()->info('ログイン中のユーザー:', [
+        'id' => $user->id,
+        'membership_id' => $membershipId,
+        'ac_id' => $acId,
+    ]);
+
+    // ユーザーの依頼一覧を取得
+    $requests = UserRequest::where('requester_id', $user->id)->get();
+
+    // ビューにデータを渡す
+    return view('requests.index', compact('requests', 'user', 'membershipId', 'acId'));
+}
     /**
      * 依頼作成フォームを表示
      */
@@ -63,7 +79,8 @@ class RequestController extends Controller
 
             $estimate = ($cost * $validated['time']) + 400;
 
-            $datetime = \Carbon\Carbon::parse($validated['date'])->format('Y-m-d') . ' ' . $validated['time_start'];
+        // 日時の結合
+        $datetime = $validated['date'] . ' ' . $validated['time_start'];
 
             $newRequest = UserRequest::create([
                 'category3_id' => $validated['category3_id'],
@@ -117,11 +134,26 @@ class RequestController extends Controller
             // データベースからリクエストを取得
             $userRequest = UserRequest::findOrFail($id);
 
+            // 更新前の time を保持
+            $originalTime = $userRequest->time;
+
             // 更新処理
-            $userRequest->contents = $validated['contents'];
-            $userRequest->date = $validated['date'];
-            $userRequest->time_start = $validated['time_start'];
-            $userRequest->time = $validated['time'];
+            $userRequest->contents = $validated['contents'] ?? $userRequest->contents;
+            $userRequest->date = $validated['date'] ?? $userRequest->date;
+            $userRequest->time_start = $validated['time_start'] ?? $userRequest->time_start;
+            $userRequest->time = $validated['time'] ?? $userRequest->time;
+
+            // time が変更された場合にのみ見積もりを再計算
+            if ($originalTime !== $validated['time']) {
+                $cost = $userRequest->cost;
+
+                if (!$cost) {
+                    throw new Exception('コストが設定されていません。');
+                }
+                // 見積もり金額を再計算
+                $userRequest->estimate = ($cost * $validated['time']) + 400;
+            }
+
             $userRequest->save();
 
             // MeetRoom の ID を取得

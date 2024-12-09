@@ -18,13 +18,13 @@
                             <select name="category3_id" id="category3_id" class="form-control text-lg" required>
                                 <option value="">カテゴリを選択</option>
                                 @foreach ($categories as $category)
-                                    <!-- cost値をdata-cost属性に設定 -->
                                     <option value="{{ $category->id }}" data-cost="{{ $category->cost }}">
                                         {{ $category->category3 }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
+
                         <!-- 依頼内容 -->
                         <div class="mb-4">
                             <label for="contents" class="form-label text-lg font-bold">依頼内容</label>
@@ -37,25 +37,25 @@
                             <div class="d-flex align-items-center">
                                 <input type="date" name="date" id="date" class="form-control text-lg me-2" required>
                                 <select name="time_start" id="time_start" class="form-control text-lg" required>
-                                    <option value="">時刻を選択
-                                @for ($hour = 8; $hour <= 20; $hour++)
-                                        <option value="{{ $hour }}:00">{{ $hour }}:00</option>
-                                        <option value="{{ $hour }}:30">{{ $hour }}:30</option>
+                                    <option value="">時刻を選択</option>
+                                    @for ($hour = 8; $hour <= 20; $hour++)
+                                        <option value="{{ sprintf('%02d:00', $hour) }}">{{ sprintf('%02d:00', $hour) }}</option>
+                                        <option value="{{ sprintf('%02d:30', $hour) }}">{{ sprintf('%02d:30', $hour) }}</option>
                                     @endfor
                                 </select>
                             </div>
                         </div>
 
-                       <!-- 作業時間 -->
-                       <div class="mb-4">
-                        <label for="time" class="form-label text-lg font-bold">作業時間</label>
-                        <select name="time" id="time" class="form-control text-lg" required>
-                            <option value="">作業時間を選択</option>
-                            @for ($i = 0.5; $i <= 8.0; $i += 0.5)
-                                <option value="{{ $i }}">{{ $i }} 時間</option>
-                            @endfor
-                        </select>
-                    </div>
+                        <!-- 作業時間 -->
+                        <div class="mb-4">
+                            <label for="time" class="form-label text-lg font-bold">作業時間</label>
+                            <select name="time" id="time" class="form-control text-lg" required>
+                                <option value="">作業時間を選択</option>
+                                @for ($i = 0.5; $i <= 8.0; $i += 0.5)
+                                    <option value="{{ number_format($i, 1) }}">{{ number_format($i, 1) }} 時間</option>
+                                @endfor
+                            </select>
+                        </div>
 
                         <!-- 場所 -->
                         <div class="mb-4">
@@ -83,7 +83,7 @@
                             </div>
                         </div>
 
-                   <!-- 見積もり金額 -->
+                        <!-- 見積もり金額 -->
                         <div class="mb-4">
                             <label for="estimate" class="form-label text-lg font-bold">見積もり金額</label>
                             <input type="text" id="estimate" name="estimate" class="form-control text-lg" readonly>
@@ -101,29 +101,25 @@
 <script>
     const categorySelect = document.getElementById('category3_id');
     const timeInput = document.getElementById('time');
-    const totalCostInput = document.getElementById('total_cost');
+    const estimateInput = document.getElementById('estimate');
     const spotSelect = document.getElementById('spot');
     const addressField = document.getElementById('address_field');
 
-    // 場所選択変更時
+    // 場所選択変更時の処理
     spotSelect.addEventListener('change', (e) => {
         addressField.classList.toggle('d-none', e.target.value !== 'その他');
     });
 
-    // コスト計算
-    document.addEventListener('DOMContentLoaded', function () {
-        const categorySelect = document.getElementById('category3_id');
-        const timeInput = document.getElementById('time');
-        const estimateInput = document.getElementById('estimate');
+    // 見積もり計算
+    function updateEstimate() {
+        const cost = parseFloat(categorySelect.selectedOptions[0]?.getAttribute('data-cost') || 0);
+        const time = parseFloat(timeInput.value || 0);
+        const estimate = (cost * time) + 400; // 基本料金 x 時間 + 交通費
+        estimateInput.value = estimate.toFixed(1);
+    }
 
-        function updateEstimate() {
-            const cost = parseFloat(categorySelect.selectedOptions[0]?.getAttribute('data-cost') || 0);
-            const time = parseFloat(timeInput.value || 0);
-            const estimate = (cost * time) + 400; // 基本料金 x 時間 + 交通費
-            estimateInput.value = estimate.toFixed(2);
-        }
-
+    document.addEventListener('DOMContentLoaded', () => {
         categorySelect.addEventListener('change', updateEstimate);
-        timeInput.addEventListener('input', updateEstimate);
+        timeInput.addEventListener('change', updateEstimate);
     });
 </script>

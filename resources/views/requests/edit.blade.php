@@ -2,12 +2,7 @@
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white shadow-sm sm:rounded-lg">
             <div class="p-6 bg-white border-b border-gray-200">
-                <h3 class="text-xl font-bold mb-4">現在の依頼内容：</h3>
-
-            <!-- カテゴリ表示 -->
-            <div class="mb-4">
-                <label class="font-bold">カテゴリ:</label>
-                <p class="text-gray-700">{{ $userRequest->category3->category3 ?? '未設定' }}</p>
+                <h3 class="text-xl font-bold mb-4">依頼内容： {{ $userRequest->category3->category3 ?? '未設定' }}</h3>
             </div>
 
                 <!-- 一覧表示 -->
@@ -17,7 +12,8 @@
                             <th class="border border-gray-300 px-4 py-2">内容</th>
                             <th class="border border-gray-300 px-4 py-2">日時</th>
                             <th class="border border-gray-300 px-4 py-2">開始時刻</th>
-                            <th class="border border-gray-300 px-4 py-2">支援時間</th>
+                            <th class="border border-gray-300 px-4 py-2">支援時間</th>                            <th class="border border-gray-300 px-4 py-2">見込み金額</th>
+
                             <th class="border border-gray-300 px-4 py-2">場所</th>
                         </tr>
                     </thead>
@@ -59,6 +55,10 @@
                                     @endfor
                                 </select>
                             </td>
+                            <td class="border border-gray-300 px-4 py-2 text-right">
+                                {{ $userRequest->estimate ? ceil($userRequest->estimate) . '円' : '未指定' }}
+                            </td>
+
                             <td class="border border-gray-300 px-4 py-2">{{ $userRequest->spot }}</td>
                         </tr>
                     </tbody>

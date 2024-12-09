@@ -11,6 +11,8 @@ use App\Http\Controllers\GoogleLoginController;
 use App\Http\Controllers\SupporterProfileController;
 use App\Http\Controllers\SupportController;
 use App\Http\Controllers\MatchingsController;
+use App\Http\Controllers\ReceiptController;
+
 
 
 
@@ -62,23 +64,28 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/requests/create', [RequestController::class, 'create'])->name('requests.create');
     Route::get('/requests/index', [RequestController::class, 'index'])->name('requests.index');
     Route::post('/requests', [RequestController::class, 'store'])->name('requests.store');
-    Route::get('/requests/{id}', [RequestController::class, 'show'])->name('requests.show'); // 詳細表示
-    Route::get('/requests/{id}/edit', [RequestController::class, 'edit'])->name('requests.edit');
-    Route::put('/requests/{id}', [RequestController::class, 'update'])->name('requests.update');
 
     // 打ち合わせルーム
     Route::get('/meet_rooms/{request_id}', [MeetRoomController::class, 'show'])->name('meet_rooms.show');
     Route::post('/meet_rooms/{id}', [MeetRoomController::class, 'store'])->name('meet_rooms.store');
     Route::post('/meet_rooms/{room}/image', [MeetRoomController::class, 'storeImage'])->name('meet_rooms.image');
-
-    // マッチング関連
     Route::get('/matchings/{id}', [MatchingsController::class, 'show'])->name('matchings.show');
     Route::post('/matchings/confirm', [MatchingsController::class, 'confirm'])->name('matchings.confirm');
+    Route::get('/requests/{id}', [RequestController::class, 'show'])->name('requests.show');
+
+    Route::get('/receipts/{request_id}', [ReceiptController::class, 'show'])->name('receipts.show');
+    Route::put('/receipts/{request_id}', [ReceiptController::class, 'update'])->name('receipts.update');
+
+    // 依頼編集
+    Route::get('/requests/{id}/edit', [RequestController::class, 'edit'])->name('requests.edit');
+    Route::put('/requests/{id}', [RequestController::class, 'update'])->name('requests.update');
+    Route::get('/requests/{id}', [RequestController::class, 'show'])->name('requests.show');
 
     // サポーター用依頼一覧
-    Route::get('/supports', [SupportController::class, 'index'])->name('supports.index');
-    Route::post('/supports/join/{requestId}', [SupportController::class, 'joinRoom'])->name('support.joinRoom');
+    Route::get('/supports', [SupportController::class, 'index'])->name('supports.index'); // サポーター用依頼一覧
+    Route::post('/supports/join/{requestId}', [SupportController::class, 'joinRoom'])->name('support.joinRoom'); // ルーム参加
 });
+
 
 
 // 管理画面用ルート

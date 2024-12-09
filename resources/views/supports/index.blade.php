@@ -27,7 +27,7 @@
                                     <th class="border border-gray-300 px-4 py-2">依頼者</th>
                                     <th class="border border-gray-300 px-4 py-2">場所（めやす）</th>
                                     <th class="border border-gray-300 px-4 py-2">日時（調整可能）</th>
-                                    <th class="border border-gray-300 px-4 py-2">ステータス</th>
+                                    <th class="border border-gray-300 px-4 py-2">マッチング</th>
                                     <th class="border border-gray-300 px-4 py-2">アクション</th>
                                 </tr>
                             </thead>
@@ -70,10 +70,10 @@
 
 <!-- 打ち合わせ -->
 <td class="border px-4 py-2 text-center">
-    <p class="text-sm text-gray-500">ステータス: {{ $request->status_name }}</p>
+    <p class="text-sm text-blue-900">{{ $request->status_name }}</p>
     <form action="{{ route('support.joinRoom', $request->id) }}" method="POST">
         @csrf
-        <button type="submit" class="bg-orange-500 text-white px-4 py-2 rounded">
+        <button type="submit" class="bg-orange-600 text-white px-4 py-2 rounded">
             打ち合わせ
         </button>
     </form>
