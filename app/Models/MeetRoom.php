@@ -34,4 +34,13 @@ class MeetRoom extends Model
     {
         return $this->hasMany(MeetRoomMember::class, 'meet_room_id', 'id');
     }
+
+    public function canJoin($userId)
+{
+    $activeMembers = $this->members()->where('is_active', 1)->count();
+    $isUserInRoom = $this->members()->where('user_id', $userId)->exists();
+
+    return $activeMembers < $this->max_members || $isUserInRoom;
+}
+
 }

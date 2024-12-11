@@ -14,8 +14,6 @@ use App\Http\Controllers\MatchingsController;
 use App\Http\Controllers\ReceiptController;
 
 
-
-
 Route::get('/', function () {
     return view('welcome');
 });
@@ -83,7 +81,11 @@ Route::middleware(['auth'])->group(function () {
 
     // サポーター用依頼一覧
     Route::get('/supports', [SupportController::class, 'index'])->name('supports.index'); // サポーター用依頼一覧
-    Route::post('/supports/join/{requestId}', [SupportController::class, 'joinRoom'])->name('support.joinRoom'); // ルーム参加
+    Route::post('/supports/join/{requestId}', [SupportController::class, 'joinRoom'])->name('supports.joinRoom');
+
+    // 領収書生成ルート
+    Route::get('/receipts/pdf/{request_id}', [ReceiptController::class, 'generatePdf'])->name('receipts.generatePdf');
+
 });
 
 

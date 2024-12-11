@@ -12,10 +12,23 @@
                         <h2 class="text-4xl font-bold text-gray-800">
                             合計金額: <span id="totalAmount">{{ number_format($matching->costkei ?? 0) }}</span> 円
                         </h2>
+                    @if ($matching->status !== 4)
                         <button type="submit" class="px-8 py-4 bg-green-500 text-white text-2xl font-bold rounded shadow hover:bg-green-600">
                             領収
                         </button>
+                    @endif
                     </div>
+                     <!-- 領収書リンク（完了時のみ表示） -->
+                    @if ($matching->status === 4)
+                    <div class="mt-4">
+                        <a href="{{ route('receipts.generatePdf', ['request_id' => $matching->request_id]) }}"
+                        class="px-6 py-3 bg-blue-500 text-white text-xl font-bold rounded shadow hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                        target="_blank">
+                            領収書を見る
+                        </a>
+                    </div>
+                    @endif
+
 
                     <!-- 内訳表 -->
                     <table class="w-full text-left border-collapse">

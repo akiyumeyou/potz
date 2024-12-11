@@ -15,19 +15,6 @@
         </div>
     </div>
 
-    <!-- @if ($membershipId === 3 && $acId === 2)
-    <a href="{{ route('supports.index') }}" class="text-blue-500 hover:underline">
-        サポート検索
-    </a>
-@else
-    <p class="text-gray-500">サポーター区分ではありません。</p>
-@endif
-
-    @if (auth()->check() && optional($user->profile)->membership_id === 3)
-    <a href="{{ route('supports.index') }}" class="text-blue-500 hover:underline">
-        サポート検索
-    </a>
-@endif -->
 <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-5">
     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-5 text-3xl text-green-900">

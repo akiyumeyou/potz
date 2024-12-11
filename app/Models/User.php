@@ -31,4 +31,13 @@ class User extends Authenticatable
     {
         return $this->hasOne(SupporterProfile::class, 'user_id', 'id');
     }
+
+public function meetRooms()
+{
+    return $this->belongsToMany(MeetRoom::class, 'meetroom_members', 'user_id', 'meet_room_id')
+        ->select('meet_rooms.*') // `meet_rooms` テーブルのカラムのみを取得
+        ->withPivot('is_active', 'role', 'joined_at', 'left_at')
+        ->withTimestamps();
+}
+
 }

@@ -33,55 +33,65 @@
                             </thead>
                             <tbody>
                                 @foreach ($requests as $request)
-                                    <tr>
-                                        <td class="border border-gray-300 px-4 py-2">{{ $request->category3->category3 ?? '未設定' }}</td>
-                                        <td class="border border-gray-300 px-4 py-2">{{ $request->user->name ?? '不明' }}</td>
-                                        <td class="border px-4 py-2">
-                                            @php
-                                                $spot = $request->spot ?? '未設定';
-                                                $address1 = $request->user->address1 ?? '未設定';
-                                            @endphp
-                                            {{ $spot }} {{ $address1 !== '未設定' ? '(' . $address1 . ')' : '' }}
+                                <tr>
+                                    <td class="border border-gray-300 px-4 py-2">{{ $request->category3->category3 ?? '未設定' }}</td>
+                                    <td class="border border-gray-300 px-4 py-2">{{ $request->user->name ?? '不明' }}</td>
+                                    <td class="border px-4 py-2">
+                                        @php
+                                            $spot = $request->spot ?? '未設定';
+                                            $address1 = $request->user->address1 ?? '未設定';
+                                        @endphp
+                                        {{ $spot }} {{ $address1 !== '未設定' ? '(' . $address1 . ')' : '' }}
+                                    </td>
+                                    <td class="border px-4 py-2">
+                                        @php
+                                            try {
+                                                $startDate = \Carbon\Carbon::parse($request->date);
+                                                $startTime = $request->time_start
+                                                    ? \Carbon\Carbon::createFromFormat('H:i:s', $request->time_start)->format('H:i')
+                                                    : '未設定';
+                                                $duration = $request->time ?? '未設定';
+                                            } catch (\Exception $e) {
+                                                $startDate = null;
+                                                $startTime = '未設定';
+                                                $duration = '未設定';
+                                            }
+                                        @endphp
+                                        @if ($startDate)
+                                            {{ $startDate->isoFormat('YYYY年MM月DD日（dddd）') }} {{ $startTime }}から{{ $duration }}時間
+                                        @else
+                                            日時情報が不正です
+                                        @endif
+                                        <td class="border px-4 py-2 text-center">
+                                            <p class="text-sm text-blue-900">{{ $request->status_name }}</p>
+                                            @if ($request->can_join)
+                                            @if ($request->color === 'blue')
+                                                <!-- 新規ルーム: 青色ボタン -->
+                                                <form action="{{ route('supports.joinRoom', $request->id) }}" method="POST">
+                                                    @csrf
+                                                    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700">
+                                                        打ち合わせに参加
+                                                    </button>
+                                                </form>
+                                            @elseif ($request->color === 'orange')
+                                                <!-- 自分のルーム: オレンジボタン -->
+                                                <a href="{{ route('meet_rooms.show', ['request_id' => $request->id]) }}" class="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-700">
+                                                    自分のルーム
+                                                </a>
+                                            @endif
+                                        @else
+                                            <!-- 定員オーバーまたは終了: グレーボタン -->
+                                            <button class="px-4 py-2 bg-gray-300 text-gray-700 rounded cursor-not-allowed" disabled>
+                                                {{ $request->status_id === 4 ? '終了' : 'マッチング' }}
+                                            </button>
+                                        @endif
+
                                         </td>
 
 
+                                </tr>
+                            @endforeach
 
-                                        <!-- 日時 -->
-<td class="border px-4 py-2">
-    @php
-        try {
-            $startDate = \Carbon\Carbon::parse($request->date);
-            $startTime = $request->time_start
-                ? \Carbon\Carbon::createFromFormat('H:i:s', $request->time_start)->format('H:i')
-                : '未設定';
-            $duration = $request->time ?? '未設定';
-        } catch (\Exception $e) {
-            $startDate = null;
-            $startTime = '未設定';
-            $duration = '未設定';
-        }
-    @endphp
-    @if ($startDate)
-        {{ $startDate->isoFormat('YYYY年MM月DD日（dddd）') }} {{ $startTime }}から{{ $duration }}時間
-    @else
-        日時情報が不正です
-    @endif
-</td>
-
-<!-- 打ち合わせ -->
-<td class="border px-4 py-2 text-center">
-    <p class="text-sm text-blue-900">{{ $request->status_name }}</p>
-    <form action="{{ route('support.joinRoom', $request->id) }}" method="POST">
-        @csrf
-        <button type="submit" class="bg-orange-600 text-white px-4 py-2 rounded">
-            打ち合わせ
-        </button>
-    </form>
-</td>
-
-
-                                    </tr>
-                                @endforeach
                             </tbody>
                         </table>
                     @else

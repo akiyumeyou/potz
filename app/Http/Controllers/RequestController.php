@@ -98,15 +98,41 @@ class RequestController extends Controller
             ]);
 
             // MeetRoom 作成
-            MeetRoom::create([
-                'request_id' => $newRequest->id,
-            ]);
+  // MeetRoom 作成
+  $meetRoom = MeetRoom::create([
+    'request_id' => $newRequest->id,
+    'max_supporters' => 1, // サポーター1人に設定
+]);
 
-            return redirect()->route('requests.index')->with('success', '依頼が登録されました。');
-        } catch (Exception $e) {
-            Log::error('依頼の保存中にエラーが発生しました: ' . $e->getMessage());
-            return back()->with('error', '依頼の保存に失敗しました。もう一度お試しください。');
-        }
+// MeetRoom に依頼者と管理者を追加
+DB::table('meetroom_members')->insert([
+    [
+        'meet_room_id' => $meetRoom->id,
+        'user_id' => auth()->id(), // 依頼者
+        'role' => 'requester',
+        'is_active' => 1,
+        'joined_at' => now(),
+    ],
+    [
+        'meet_room_id' => $meetRoom->id,
+        'user_id' => 3, // 管理者（固定ID:テスト用は３）
+        'role' => 'admin',
+        'is_active' => 1,
+        'joined_at' => now(),
+    ],
+]);
+
+// トランザクション確定
+DB::commit();
+
+return redirect()->route('requests.index')->with('success', '依頼が登録され、ミートルームが作成されました。');
+} catch (Exception $e) {
+// トランザクションロールバック
+DB::rollBack();
+
+Log::error('依頼の保存中にエラーが発生しました: ' . $e->getMessage());
+return back()->with('error', '依頼の保存に失敗しました。もう一度お試しください。');
+}
     }
     public function edit($id)
     {

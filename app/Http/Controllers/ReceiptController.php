@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Matching;
+use App\Models\UserRequest; // 依頼テーブルモデルをインポート
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ReceiptController extends Controller
 {
+    // 領収書表示メソッド
     public function show($request_id)
     {
         // マッチングデータを取得
@@ -16,6 +19,7 @@ class ReceiptController extends Controller
         return view('supports.receipt', compact('matching'));
     }
 
+    // 領収書更新メソッド
     public function update(Request $request, $request_id)
     {
         // バリデーションルール
@@ -31,8 +35,8 @@ class ReceiptController extends Controller
         // マッチングデータを取得
         $matching = Matching::where('request_id', $request_id)->firstOrFail();
 
-  // ログに取得したデータを記録（確認用）
-  logger('Before update:', $matching->toArray());
+        // 依頼データを取得
+        $userRequest = UserRequest::findOrFail($request_id);
 
         // 各項目の計算
         $transportation_costs = round($validated['distance'] * 15, 2); // 交通費
@@ -44,8 +48,8 @@ class ReceiptController extends Controller
             ($validated['sonotacost3'] ?? 0),
             2
         );
-        // $validated['distance'] = $request->input('distance', 0);
-        // データベースを更新
+
+        // マッチングテーブルを更新
         $matching->update([
             'time' => $validated['time'], // サポート時間（小数対応）
             'distance' => $validated['distance'], // 距離を保存
@@ -58,16 +62,32 @@ class ReceiptController extends Controller
             'status' => 4, // ステータス
             'syousyu_flg' => 1, // 領収済フラグ
             'closed_at' => now(), // 更新日時
-
         ]);
 
-// ログに更新後のデータを記録（確認用）
-logger('After update:', $matching->toArray());
+        // 依頼テーブルのステータスを更新
+        $userRequest->update([
+            'status_id' => 4, // 依頼のステータスを終了(4)に更新
+        ]);
 
         // 成功メッセージをリダイレクト先に渡す
         return redirect()
             ->route('receipts.show', ['request_id' => $request_id])
             ->with('success', 'データが正常に更新されました');
     }
+
+    // PDF生成メソッド
+    public function generatePdf($request_id)
+{
+    // マッチングデータを取得
+    $matching = Matching::where('request_id', $request_id)->firstOrFail();
+
+    // PDFを生成
+    $pdf = Pdf::loadView('supports.pdf', compact('matching'));
+
+    // カスタムフォントを設定
+    $pdf->getDomPDF()->getOptions()->set('defaultFont', 'noto_sans_jp');
+
+    return $pdf->stream('領収書_' . $request_id . '.pdf');
 }
 
+}

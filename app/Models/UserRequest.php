@@ -45,9 +45,14 @@ class UserRequest extends Model
             default => '不明',
         };
     }
+
     public function category3()
     {
     return $this->belongsTo(Category3::class, 'category3_id');
     }
-
+    
+   public function meetRoom()
+   {
+       return $this->hasOne(MeetRoom::class, 'request_id');
+   }
 }
