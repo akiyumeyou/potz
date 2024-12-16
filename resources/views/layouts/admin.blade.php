@@ -16,9 +16,10 @@
     <div class="sidebar">
         <h2>管理画面</h2>
         <a href="{{ route('admin.home') }}">ホーム</a>
-        <a href="{{ route('admin.users') }}">ユーザー一覧</a>
+        <a href="{{ route('admin.users.index') }}">ユーザー一覧</a>
         <a href="{{ route('admin.categories') }}">カテゴリ一覧</a>
-        <a href="{{ route('admin.requests') }}">サポート一覧</a>
+        <a href="{{ route('admin.supports.index') }}">サポート一覧</a>
+
         <a href="{{ route('logout') }}">ログアウト</a>
     </div>
     <div class="content">

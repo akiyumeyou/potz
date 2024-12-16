@@ -18,7 +18,8 @@
                             <select name="category3_id" id="category3_id" class="form-control text-lg w-full" required>
                                 <option value="">選択してください</option>
                                 @foreach ($categories as $category)
-                                    <option value="{{ $category->id }}" data-cost="{{ $category->cost }}">
+                                    <option value="{{ $category->id }}" data-cost="{{ $category->cost }}"
+                                        {{ old('category3_id', $originalRequest->category3_id ?? '') == $category->id ? 'selected' : '' }}>
                                         {{ $category->category3 }}
                                     </option>
                                 @endforeach
@@ -35,12 +36,19 @@
                         <div class="mb-4">
                             <label for="date" class="block text-lg font-bold text-gray-700 mb-2">希望日時</label>
                             <div class="flex space-x-2">
-                                <input type="date" name="date" id="date" class="form-control text-lg w-1/2" required>
+                                <input type="date" name="date" id="date" class="form-control text-lg w-1/2" required
+                                    value="{{ old('date', $originalRequest->date ?? '') }}">
                                 <select name="time_start" id="time_start" class="form-control text-lg w-1/2" required>
                                     <option value="">時刻を選択</option>
                                     @for ($hour = 8; $hour <= 20; $hour++)
-                                        <option value="{{ sprintf('%02d:00', $hour) }}">{{ sprintf('%02d:00', $hour) }}</option>
-                                        <option value="{{ sprintf('%02d:30', $hour) }}">{{ sprintf('%02d:30', $hour) }}</option>
+                                        <option value="{{ sprintf('%02d:00', $hour) }}"
+                                            {{ old('time_start', $originalRequest->time_start ?? '') == sprintf('%02d:00', $hour) ? 'selected' : '' }}>
+                                            {{ sprintf('%02d:00', $hour) }}
+                                        </option>
+                                        <option value="{{ sprintf('%02d:30', $hour) }}"
+                                            {{ old('time_start', $originalRequest->time_start ?? '') == sprintf('%02d:30', $hour) ? 'selected' : '' }}>
+                                            {{ sprintf('%02d:30', $hour) }}
+                                        </option>
                                     @endfor
                                 </select>
                             </div>
@@ -52,7 +60,9 @@
                             <select name="time" id="time" class="form-control text-lg w-full" required>
                                 <option value="">時間を選択</option>
                                 @for ($i = 0.5; $i <= 8.0; $i += 0.5)
-                                    <option value="{{ $i }}">{{ $i }} 時間</option>
+                                    <option value="{{ $i }}" {{ old('time', $originalRequest->time ?? '') == $i ? 'selected' : '' }}>
+                                        {{ $i }} 時間
+                                    </option>
                                 @endfor
                             </select>
                         </div>
@@ -61,15 +71,16 @@
                         <div class="mb-4">
                             <label for="spot" class="block text-lg font-bold text-gray-700 mb-2">場所</label>
                             <select name="spot" id="spot" class="form-control text-lg w-full" required>
-                                <option value="自宅">自宅</option>
-                                <option value="その他">その他</option>
+                                <option value="自宅" {{ old('spot', $originalRequest->spot ?? '') == '自宅' ? 'selected' : '' }}>自宅</option>
+                                <option value="その他" {{ old('spot', $originalRequest->spot ?? '') == 'その他' ? 'selected' : '' }}>その他</option>
                             </select>
                         </div>
 
                         <!-- その他の住所 -->
-                        <div class="mb-4 hidden" id="address_field">
+                        <div class="mb-4 {{ old('spot', $originalRequest->spot ?? '') == 'その他' ? '' : 'hidden' }}" id="address_field">
                             <label for="address" class="block text-lg font-bold text-gray-700 mb-2">他の住所</label>
-                            <input type="text" name="address" id="address" class="form-control text-lg w-full">
+                            <input type="text" name="address" id="address" class="form-control text-lg w-full"
+                                value="{{ old('address', $originalRequest->address ?? '') }}">
                         </div>
 
                         <!-- 駐車場 -->
@@ -77,11 +88,11 @@
                             <label class="block text-lg font-bold text-gray-700 mb-2">駐車場</label>
                             <div class="flex items-center space-x-4">
                                 <label>
-                                    <input type="radio" name="parking" value="1" required>
+                                    <input type="radio" name="parking" value="1" {{ old('parking', $originalRequest->parking ?? '') == 1 ? 'checked' : '' }}>
                                     なし
                                 </label>
                                 <label>
-                                    <input type="radio" name="parking" value="2" required>
+                                    <input type="radio" name="parking" value="2" {{ old('parking', $originalRequest->parking ?? '') == 2 ? 'checked' : '' }}>
                                     あり
                                 </label>
                             </div>
@@ -90,7 +101,8 @@
                         <!-- 見積もり金額 -->
                         <div class="mb-4">
                             <label for="estimate" class="block text-lg font-bold text-gray-700 mb-2">見積もり金額</label>
-                            <input type="text" id="estimate" name="estimate" class="form-control text-lg w-full" readonly>
+                            <input type="text" id="estimate" name="estimate" class="form-control text-lg w-full"
+                                value="{{ isset($originalRequest) ? number_format($originalRequest->estimate, 0) . ' 円' : '' }}" readonly>
                         </div>
 
                         <!-- 利用規約 -->
@@ -103,12 +115,12 @@
 
                         <!-- 登録ボタン -->
                         <button
-                        type="submit"
-                        id="submitButton"
-                        class="btn text-lg w-full py-2 bg-gray-400 text-white cursor-not-allowed"
-                        disabled>
-                        サポート依頼登録
-                    </button>
+                            type="submit"
+                            id="submitButton"
+                            class="btn text-lg w-full py-2 bg-gray-400 text-white cursor-not-allowed"
+                            disabled>
+                            サポート依頼登録
+                        </button>
 
                     </form>
                 </div>
@@ -117,32 +129,45 @@
     </div>
 </x-app-layout>
 
+
 <script>
-    // 利用規約に同意しないとボタンを押せない
+    // 利用規約に同意しないとボタンを押せない13時
     document.getElementById('termsCheck').addEventListener('change', function (e) {
         document.getElementById('submitButton').disabled = !e.target.checked;
     });
 
-    // 見積もり計算
-    const categorySelect = document.getElementById('category3_id');
-    const timeInput = document.getElementById('time');
-    const estimateInput = document.getElementById('estimate');
-    const spotSelect = document.getElementById('spot');
-    const addressField = document.getElementById('address_field');
+ // 要素を取得
+const categorySelect = document.getElementById('category3_id');
+const timeInput = document.getElementById('time');
+const estimateInput = document.getElementById('estimate');
+const spotSelect = document.getElementById('spot');
+const addressField = document.getElementById('address_field');
 
-    spotSelect.addEventListener('change', () => {
-        addressField.classList.toggle('hidden', spotSelect.value !== 'その他');
-    });
+// 見積もり計算
+function updateEstimate() {
+    const cost = parseFloat(categorySelect.selectedOptions[0]?.getAttribute('data-cost') || 0); // カテゴリのコストを取得
+    const time = parseFloat(timeInput.value || 0); // 時間数を取得
+    const estimate = (cost * time) + 400; // 計算式: コスト × 時間 + 基本料金
+    estimateInput.value = numberWithCommas(estimate) + ' 円'; // 表示をフォーマット
+}
 
-    function updateEstimate() {
-        const cost = parseFloat(categorySelect.selectedOptions[0]?.getAttribute('data-cost') || 0);
-        const time = parseFloat(timeInput.value || 0);
-        const estimate = (cost * time) + 400;
-        estimateInput.value = estimate.toFixed(0) + ' 円';
-    }
+// 数字をカンマ区切りにする関数
+function numberWithCommas(x) {
+    return x.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
 
-    categorySelect.addEventListener('change', updateEstimate);
-    timeInput.addEventListener('change', updateEstimate);
+// イベントリスナーを設定
+categorySelect.addEventListener('change', updateEstimate);
+timeInput.addEventListener('change', updateEstimate);
+
+// 場所選択で住所フィールドの表示切り替え
+spotSelect.addEventListener('change', () => {
+    addressField.classList.toggle('hidden', spotSelect.value !== 'その他');
+});
+
+// ページロード時に初期値を再計算
+document.addEventListener('DOMContentLoaded', updateEstimate);
+
 
     // ボタンの状態を切り替える
     const termsCheck = document.getElementById('termsCheck');

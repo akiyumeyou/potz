@@ -50,9 +50,19 @@ class UserRequest extends Model
     {
     return $this->belongsTo(Category3::class, 'category3_id');
     }
-    
+
    public function meetRoom()
    {
        return $this->hasOne(MeetRoom::class, 'request_id');
+   }
+   
+   public function requester()
+   {
+       return $this->belongsTo(User::class, 'requester_id');
+   }
+
+   public function supporter()
+   {
+       return $this->belongsTo(User::class, 'supporter_id');
    }
 }

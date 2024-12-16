@@ -13,9 +13,59 @@ use Exception;
 class RequestController extends Controller
 {
     /**
-     * ダッシュボードの依頼一覧を表示
-     */
+     * 依頼一覧を表示
+    */
     public function index()
+    {
+        $user = Auth::user();
+
+        // ログインしていない場合、ログインページにリダイレクト
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'ログインしてください。');
+        }
+
+        // 一般会員でプロフィール登録が未完了の場合
+        $requiresProfileCompletion = $user->membership_id == 1 && !$user->profile_completed;
+
+        // ログイン中のユーザーの依頼を取得（降順でソート）
+        $requests = UserRequest::where('requester_id', $user->id)
+            ->orderBy('date', 'desc') // 日付の降順でソート
+            ->get();
+
+        // membership_id を取得
+        $membershipId = $user->membership_id;
+
+        // ac_id を取得
+        $acId = optional($user->supporterProfile)->ac_id;
+
+        // デバッグログ
+        logger()->info('ログイン中のユーザー:', [
+            'id' => $user->id,
+            'membership_id' => $membershipId,
+            'ac_id' => $acId,
+            'requiresProfileCompletion' => $requiresProfileCompletion,
+        ]);
+
+        // ビューにデータを渡す
+        return view('requests.index', compact('requests', 'user', 'membershipId', 'acId', 'requiresProfileCompletion'));
+    }
+
+
+    /**
+     * 依頼作成フォームを表示
+    */
+    public function create()
+    {
+        // カテゴリデータを取得
+        $categories = DB::table('category3')->select('id', 'category3', 'cost')->get();
+
+        return view('requests.create', compact('categories'));
+    }
+
+    /**
+     * 再依頼フォームを表示
+    */
+    public function createFromRequest($requestId)
     {
         $user = Auth::user();
 
@@ -23,38 +73,19 @@ class RequestController extends Controller
             return redirect()->route('login')->with('error', 'ログインしてください。');
         }
 
-        $requests = UserRequest::where('requester_id', $user->id)->get();
+        // 再依頼元のリクエストを取得
+        $originalRequest = UserRequest::where('id', $requestId)
+            ->where('requester_id', $user->id) // ユーザー自身のリクエストのみ
+            ->firstOrFail();
 
-        // membership_id を取得
-    $membershipId = $user->membership_id;
-
-    // ac_id を取得
-    $acId = optional($user->supporterProfile)->ac_id;
-
-    // デバッグログ
-    logger()->info('ログイン中のユーザー:', [
-        'id' => $user->id,
-        'membership_id' => $membershipId,
-        'ac_id' => $acId,
-    ]);
-
-    // ユーザーの依頼一覧を取得
-    $requests = UserRequest::where('requester_id', $user->id)->get();
-
-    // ビューにデータを渡す
-    return view('requests.index', compact('requests', 'user', 'membershipId', 'acId'));
-}
-    /**
-     * 依頼作成フォームを表示
-     */
-    public function create()
-    {
+        // カテゴリデータを取得
         $categories = DB::table('category3')->select('id', 'category3', 'cost')->get();
 
-        return view('requests.create', compact('categories'));
+        // 元のリクエストデータをビューに渡す
+        return view('requests.create', compact('categories', 'originalRequest'));
     }
 
-    /**
+/**
      * 依頼を保存
      */
     public function store(Request $request)
@@ -115,7 +146,7 @@ DB::table('meetroom_members')->insert([
     ],
     [
         'meet_room_id' => $meetRoom->id,
-        'user_id' => 3, // 管理者（固定ID:テスト用は３）
+        'user_id' => 3, // 管理者（固定ID:テスト用は）
         'role' => 'admin',
         'is_active' => 1,
         'joined_at' => now(),
@@ -214,4 +245,5 @@ return back()->with('error', '依頼の保存に失敗しました。もう一�
 
         return view('requests.show', compact('meetRoom', 'userRequest'));
     }
+
 }

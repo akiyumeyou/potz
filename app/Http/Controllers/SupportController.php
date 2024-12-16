@@ -43,8 +43,8 @@ class SupportController extends Controller
         ->get()
         ->map(function ($request) use ($userMeetRoomIds, $user) {
             $request->status_name = match ($request->status_id) {
-                1 => '準備中',
-                2 => '調整中',
+                1 => '新規依頼',
+                2 => '打ち合わせ中',
                 3 => 'マッチング確定',
                 4 => '終了',
                 default => '不明',

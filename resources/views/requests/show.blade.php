@@ -9,35 +9,45 @@
             {{ session('success') }}
         </div>
     @endif
-    <div class="p-4 bg-white shadow sm:rounded-lg">
+    <div class="justify-center space-x-4 mb-6">
+        @if ($userRequest->status_id === 1 || $userRequest->status_id === 2)
+            <!-- 確定ボタン -->
+            <form action="{{ route('matchings.confirm') }}" method="POST" class="inline-block">
+                @csrf
+                <input type="hidden" name="request_id" value="{{ $userRequest->id }}">
+                <input type="hidden" name="supporter_id" value="{{ Auth::id() }}">
+                <button type="submit" class="px-6 py-3 bg-blue-500 text-white text-xl font-bold rounded shadow hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                    確定する
+                </button>
+            </form>
+        @elseif ($userRequest->status_id === 3)
+            <!-- 成立中 -->
+            <span class="px-6 py-3 bg-orange-300 text-white text-xl font-bold rounded shadow">
+                成立中
+            </span>
 
-        <div class="justify-center space-x-4 mb-6">
-            @if ($userRequest->status_id === 1 || $userRequest->status_id === 2)
-                <!-- 確定ボタン -->
-                <form action="{{ route('matchings.confirm') }}" method="POST" class="inline-block">
-                    @csrf
-                    <input type="hidden" name="request_id" value="{{ $userRequest->id }}">
-                    <input type="hidden" name="supporter_id" value="{{ Auth::id() }}">
-                    <button type="submit" class="px-6 py-3 bg-blue-500 text-white text-xl font-bold rounded shadow hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">
-                        確定する
-                    </button>
-                </form>
-            @elseif ($userRequest->status_id === 3)
-                <!-- 成立中 -->
-                <span class="px-6 py-3 bg-orange-300 text-white text-xl font-bold rounded shadow">
-                    成立中
-                </span>
-                <!-- 領収書発行ボタン -->
-                <a href="{{ route('receipts.show', ['request_id' => $userRequest->id]) }}" class="px-6 py-3 bg-green-500 text-white text-xl font-bold rounded shadow hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">
+            <!-- 領収書ボタン -->
+            @if (Auth::id() === $userRequest->supporter_id)
+                <!-- サポートさん向け: 領収書発行ボタン -->
+                <a href="{{ route('receipts.generate', ['request_id' => $userRequest->id]) }}" class="px-6 py-3 bg-green-500 text-white text-xl font-bold rounded shadow hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">
                     領収書発行
                 </a>
-            @elseif ($userRequest->status_id === 4)
-                <!-- 終了案件 -->
-                <p class="px-6 py-3 bg-gray-300 text-gray-700 text-xl font-bold rounded shadow">
-                    この案件は終了しています。
-                </p>
+            @elseif (Auth::id() === $userRequest->requester_id)
+                <!-- 依頼者向け: 領収書参照ボタン -->
+                <a href="{{ route('receipts.generatePdf', ['request_id' => $userRequest->id]) }}"
+                    class="px-6 py-3 bg-blue-500 text-white text-xl font-bold rounded shadow hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    target="_blank">
+                    領収書を見る
+                </a>
             @endif
-        </div>
+        @elseif ($userRequest->status_id === 4)
+            <!-- 終了案件 -->
+            <p class="px-6 py-3 bg-gray-300 text-gray-700 text-xl font-bold rounded shadow">
+                この案件は終了しています。
+            </p>
+        @endif
+    </div>
+
 
         <!-- 編集セクション -->
         @if (!in_array($userRequest->status_id, [3, 4]))

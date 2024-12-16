@@ -40,4 +40,9 @@ public function meetRooms()
         ->withTimestamps();
 }
 
+public function membershipClass()
+{
+    return $this->belongsTo(MembershipClass::class, 'membership_id', 'id');
+}
+
 }
