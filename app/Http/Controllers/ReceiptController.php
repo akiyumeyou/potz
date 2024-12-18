@@ -88,7 +88,7 @@ class ReceiptController extends Controller
 
         // カスタムフォント設定
         $pdf->getDomPDF()->getOptions()->set('defaultFont', 'migmix');
-        
+
         // PDFをストリーム表示
         return $pdf->stream('領収書_' . $request_id . '.pdf');
     }

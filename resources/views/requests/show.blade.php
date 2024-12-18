@@ -29,7 +29,7 @@
         </span>
 
         <!-- 領収書発行ボタン: サポートさんのみ -->
-        @if (Auth::id() === $userRequest->supporter_id)
+        @if ($userRequest->status_id === 3 && Auth::id() === $userRequest->supporter_id)
             <a href="{{ route('receipts.show', ['request_id' => $userRequest->id]) }}"
                class="w-full sm:w-auto px-8 py-3 bg-blue-500 text-white text-xl font-bold rounded-lg shadow-md text-center hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">
                 領収書発行
@@ -46,7 +46,6 @@
 
 
 
-    </div>
 
 
         <!-- 編集セクション -->
