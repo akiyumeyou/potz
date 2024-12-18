@@ -86,10 +86,9 @@ class ReceiptController extends Controller
         $pdf = Pdf::loadView('supports.pdf', compact('matching'))
                   ->setPaper('a4', 'portrait'); // 縦A4サイズ
 
-        // フォントサブセット設定 (最適化)
-        $pdf->getDomPDF()->getOptions()->set('enable_font_subsetting', true);
-        $pdf->getDomPDF()->getOptions()->set('defaultFont', 'NotoSansJP');
-
+        // カスタムフォント設定
+        $pdf->getDomPDF()->getOptions()->set('defaultFont', 'migmix');
+        
         // PDFをストリーム表示
         return $pdf->stream('領収書_' . $request_id . '.pdf');
     }
