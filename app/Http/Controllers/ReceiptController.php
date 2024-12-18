@@ -14,6 +14,7 @@ class ReceiptController extends Controller
     {
         // マッチングデータを取得
         $matching = Matching::where('request_id', $request_id)->firstOrFail();
+        $userRequest = UserRequest::findOrFail($request_id);
 
         // 表示用ビューにデータを渡す
         return view('supports.receipt', compact('matching'));
@@ -77,17 +78,20 @@ class ReceiptController extends Controller
 
     // PDF生成メソッド
     public function generatePdf($request_id)
-{
-    // マッチングデータを取得
-    $matching = Matching::where('request_id', $request_id)->firstOrFail();
+    {
+        // マッチングデータを取得
+        $matching = Matching::where('request_id', $request_id)->firstOrFail();
 
-    // PDFを生成
-    $pdf = Pdf::loadView('supports.pdf', compact('matching'));
+        // PDFを生成し、フォントとサイズを設定
+        $pdf = Pdf::loadView('supports.pdf', compact('matching'))
+                  ->setPaper('a4', 'portrait'); // 縦A4サイズ
 
-    // カスタムフォントを設定
-    $pdf->getDomPDF()->getOptions()->set('defaultFont', 'noto_sans_jp');
+        // フォントサブセット設定 (最適化)
+        $pdf->getDomPDF()->getOptions()->set('enable_font_subsetting', true);
+        $pdf->getDomPDF()->getOptions()->set('defaultFont', 'NotoSansJP');
 
-    return $pdf->stream('領収書_' . $request_id . '.pdf');
-}
+        // PDFをストリーム表示
+        return $pdf->stream('領収書_' . $request_id . '.pdf');
+    }
 
 }

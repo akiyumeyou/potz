@@ -74,7 +74,7 @@
                     <input type="hidden" name="time_start" id="form-time_start" value="{{ $userRequest->time_start }}">
                     <input type="hidden" name="time" id="form-time" value="{{ $userRequest->time }}">
 
-                    <button type="submit" class="px-6 py-3 bg-green-500 text-white text-xl font-bold rounded shadow hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">
+                    <button type="submit" class="px-6 py-1 bg-green-500 text-white text-xl font-bold rounded shadow hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">
                         保存する
                     </button>
                 </form>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\UserRequest;
 use App\Models\MeetRoom;
+use App\Http\Controllers\Matching;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -243,6 +244,7 @@ return back()->with('error', '依頼の保存に失敗しました。もう一�
         $userRequest = UserRequest::findOrFail($meetRoom->request_id);
         $userRequest = UserRequest::with('category3')->findOrFail($id);
 
+        // $matching をビューに渡す
         return view('requests.show', compact('meetRoom', 'userRequest'));
     }
 
