@@ -79,7 +79,6 @@ class ReceiptController extends Controller
     // PDF生成メソッド
     public function generatePdf($request_id)
     {
-        // マッチングデータを取得
         $matching = Matching::where('request_id', $request_id)->firstOrFail();
 
         // PDFを生成し、フォントとサイズを設定
@@ -89,7 +88,6 @@ class ReceiptController extends Controller
         // カスタムフォント設定
         $pdf->getDomPDF()->getOptions()->set('defaultFont', 'migmix');
 
-        // PDFをストリーム表示
         return $pdf->stream('領収書_' . $request_id . '.pdf');
     }
 

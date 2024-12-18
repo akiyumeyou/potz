@@ -81,19 +81,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/matchings/{id}', [MatchingsController::class, 'show'])->name('matchings.show');
     Route::post('/matchings/confirm', [MatchingsController::class, 'confirm'])->name('matchings.confirm');
 
-    // 領収書
     // 領収書表示（発行フォーム表示）
     Route::get('/receipts/{request_id}', [ReceiptController::class, 'show'])->name('receipts.show');
-
     // 領収書更新（入金処理とDB保存）
     Route::put('/receipts/{request_id}', [ReceiptController::class, 'update'])->name('receipts.update');
-
     // PDF生成・表示
     Route::get('/receipts/pdf/{request_id}', [ReceiptController::class, 'generatePdf'])->name('receipts.generatePdf');
 
-
-
-// サポーター用依頼一覧
+    // サポーター用依頼一覧
     Route::get('/supports', [SupportController::class, 'index'])->name('supports.index'); // サポーター用依頼一覧
     Route::post('/supports/join/{requestId}', [SupportController::class, 'joinRoom'])->name('supports.joinRoom');
 

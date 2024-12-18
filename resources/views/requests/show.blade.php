@@ -35,18 +35,14 @@
                 領収書発行
             </a>
         @endif
-    @elseif ($userRequest->status_id === 4)
+        @elseif ($userRequest->status_id === 4)
         <!-- 領収書表示ボタン: サポートさんと依頼者双方 -->
-        <a href="{{ route('receipts.generatePdf', ['request_id' => $userRequest->id]) }}"
-           class="w-full sm:w-auto px-8 py-3 bg-green-500 text-white text-xl font-bold rounded-lg shadow-md text-center hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">
-            領収書を見る
+            <a href="{{ route('receipts.generatePdf', ['request_id' => $userRequest->id]) }}"
+            class="w-full sm:w-auto px-8 py-3 bg-green-500 text-white text-xl font-bold rounded-lg shadow-md text-center hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">
+                領収書を見る
         </a>
     @endif
 </div>
-
-
-
-
 
         <!-- 編集セクション -->
         @if (!in_array($userRequest->status_id, [3, 4]))

@@ -26,7 +26,7 @@
 
         .header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
         .header h1 {
             margin: 0;
