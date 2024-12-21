@@ -29,18 +29,20 @@
     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-5 text-3xl text-green-900">
             @if ($membershipId >= 3 && $acId === 2)
-                <a href="{{ route('supports.index') }}" class="text-orange-500 hover:underline">
-                    {{ __('サポート検索') }}
-                </a>
-            @elseif ($membershipId >= 3 && $acId !== 2)
-                <p class="text-gray-500">
-                    {{ __('プロフィールから認証画像の登録をしてください。') }}
-                </p>
-            @else
-                <p class="text-gray-500">
-                    {{ __('依頼のみできます') }}
-                </p>
-            @endif
+            <a href="{{ route('supports.index') }}" class="text-orange-500 hover:underline">
+                {{ __('サポート検索') }}
+            </a>
+
+        @elseif ($membershipId >= 3 && $acId !== 2)
+            <p class="text-gray-500">
+                {{ __('プロフィールから認証画像の登録をしてください。') }}
+            </p>
+        @else
+            <p class="text-gray-500">
+                {{ __('依頼のみできます') }}
+            </p>
+        @endif
+
         </div>
     </div>
 </div>

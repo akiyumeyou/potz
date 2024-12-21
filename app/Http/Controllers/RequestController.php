@@ -63,34 +63,54 @@ class RequestController extends Controller
         return view('requests.create', compact('categories'));
     }
 
-    /**
+/**
      * 再依頼フォームを表示
-    */
-    public function createFromRequest($requestId)
+     */
+    public function createFromRequest($from_request)
     {
         $user = Auth::user();
 
+        // ログインチェック
         if (!$user) {
             return redirect()->route('login')->with('error', 'ログインしてください。');
         }
 
         // 再依頼元のリクエストを取得
-        $originalRequest = UserRequest::where('id', $requestId)
-            ->where('requester_id', $user->id) // ユーザー自身のリクエストのみ
+        $originalRequest = UserRequest::where('id', $from_request)
+            ->where(function ($query) use ($user) {
+                $query->where('requester_id', $user->id) // 依頼者の場合
+                      ->orWhereHas('supporter', function ($q) use ($user) {
+                          $q->where('id', $user->id); // サポーターの場合
+                      });
+            })
             ->firstOrFail();
+                // 現在ログインしているサポーターが対応する案件のみ処理を許可
+        if ($originalRequest->supporter_id !== null && $originalRequest->supporter_id !== $user->id) {
+        return redirect()->route('requests.index')->with('error', 'この案件を再依頼する権限がありません。');
+    }
+
+        // 日時は再設定（依頼者には空欄、サポーターにはデフォルト値）
+        if ($originalRequest->requester_id === $user->id) {
+            $originalRequest->date = null; // 依頼者の場合は空欄
+        } else {
+            $originalRequest->date = now()->addDays(1)->format('Y-m-d'); // サポーターの場合は翌日
+            $originalRequest->time_start = '10:00'; // デフォルトの開始時刻
+        }
 
         // カテゴリデータを取得
         $categories = DB::table('category3')->select('id', 'category3', 'cost')->get();
 
-        // 元のリクエストデータをビューに渡す
+        // ビューにデータを渡す
         return view('requests.create', compact('categories', 'originalRequest'));
     }
 
-/**
+    /**
      * 依頼を保存
      */
     public function store(Request $request)
     {
+        DB::beginTransaction();
+
         try {
             // バリデーション
             $validated = $request->validate([
@@ -104,20 +124,32 @@ class RequestController extends Controller
                 'parking' => 'required|integer|in:1,2',
             ]);
 
+            // 元の依頼情報を取得（再依頼の場合のみ存在）
+            $originalRequestId = $request->input('original_request_id');
+            $originalRequest = $originalRequestId ? UserRequest::find($originalRequestId) : null;
+
+            // 依頼者とサポーターの設定
+            $isSupporterAction = Auth::user()->membership_id === 3; // サポーターかどうか
+            $requesterId = $originalRequest ? $originalRequest->requester_id : Auth::id(); // 元の依頼者を優先
+            $supporterId = $isSupporterAction ? Auth::id() : ($originalRequest->supporter_id ?? null); // サポーターの場合設定
+
+            // ステータスの設定
+            $statusId = $isSupporterAction ? 2 : 1; // サポーターの場合はステータスを「打ち合わせ中」に設定
+
+            // カテゴリコスト取得
             $cost = DB::table('category3')->where('id', $validated['category3_id'])->value('cost');
             if (!$cost) {
                 return back()->withErrors(['category3_id' => 'カテゴリに単価が設定されていません。']);
             }
 
+            // 見積もり金額計算
             $estimate = ($cost * $validated['time']) + 400;
 
-        // 日時の結合
-        $datetime = $validated['date'] . ' ' . $validated['time_start'];
-
+            // 新しい依頼の作成
             $newRequest = UserRequest::create([
                 'category3_id' => $validated['category3_id'],
                 'contents' => $validated['contents'],
-                'date' => $datetime,
+                'date' => $validated['date'],
                 'time_start' => $validated['time_start'],
                 'time' => $validated['time'],
                 'spot' => $validated['spot'] ?? null,
@@ -125,47 +157,57 @@ class RequestController extends Controller
                 'parking' => $validated['parking'],
                 'cost' => $cost,
                 'estimate' => $estimate,
-                'requester_id' => auth()->id(),
-                'status_id' => 1,
+                'requester_id' => $requesterId, // 依頼者
+                'supporter_id' => $supporterId, // サポーター
+                'status_id' => $statusId, // ステータス
             ]);
 
             // MeetRoom 作成
-  // MeetRoom 作成
-  $meetRoom = MeetRoom::create([
-    'request_id' => $newRequest->id,
-    'max_supporters' => 1, // サポーター1人に設定
-]);
+            $meetRoom = MeetRoom::create([
+                'request_id' => $newRequest->id,
+                'max_supporters' => 1, // サポーター1人に設定
+            ]);
 
-// MeetRoom に依頼者と管理者を追加
-DB::table('meetroom_members')->insert([
-    [
-        'meet_room_id' => $meetRoom->id,
-        'user_id' => auth()->id(), // 依頼者
-        'role' => 'requester',
-        'is_active' => 1,
-        'joined_at' => now(),
-    ],
-    [
-        'meet_room_id' => $meetRoom->id,
-        'user_id' => 3, // 管理者（固定ID:テスト用は）
-        'role' => 'admin',
-        'is_active' => 1,
-        'joined_at' => now(),
-    ],
-]);
+            // MeetRoom メンバー登録
+            DB::table('meetroom_members')->insert([
+                [
+                    'meet_room_id' => $meetRoom->id,
+                    'user_id' => $requesterId, // 依頼者
+                    'role' => 'requester',
+                    'is_active' => 1,
+                    'joined_at' => now(),
+                ],
+                [
+                    'meet_room_id' => $meetRoom->id,
+                    'user_id' => 3, // 管理者（仮ID）
+                    'role' => 'admin',
+                    'is_active' => 1,
+                    'joined_at' => now(),
+                ],
+            ]);
 
-// トランザクション確定
-DB::commit();
+            // サポーターも追加
+            if ($supporterId) {
+                DB::table('meetroom_members')->insert([
+                    'meet_room_id' => $meetRoom->id,
+                    'user_id' => $supporterId,
+                    'role' => 'supporter',
+                    'is_active' => 1,
+                    'joined_at' => now(),
+                ]);
+            }
 
-return redirect()->route('requests.index')->with('success', '依頼が登録され、ミートルームが作成されました。');
-} catch (Exception $e) {
-// トランザクションロールバック
-DB::rollBack();
+            DB::commit();
 
-Log::error('依頼の保存中にエラーが発生しました: ' . $e->getMessage());
-return back()->with('error', '依頼の保存に失敗しました。もう一度お試しください。');
-}
+            return redirect()->route('requests.index')->with('success', '依頼が登録されました。');
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('依頼の保存中にエラーが発生しました: ' . $e->getMessage());
+            return back()->with('error', '依頼の保存に失敗しました。');
+        }
     }
+
+
     public function edit($id)
     {
         $userRequest = UserRequest::findOrFail($id);

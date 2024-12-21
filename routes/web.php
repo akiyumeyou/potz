@@ -65,7 +65,12 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('requests')->group(function () {
         Route::get('/', [RequestController::class, 'index'])->name('requests.index'); // 依頼一覧
         Route::get('/create', [RequestController::class, 'create'])->name('requests.create'); // 新規依頼作成
-        Route::get('/create/{from_request}', [RequestController::class, 'createFromRequest'])->name('requests.createFromRequest'); // 再依頼
+// 依頼者が再依頼する
+Route::get('/requests/create/{from_request}', [RequestController::class, 'createFromRequest'])->name('requests.createFromRequest');
+
+// サポーターが再依頼を登録する
+Route::get('/requests/create/{from_request}', [RequestController::class, 'createFromRequest'])->name('requests.createFromRequest');
+
         Route::post('/', [RequestController::class, 'store'])->name('requests.store'); // 依頼の保存
         Route::get('/{id}/edit', [RequestController::class, 'edit'])->name('requests.edit'); // 編集
         Route::put('/{id}', [RequestController::class, 'update'])->name('requests.update'); // 更新

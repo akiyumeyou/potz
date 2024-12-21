@@ -5,77 +5,89 @@ namespace App\Http\Controllers;
 use App\Models\MeetRoom;
 use App\Models\UserRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
 
 class SupportController extends Controller
 {
-    // サポーター用依頼一覧の表示
-    public function index()
-    {
-        $user = Auth::user();
+ // サポーター用依頼一覧の表示
+public function index(Request $request)
+{
+    $user = Auth::user();
 
-        if (!$user) {
-            return redirect()->route('login')->with('error', 'ログインしてください。');
+    if (!$user) {
+        return redirect()->route('login')->with('error', 'ログインしてください。');
+    }
+
+    if ($user->membership_id !== 3) {
+        return redirect()->route('requests.index')->with('error', 'サポーター区分ではありません。');
+    }
+
+    $filter = $request->input('filter', 'all'); // デフォルトは 'all'
+
+    // フィルタに応じて案件を取得
+    $requests = $this->getRequests($user, $filter);
+
+    return view('supports.index', compact('requests', 'filter', 'user'));
+}
+// getRequests メソッド
+private function getRequests($user, $filter)
+{
+    $query = UserRequest::with([
+        'category3',
+        'user' => function ($query) {
+            $query->select('id', 'name');
+        },
+        'meetRoom' => function ($query) {
+            $query->withCount(['members as supporter_count' => function ($subQuery) {
+                $subQuery->where('role', 'supporter');
+            }]);
         }
+    ]);
 
-        if ($user->membership_id !== 3) {
-            return redirect()->route('requests.index')->with('error', 'サポーター区分ではありません。');
-        }
+    if ($filter === 'own') {
+        $query->where('supporter_id', $user->id); // 自分の案件
+    } elseif ($filter === 'new') {
+        $query->where('status_id', 1); // 新規案件
+    }
 
-        // サポーターが所属するルームのIDを取得
-        $userMeetRoomIds = $user->meetRooms()
-            ->wherePivot('is_active', 1)
-            ->pluck('id')
-            ->toArray();
-
-        // 依頼一覧を取得
-        $requests = UserRequest::with([
-            'category3',
-            'user' => function ($query) {
-                $query->select('id', 'address1', 'name');
-            },
-            'meetRoom' => function ($query) {
-                $query->withCount(['members as supporter_count' => function ($subQuery) {
-                    $subQuery->where('role', 'supporter'); // サポーターのみカウント
-                }]);
-            }
-        ])
-        ->select('id', 'category3_id', 'requester_id', 'spot', 'date', 'time_start', 'time', 'status_id')
-        ->get()
-        ->map(function ($request) use ($userMeetRoomIds, $user) {
+    return $query->get()
+        ->map(function ($request) use ($user) {
             $request->status_name = match ($request->status_id) {
                 1 => '新規依頼',
-                2 => '打ち合わせ中',
+                2 => '調整中',
                 3 => 'マッチング確定',
                 4 => '終了',
                 default => '不明',
             };
 
-            // 状態による色分けとアクション
-            if (in_array($request->meetRoom->id, $userMeetRoomIds)) {
-                // 自分が所属するルーム
-                $request->color = 'orange';
-                $request->can_join = true;
-            } elseif ($request->status_id === 4) {
-                // 終了案件は常にグレー
-                $request->color = 'gray';
-                $request->can_join = false;
-            } elseif ($request->meetRoom->supporter_count < $request->meetRoom->max_supporters) {
-                // 定員未満のルーム
-                $request->color = 'blue';
-                $request->can_join = true;
-            } else {
-                // 定員オーバーのルーム
-                $request->color = 'gray';
-                $request->can_join = false;
-            }
+            // ボタン条件を設定
+            $request->can_join = $request->status_id === 1 || $request->supporter_id === $user->id; // 打ち合わせ参加ボタン
+            $request->can_recreate = $request->supporter_id === $user->id && $request->status_id !== 1; // 再依頼ボタン
 
             return $request;
         });
+}
 
-        return view('supports.index', compact('requests', 'user'));
+
+// ルームの状態によって色を決定するメソッド
+private function determineColor($request, $userMeetRoomIds)
+{
+    if (!isset($request->meetRoom)) {
+        return 'gray';
     }
 
+    if (in_array($request->meetRoom->id, $userMeetRoomIds)) {
+        return 'orange'; // 自分のルーム
+    } elseif ($request->status_id === 4) {
+        return 'gray'; // 終了案件
+    } elseif ($request->meetRoom->supporter_count < $request->meetRoom->max_supporters) {
+        return 'blue'; // 定員未満
+    }
 
+    return 'gray'; // 定員オーバー
+}
 
     // 打ち合わせルームに参加
     public function joinRoom($requestId)

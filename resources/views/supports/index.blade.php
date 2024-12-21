@@ -10,14 +10,21 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
                     <h3 class="text-lg font-bold mb-4">依頼一覧</h3>
-
-                    <!-- フィルタ機能 -->
-                    <div class="flex space-x-4 mb-6">
-                        <button class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700" onclick="filterRequests('all')">すべて</button>
-                        <button class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700" onclick="filterRequests('own')">自分の案件</button>
-                        <button class="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-700" onclick="filterRequests('new')">新規案件</button>
-                        <button class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-700" onclick="filterRequests('completed')">終了済み</button>
-                    </div>
+<!-- フィルタボタン -->
+<div class="flex space-x-4 mb-6">
+    <button id="filter-own" class="px-4 py-2 rounded text-white bg-green-500 hover:bg-green-700">
+        自分の案件
+    </button>
+    <button id="filter-new" class="px-4 py-2 rounded text-white bg-yellow-500 hover:bg-yellow-700">
+        新規案件
+    </button>
+    <button id="filter-all" class="px-4 py-2 rounded text-white bg-blue-500 hover:bg-blue-700">
+        すべて
+    </button>
+    <button id="filter-completed" class="px-4 py-2 rounded text-white bg-gray-500 hover:bg-gray-700">
+        終了
+    </button>
+</div>
 
                     <!-- 一覧表示 -->
                     <div id="request-list" class="hidden sm:block">
@@ -28,16 +35,17 @@
                                         <th class="border px-4 py-2">カテゴリ</th>
                                         <th class="border px-4 py-2">状況</th>
                                         <th class="border px-4 py-2">依頼者</th>
-                                        <th class="border px-4 py-2">場所</th>
+                                        <th class="border px-4 py-2">サポーター</th>
                                         <th class="border px-4 py-2">日時</th>
                                         <th class="border px-4 py-2">アクション</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($requests->sortByDesc('date') as $request)
-                                        <tr class="request-row"
-                                            data-status="{{ $request->status_id }}"
-                                            data-is-own="{{ $request->is_own ? 'true' : 'false' }}">
+                                    <tr class="request-row"
+                                    data-is-own="{{ $request->supporter_id === $user->id ? 'true' : 'false' }}"
+                                    data-status="{{ $request->status_id }}">
+
                                             <td class="border px-4 py-2">{{ $request->category3->category3 ?? '未設定' }}</td>
                                             <!-- ステータス -->
                                         <td class="border px-4 py-2">
@@ -52,16 +60,36 @@
                                             <span class="text-sm font-bold text-gray-800">{{ $statusLabels[$request->status_id] ?? '不明' }}</span>
                                         </td>
                                             <td class="border px-4 py-2">{{ $request->user->name ?? '不明' }}</td>
-                                            <td class="border px-4 py-2">{{ $request->spot ?? '未設定' }}</td>
+                                            <td class="border px-4 py-2">{{ $request->supporter->name ?? '未割り当て' }}</td>
                                             <td class="border px-4 py-2">
                                                 {{ \Carbon\Carbon::parse($request->date)->isoFormat('YYYY年MM月DD日（dddd）') }}
                                             </td>
                                             <td class="border px-4 py-2">
+                                                <!-- 詳細ボタン -->
                                                 <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
                                                     onclick="openModal({{ $request->id }})">詳細を見る</button>
+
+                                                <!-- 打ち合わせに入るボタン -->
+                                                @if ($request->can_join)
+                                                    <a href="/meet_rooms/{{ $request->id }}"
+                                                       class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
+                                                        打ち合わせに入る
+                                                    </a>
+                                                @endif
+
+                                                <!-- 再依頼ボタン -->
+                                                @if ($request->can_recreate)
+                                                    <a href="{{ route('requests.createFromRequest', ['from_request' => $request->id]) }}"
+                                                       class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">
+                                                        再依頼
+                                                    </a>
+                                                @endif
                                             </td>
+
                                         </tr>
+
                                     @endforeach
+
                                 </tbody>
                             </table>
                         @else
@@ -88,7 +116,7 @@
     </div>
 
    <!-- モーダル -->
-<div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 hidden flex items-center justify-center">
+   <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 hidden flex items-center justify-center">
     <div class="bg-white rounded-lg shadow-lg p-6 w-1/2">
         <h3 class="text-lg font-bold mb-4" id="modal-title">依頼詳細</h3>
         <p id="modal-category" class="text-sm mb-2">カテゴリ: </p>
@@ -97,9 +125,9 @@
         <p id="modal-datetime" class="text-sm mb-2">日時: </p>
         <p id="modal-status" class="text-sm mb-2">ステータス: </p>
 
-        <!-- 打ち合わせボタン -->
+        <!-- ボタンを表示 -->
         <div id="modal-action" class="mt-4">
-            <!-- ボタンの内容は動的に設定 -->
+            <!-- 動的に内容を設定 -->
         </div>
 
         <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-700 mt-4" onclick="closeModal()">閉じる</button>
@@ -112,27 +140,47 @@
 <script>
     const requests = @json($requests);
 
-    function filterRequests(filter) {
+   // フィルタリング機能
+   document.addEventListener('DOMContentLoaded', () => {
         const rows = document.querySelectorAll('.request-row');
-        const cards = document.querySelectorAll('.request-card');
 
-        [...rows, ...cards].forEach(element => {
-            const isOwn = element.dataset.isOwn === 'true';
-            const statusId = parseInt(element.dataset.status);
-
-            if (filter === 'all') {
-                element.style.display = 'table-row';
-            } else if (filter === 'own' && isOwn) {
-                element.style.display = 'table-row';
-            } else if (filter === 'new' && statusId === 1) {
-                element.style.display = 'table-row';
-            } else if (filter === 'completed' && statusId === 4) {
-                element.style.display = 'table-row';
-            } else {
-                element.style.display = 'none';
-            }
+        // フィルタボタンのクリックイベント
+        document.getElementById('filter-own').addEventListener('click', () => {
+            filterRequests('own');
         });
-    }
+        document.getElementById('filter-new').addEventListener('click', () => {
+            filterRequests('new');
+        });
+        document.getElementById('filter-all').addEventListener('click', () => {
+            filterRequests('all');
+        });
+        document.getElementById('filter-completed').addEventListener('click', () => {
+            filterRequests('completed');
+        });
+
+        // フィルタ処理
+        function filterRequests(filter) {
+            rows.forEach(row => {
+                const isOwn = row.dataset.isOwn === 'true';
+                const statusId = parseInt(row.dataset.status);
+
+                if (filter === 'own' && isOwn) {
+                    row.style.display = 'table-row';
+                } else if (filter === 'new' && statusId === 1) {
+                    row.style.display = 'table-row';
+                } else if (filter === 'all') {
+                    row.style.display = 'table-row';
+                } else if (filter === 'completed' && statusId === 4) {
+                    row.style.display = 'table-row';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // 初期状態で「自分の案件」を表示
+        filterRequests('own');
+    });
 
     function openModal(requestId) {
     const modal = document.getElementById('modal');
@@ -145,41 +193,27 @@
     document.getElementById('modal-datetime').textContent = `日時: ${request.date} ${request.time_start}`;
     document.getElementById('modal-status').textContent = `ステータス: ${request.status_name}`;
 
-    // 打ち合わせボタンを生成
     const actionContainer = document.getElementById('modal-action');
     actionContainer.innerHTML = ''; // 既存のボタンをクリア
 
     if (request.can_join) {
-        if (request.color === 'blue') {
-            // 新規ルーム（青色ボタン）
-            const form = document.createElement('form');
-            form.action = `/supports/join/${request.id}`;
-            form.method = 'POST';
-            form.innerHTML = `
-                <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').getAttribute('content')}">
-                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
-                    打ち合わせに参加
-                </button>
-            `;
-            actionContainer.appendChild(form);
-        } else if (request.color === 'orange') {
-            // 自分のルーム（オレンジボタン）
-            const link = document.createElement('a');
-            link.href = `/meet_rooms/${request.id}`;
-            link.className = 'bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-700';
-            link.textContent = '自分のルーム';
-            actionContainer.appendChild(link);
-        }
-    } else {
-        // 定員オーバーまたは終了（グレーボタン）
-        const button = document.createElement('button');
-        button.className = 'bg-gray-300 text-gray-700 px-4 py-2 rounded cursor-not-allowed';
-        button.disabled = true;
-        button.textContent = request.status_id === 4 ? '終了' : 'マッチング不可';
-        actionContainer.appendChild(button);
+        // 打ち合わせに入るボタン
+        const joinButton = document.createElement('a');
+        joinButton.href = `/meet_rooms/${request.id}`;
+        joinButton.className = 'bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700';
+        joinButton.textContent = '打ち合わせに入る';
+        actionContainer.appendChild(joinButton);
     }
 
-    // モーダルを表示
+    if (request.can_recreate) {
+        // 再依頼ボタン
+        const recreateButton = document.createElement('a');
+        recreateButton.href = `/requests/create-from-request/${request.id}`;
+        recreateButton.className = 'bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700';
+        recreateButton.textContent = '再依頼';
+        actionContainer.appendChild(recreateButton);
+    }
+
     modal.classList.remove('hidden');
 }
 

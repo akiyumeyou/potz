@@ -12,6 +12,8 @@
                     <form action="{{ route('requests.store') }}" method="POST" id="supportRequestForm">
                         @csrf
 
+                        <input type="hidden" name="original_request_id" value="{{ $originalRequest->id ?? '' }}">
+
                         <!-- 依頼カテゴリ -->
                         <div class="mb-4">
                             <label for="category3_id" class="block text-lg font-bold text-gray-700 mb-2">依頼カテゴリ</label>
@@ -29,15 +31,15 @@
                         <!-- 依頼内容 -->
                         <div class="mb-4">
                             <label for="contents" class="block text-lg font-bold text-gray-700 mb-2">具体的な内容</label>
-                            <textarea name="contents" id="contents" class="form-control text-lg w-full" rows="4" required></textarea>
+                            <textarea name="contents" id="contents" class="form-control text-lg w-full" rows="4" required>{{ old('contents', $originalRequest->contents ?? '') }}</textarea>
                         </div>
 
                         <!-- 希望日時 -->
                         <div class="mb-4">
                             <label for="date" class="block text-lg font-bold text-gray-700 mb-2">希望日時</label>
                             <div class="flex space-x-2">
-                                <input type="date" name="date" id="date" class="form-control text-lg w-1/2" required
-                                    value="{{ old('date', $originalRequest->date ?? '') }}">
+                                <input type="date" name="date" id="date" class="form-control text-lg w-1/2"
+                                    value="{{ old('date', $originalRequest->date ?? (isset($originalRequest) ? now()->addDays(1)->format('Y-m-d') : '')) }}">
                                 <select name="time_start" id="time_start" class="form-control text-lg w-1/2" required>
                                     <option value="">時刻を選択</option>
                                     @for ($hour = 8; $hour <= 20; $hour++)
