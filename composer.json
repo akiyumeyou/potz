@@ -8,14 +8,18 @@
         "php": "^8.3",
         "barryvdh/laravel-dompdf": "^3.0",
         "brick/math": "^0.12.1",
+        "guzzlehttp/guzzle": "*",
         "intervention/image": "^3.9",
         "laravel/framework": "^11.0",
         "laravel/socialite": "^5.16",
         "laravel/tinker": "^2.9",
-        "phpseclib/phpseclib": "^3.0"
+        "nunomaduro/termwind": "^2.3",
+        "phpseclib/phpseclib": "^3.0",
+        "sebastian/type": "^5.1"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
+        "laravel-lang/lang": "^15.11",
         "laravel/breeze": "^2.2",
         "laravel/pint": "^1.13",
         "laravel/sail": "^1.26",

@@ -69,13 +69,25 @@
                                                 <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
                                                     onclick="openModal({{ $request->id }})">詳細を見る</button>
 
+                                                <!-- 打ち合わせ -->
+                                                <!-- サポートするボタン -->
+                                                @if ($request->status_id === 1)
+                                                <form action="{{ route('support.joinRoom', $request->id) }}" method="POST">
+                                                    @csrf
+                                                    <button type="submit" class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-700">
+                                                        サポートする
+                                                    </button>
+                                                </form>
+                                                @elseif ($request->can_join)
                                                 <!-- 打ち合わせに入るボタン -->
-                                                @if ($request->can_join)
-                                                    <a href="/meet_rooms/{{ $request->id }}"
-                                                       class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
+                                                <form action="{{ route('support.joinRoom', $request->id) }}" method="POST">
+                                                    @csrf
+                                                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
                                                         打ち合わせに入る
-                                                    </a>
+                                                    </button>
+                                                </form>
                                                 @endif
+
 
                                                 <!-- 再依頼ボタン -->
                                                 @if ($request->can_recreate)

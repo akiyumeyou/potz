@@ -14,11 +14,24 @@ use App\Http\Controllers\SupporterProfileController;
 use App\Http\Controllers\SupportController;
 use App\Http\Controllers\MatchingsController;
 use App\Http\Controllers\ReceiptController;
+use App\Http\Controllers\Auth\EmailVerificationPromptController;
+use App\Http\Controllers\Auth\EmailVerificationNotificationController;
+
+
+Route::middleware(['auth'])->group(function () {
+    // メール認証を促すページ
+    Route::get('/email/verify', [EmailVerificationPromptController::class, '__invoke'])
+        ->name('verification.notice');
+
+    // 認証メールの再送信
+    Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
+        ->name('verification.send');
+});
 
 
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('auth.login');
 });
 
 Route::get('/dashboard', function () {
@@ -95,7 +108,7 @@ Route::get('/requests/create/{from_request}', [RequestController::class, 'create
 
     // サポーター用依頼一覧
     Route::get('/supports', [SupportController::class, 'index'])->name('supports.index'); // サポーター用依頼一覧
-    Route::post('/supports/join/{requestId}', [SupportController::class, 'joinRoom'])->name('supports.joinRoom');
+    Route::post('/supports/join/{id}', [SupportController::class, 'joinRoom'])->name('support.joinRoom');
 
 });
 
