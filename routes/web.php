@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\SenryuController;
 use App\Http\Controllers\RequestController;
 use App\Http\Controllers\MeetRoomController;
 use App\Http\Controllers\Admin\AdminController;
@@ -71,6 +72,11 @@ Route::middleware('auth')->group(function () {
     Route::patch('/events/{event}', [EventController::class, 'update'])->name('events.update');
     Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
 });
+
+// 川柳
+Route::resource('senryus', SenryuController::class);
+Route::post('/senryus/{id}/iine', [SenryuController::class, 'incrementIine'])->name('senryu.incrementIine');
+Route::get('/senryu', [SenryuController::class, 'index'])->name('senryu.index');
 
 /// 認証が必要なルート
 Route::middleware(['auth'])->group(function () {

@@ -87,7 +87,25 @@ class Event extends Model
         return $nextEventDate->toDateString();
     }
 
-    // 表示用の開催日を取得
+    // 表示用の開催日をフォーマットして取得
+    public function getFormattedDisplayEventDate()
+    {
+        $eventDate = Carbon::parse($this->getDisplayEventDate());
+        $weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+
+        return $eventDate->format('Y年m月d日') . ' (' . $weekdays[$eventDate->dayOfWeek] . ')';
+    }
+
+    // 時間をフォーマットして取得
+    public function getFormattedTime()
+    {
+        $startTime = Carbon::parse($this->start_time)->format('H:i');
+        $endTime = Carbon::parse($this->end_time)->format('H:i');
+
+        return $startTime . ' - ' . $endTime;
+    }
+
+    // 表示用の開催日を取得（次回日程含む）
     public function getDisplayEventDate()
     {
         if ($this->isOngoing() || $this->isUpcoming()) {
@@ -107,10 +125,6 @@ class Event extends Model
     // イメージURLを取得するメソッド
     public function getImageUrl()
     {
-        if ($this->image_path) {
-            return asset('storage/' . $this->image_path);
-        }
-
-        return null;
+        return $this->image_path ? asset('storage/' . $this->image_path) : null;
     }
 }

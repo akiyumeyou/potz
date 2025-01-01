@@ -35,11 +35,7 @@ class EventController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
-        $imagePath = null;
-
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('events', 'public');
-        }
+        $imagePath = $request->file('image') ? $request->file('image')->store('events', 'public') : null;
 
         Event::create([
             'title' => $request->title,
@@ -106,11 +102,12 @@ class EventController extends Controller
             'recurring' => $request->recurring_type !== 'once' ? 1 : 0,
             'recurring_type' => $request->recurring_type,
             'image_path' => $imagePath,
-            'holiday' => $request->has('holiday') ? 1 : 0, // 編集時に次回休みフラグを更新
+            'holiday' => $request->has('holiday') ? 1 : 0,
         ]);
 
         return redirect()->route('events.index')->with('success', 'イベントが更新されました。');
     }
+
 
     // イベントを削除するメソッド
     public function destroy(Event $event)

@@ -112,14 +112,16 @@
                     <!-- モバイル表示用 -->
                     <div id="card-list" class="sm:hidden grid grid-cols-1 gap-4">
                         @foreach ($requests->sortByDesc('date') as $request)
-                            <div class="request-card bg-gray-100 shadow-md rounded-lg p-4">
-                                <p class="text-sm font-semibold text-gray-800">{{ $request->category3->category3 ?? '未設定' }}</p>
-                                <p class="text-xs text-gray-600">
-                                    {{ \Carbon\Carbon::parse($request->date)->isoFormat('YYYY年MM月DD日（dddd）') }}
-                                </p>
-                                <button class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700 mt-2"
-                                    onclick="openModal({{ $request->id }})">詳細を見る</button>
-                            </div>
+                        <div class="request-card bg-gray-100 shadow-md rounded-lg p-4"
+                        data-is-own="{{ $request->supporter_id === $user->id ? 'true' : 'false' }}"
+                        data-status="{{ $request->status_id }}">
+                       <p class="text-sm font-semibold text-gray-800">{{ $request->category3->category3 ?? '未設定' }}</p>
+                       <p class="text-xs text-gray-600">
+                           {{ \Carbon\Carbon::parse($request->date)->isoFormat('YYYY年MM月DD日（dddd）') }}
+                       </p>
+                       <button class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700 mt-2"
+                           onclick="openModal({{ $request->id }})">詳細を見る</button>
+                       </div>
                         @endforeach
                     </div>
                 </div>
@@ -172,23 +174,44 @@
 
         // フィルタ処理
         function filterRequests(filter) {
-            rows.forEach(row => {
-                const isOwn = row.dataset.isOwn === 'true';
-                const statusId = parseInt(row.dataset.status);
+    rows.forEach(row => {
+        const isOwn = row.dataset.isOwn === 'true';
+        const statusId = parseInt(row.dataset.status);
 
-                if (filter === 'own' && isOwn) {
-                    row.style.display = 'table-row';
-                } else if (filter === 'new' && statusId === 1) {
-                    row.style.display = 'table-row';
-                } else if (filter === 'all') {
-                    row.style.display = 'table-row';
-                } else if (filter === 'completed' && statusId === 4) {
-                    row.style.display = 'table-row';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
+        // デスクトップ用フィルタ
+        if (filter === 'own' && isOwn) {
+            row.style.display = 'table-row';
+        } else if (filter === 'new' && statusId === 1) {
+            row.style.display = 'table-row';
+        } else if (filter === 'all') {
+            row.style.display = 'table-row';
+        } else if (filter === 'completed' && statusId === 4) {
+            row.style.display = 'table-row';
+        } else {
+            row.style.display = 'none';
         }
+    });
+
+    // モバイル用カードリストフィルタ
+    const cards = document.querySelectorAll('.request-card');
+    cards.forEach(card => {
+        const isOwn = card.dataset.isOwn === 'true';
+        const statusId = parseInt(card.dataset.status);
+
+        if (filter === 'own' && isOwn) {
+            card.style.display = 'block';
+        } else if (filter === 'new' && statusId === 1) {
+            card.style.display = 'block';
+        } else if (filter === 'all') {
+            card.style.display = 'block';
+        } else if (filter === 'completed' && statusId === 4) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
 
         // 初期状態で「自分の案件」を表示
         filterRequests('own');

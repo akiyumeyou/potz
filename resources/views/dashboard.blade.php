@@ -38,11 +38,11 @@
             </div>
 
             <!-- シルバー川柳 -->
-            <div class="relative block bg-[#FFF8DC] hover:bg-[#FBE9A1] border border-gray-300 rounded-lg shadow-md p-4 opacity-50 cursor-not-allowed">
+            <a href="{{ route('senryus.index') }}" class="relative block bg-[#FFF8DC] hover:bg-[#FBE9A1] border border-gray-300 rounded-lg shadow-md p-4">
                 <div class="rounded-lg overflow-hidden">
                     <img src="{{ asset('img/buttons/4.png') }}" alt="シルバー川柳" class="mx-auto">
                 </div>
-            </div>
+            </a>
 
             <!-- 会員Q&A -->
             <div class="relative block bg-[#FFF8DC] hover:bg-[#FBE9A1] border border-gray-300 rounded-lg shadow-md p-4 opacity-50 cursor-not-allowed">

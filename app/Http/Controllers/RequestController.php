@@ -134,7 +134,7 @@ class RequestController extends Controller
             $supporterId = $isSupporterAction ? Auth::id() : ($originalRequest->supporter_id ?? null); // サポーターの場合設定
 
             // ステータスの設定
-            $statusId = $isSupporterAction ? 2 : 1; // サポーターの場合はステータスを「打ち合わせ中」に設定
+            $statusId = $isSupporterAction ? 1 : 1; // サポーターの場合はステータスを２に設定 →１supportidが更新されていない
 
             // カテゴリコスト取得
             $cost = DB::table('category3')->where('id', $validated['category3_id'])->value('cost');
@@ -176,6 +176,8 @@ class RequestController extends Controller
                     'role' => 'requester',
                     'is_active' => 1,
                     'joined_at' => now(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ],
                 [
                     'meet_room_id' => $meetRoom->id,
@@ -183,6 +185,8 @@ class RequestController extends Controller
                     'role' => 'admin',
                     'is_active' => 1,
                     'joined_at' => now(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ],
             ]);
 

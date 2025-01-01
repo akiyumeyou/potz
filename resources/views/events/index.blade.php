@@ -11,6 +11,11 @@
             background-color: #FF8C00; /* オレンジ色のホバー状態 */
         }
 
+        .event-info {
+        font-size: 1.25rem; /* テキストサイズを大きく設定 */
+        font-weight: bold; /* 太字 */
+        margin-bottom: 0.5rem; /* 下部の余白を設定 */
+    }
         /* 全体の文字サイズを16pxに設定 */
         body {
             font-size: 16px;
@@ -27,7 +32,16 @@
                 </div>
             @endif
 
-            <a href="{{ route('events.create') }}" class="inline-block mb-6 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">イベントを作成</a>
+            <header class="mb-10">
+                <nav class="mt-4 flex justify-end pr-10">
+                    @if (Auth::check() && Auth::user()->membership_id >= 2)
+                        <a href="{{ route('events.create') }}"
+                            class="text-white bg-orange-500 hover:bg-orange-400 px-6 py-3 rounded-lg shadow-lg text-lg font-bold">
+                            イベントを作成
+                        </a>
+                    @endif
+                </nav>
+            </header>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse($events as $event)
@@ -36,11 +50,11 @@
                         @if($event->image_path)
                         <img src="{{ $event->getImageUrl() }}" alt="イベント画像" class="mb-4 rounded-lg">
                     @endif
-                        <p class="mb-1">開催日: {{ $event->getDisplayEventDate() }}</p>
-                        <p class="mb-1">時間: {{ $event->start_time }} - {{ $event->end_time }}</p>
-                        <p class="mb-1">内容: {{ $event->content }}</p>
-                        <p class="mb-1">作成者: {{ $event->user->name }}</p>
-                        <p class="mb-4">参加費: 無料</p>
+                    <p class="event-info">開催日: {{ $event->getFormattedDisplayEventDate() }}</p>
+                    <p class="event-info">時間: {{ $event->getFormattedTime() }}</p>
+                    <p class="event-info">内容: {{ $event->content }}</p>
+                    <p class="mb-1">作成者: {{ $event->user->name }}</p>
+                    <p class="mb-4">参加費: 無料</p>
 
                         @if($event->isOngoing())
                             <a href="{{ $event->zoom_url }}" class="btn-orange bg-orange-500 text-white font-bold py-2 px-4 rounded hover:bg-orange-700">参加</a>
