@@ -14,106 +14,94 @@ class SenryuController extends Controller
     public function index()
     {
         $senryus = Senryu::all();
-        return view('senryu.index', compact('senryus'));
+        return view('senryus.index', compact('senryus'));
     }
 
     // 新規作成フォーム表示
     public function create()
     {
-        return view('senryu.create');
+        return view('senryus.create');
     }
 
-    // 新規作成処理
     public function store(Request $request)
-{
-    $request->validate([
-        'theme' => 'nullable|string|max:128',
-        's_text1' => 'nullable|string|max:10',
-        's_text2' => 'nullable|string|max:10',
-        's_text3' => 'nullable|string|max:10',
-        'img_path' => 'nullable|file|mimes:jpeg,png,jpg,gif,mp4,mov,avi|max:20480', // 20MBまでの画像または動画
-    ]);
-
-    try {
-        $data = $request->except('img_path');
-        $data['user_id'] = Auth::id();
-        $data['user_name'] = Auth::user()->name;
-        $data['iine'] = 0; // 新規作成時に iine フィールドを 0 に設定
-
-        if ($request->hasFile('img_path')) {
-            Log::info('File is present. Processing upload.');
-            $filePath = $request->file('img_path')->store('senryu', 'public');
-
-            // 保存されたファイルのフルURLを生成
-            $data['img_path'] = url('/storage/' . $filePath);
-
-            Log::info('File uploaded to: ' . $data['img_path']);
-        } else {
-            Log::info('No file uploaded.');
-            $data['img_path'] = ''; // img_pathが提供されていない場合のデフォルト値
-        }
-
-        Senryu::create($data);
-        Log::info('Senryu created successfully.');
-
-        return redirect()->route('senryus.index')->with('success', '川柳が作成されました');
-    } catch (\Exception $e) {
-        Log::error('Error creating Senryu: ' . $e->getMessage());
-        return redirect()->back()->with('error', 'エラーが発生しました: ' . $e->getMessage());
-    }
-}
-
-
-
-    // 詳細表示
-    public function show(Senryu $senryu)
-    {
-        return view('senryu.show', compact('senryu'));
-    }
-
-    // 編集フォーム表示
-    public function edit(Senryu $senryu)
-    {
-        return view('senryu.edit', compact('senryu'));
-    }
-
-    // 更新処理
-    public function update(Request $request, Senryu $senryu)
     {
         $request->validate([
             'theme' => 'nullable|string|max:128',
             's_text1' => 'nullable|string|max:10',
             's_text2' => 'nullable|string|max:10',
             's_text3' => 'nullable|string|max:10',
-            'img_path' => 'nullable|file|mimes:jpeg,png,jpg,gif,mp4,mov,avi|max:20480', // 20MBまでの画像または動画
+            'img_path' => 'nullable|file|mimes:jpeg,png,jpg,gif,mp4,mov,avi|max:20480', // 最大20MB
         ]);
 
         try {
             $data = $request->except('img_path');
+            $data['user_id'] = Auth::id();
+            $data['user_name'] = Auth::user()->name;
+            $data['iine'] = 0;
 
             if ($request->hasFile('img_path')) {
-                $filePath = '';
-
-                if (strpos($request->file('img_path')->getMimeType(), 'image') !== false) {
-                    $filePath = $request->file('img_path')->store('public/senryu');
-                } else {
-                    $filePath = $request->file('img_path')->store('public/senryu');
-                }
-
-                if ($senryu->img_path) {
-                    Storage::delete(str_replace('/storage/', 'public/', $senryu->img_path));
-                }
-
-                $data['img_path'] = Storage::url($filePath);
+                $filePath = $request->file('img_path')->store('senryus', 'public');
+                $data['img_path'] = 'storage/' . $filePath;
+            } else {
+                $data['img_path'] = 'storage/senryus/dummy.jpg'; // ダミー画像
             }
 
-            $senryu->update($data);
+            Senryu::create($data);
 
-            return redirect()->route('senryus.index')->with('success', '川柳が更新されました');
+            return redirect()->route('senryus.index')->with('success', '投稿が成功しました');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'エラーが発生しました: ' . $e->getMessage());
         }
     }
+
+
+
+    // 詳細表示
+    public function show(Senryu $senryu)
+    {
+        return view('senryus.show', compact('senryu'));
+    }
+
+    // 編集フォーム表示
+    public function edit(Senryu $senryu)
+    {
+        return view('senryus.edit', compact('senryu'));
+    }
+
+    // 更新処理
+    public function update(Request $request, $id)
+{
+    $request->validate([
+        'theme' => 'nullable|string|max:128',
+        's_text1' => 'nullable|string|max:10',
+        's_text2' => 'nullable|string|max:10',
+        's_text3' => 'nullable|string|max:10',
+        'img_path' => 'nullable|file|mimes:jpeg,png,jpg,gif,mp4,mov,avi|max:20480', // 最大20MBの画像・動画
+    ]);
+
+    try {
+        $senryu = Senryu::findOrFail($id);
+        $data = $request->except('img_path');
+
+        // ファイルアップロード処理
+        if ($request->hasFile('img_path')) {
+            // 古いファイルの削除
+            if ($senryu->img_path && file_exists(public_path($senryu->img_path))) {
+                unlink(public_path($senryu->img_path));
+            }
+
+            // 新しいファイルをアップロード
+            $filePath = $request->file('img_path')->store('senryus', 'public');
+            $data['img_path'] = 'storage/' . $filePath; // パス形式を統一
+        }
+
+        $senryu->update($data);
+
+        return redirect()->route('senryus.index')->with('success', '川柳が更新されました');
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', 'エラーが発生しました: ' . $e->getMessage());
+    }
+}
 
     // 削除処理
     public function destroy(Senryu $senryu)
@@ -133,7 +121,7 @@ class SenryuController extends Controller
         $senryu->iine += 1;
         $senryu->save();
 
-        return redirect()->route('senryu.index');
+        return redirect()->route('senryus.index');
     }
 
 

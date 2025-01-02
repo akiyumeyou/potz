@@ -75,8 +75,8 @@ Route::middleware('auth')->group(function () {
 
 // 川柳
 Route::resource('senryus', SenryuController::class);
-Route::post('/senryus/{id}/iine', [SenryuController::class, 'incrementIine'])->name('senryu.incrementIine');
-Route::get('/senryu', [SenryuController::class, 'index'])->name('senryu.index');
+Route::post('/senryus/{id}/iine', [SenryuController::class, 'incrementIine'])->name('senryus.incrementIine');
+Route::get('/senryus', [SenryuController::class, 'index'])->name('senryus.index');
 
 /// 認証が必要なルート
 Route::middleware(['auth'])->group(function () {
