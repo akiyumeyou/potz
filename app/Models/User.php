@@ -7,6 +7,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\SupporterProfile;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Carbon\Carbon;
+
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -44,6 +46,14 @@ public function meetRooms()
 public function membershipClass()
 {
     return $this->belongsTo(MembershipClass::class, 'membership_id', 'id');
+}
+
+public function getAgeAttribute()
+{
+    if ($this->birthday) {
+        return Carbon::parse($this->birthday)->age;
+    }
+    return '不明';
 }
 
 }

@@ -12,9 +12,9 @@
                             <th class="border border-gray-300 px-4 py-2">内容</th>
                             <th class="border border-gray-300 px-4 py-2">日時</th>
                             <th class="border border-gray-300 px-4 py-2">開始時刻</th>
-                            <th class="border border-gray-300 px-4 py-2">支援時間</th>                            <th class="border border-gray-300 px-4 py-2">見込み金額</th>
-
-                            <th class="border border-gray-300 px-4 py-2">場所</th>
+                            <th class="border border-gray-300 px-4 py-2">支援時間</th>
+                           <th class="border border-gray-300 px-4 py-2">見込み金額</th>
+                            <th class="border border-gray-300 px-4 py-2">訪問先</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -55,11 +55,19 @@
                                     @endfor
                                 </select>
                             </td>
-                            <td class="border border-gray-300 px-4 py-2 text-right">
-                                {{ $userRequest->estimate ? ceil($userRequest->estimate) . '円' : '未指定' }}
-                            </td>
+                            <!-- 見込み金額の再表示 -->
+<td class="border border-gray-300 px-4 py-2 text-right">
+        {{ ceil($userRequest->estimate) }}円
 
-                            <td class="border border-gray-300 px-4 py-2">{{ $userRequest->spot }}</td>
+    </td>
+</td>
+
+                            <td class="border border-gray-300 px-4 py-2">
+
+                                <button class="bg-gray-500 text-white px-2 py-1 rounded hover:bg-gray-700" onclick="showDetails()">
+                                    詳細確認
+                                </button>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -78,7 +86,16 @@
                         保存する
                     </button>
                 </form>
-
+<!-- モーダル -->
+<div id="details-modal" class="hidden fixed z-50 inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white p-4 rounded-lg shadow-lg">
+        <h2 class="text-xl font-bold mb-2">訪問先の詳細</h2>
+        <p>依頼者: {{ $userRequest->user->real_name }}</p>
+        <p>住所: {{ $userRequest->user->prefecture }} {{ $userRequest->user->address1 }} {{ $userRequest->user->address2 }}</p>
+        <p>電話番号: {{ $userRequest->user->tel }}</p>
+        <button class="bg-red-500 text-white px-4 py-2 rounded mt-4" onclick="closeModal()">閉じる</button>
+    </div>
+</div>
             </div>
         </div>
     </div>
@@ -105,4 +122,11 @@
         document.getElementById('form-time').value = document.querySelector('[name="time"]').value;
 
     });
+
+    function showDetails() {
+        document.getElementById('details-modal').classList.remove('hidden');
+    }
+    function closeModal() {
+        document.getElementById('details-modal').classList.add('hidden');
+    }
 </script>

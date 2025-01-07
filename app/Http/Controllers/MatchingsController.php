@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB; // トランザクション用
 use App\Models\UserRequest; // リクエストモデル
 use App\Models\Matching; // マッチングモデル
 use App\Models\MeetRoom; // ミートルームモデル
+use Illuminate\Support\Facades\Log;
+
 
 class MatchingsController extends Controller
 {
@@ -24,8 +26,13 @@ class MatchingsController extends Controller
         DB::beginTransaction(); // トランザクション開始
 
         try {
-            // 該当するリクエストを取得
-            $userRequest = UserRequest::findOrFail($validated['request_id']);
+            // 該当するリクエストを取得（関連データを事前にロード）
+            $userRequest = UserRequest::with('meetRoom')->findOrFail($validated['request_id']);
+
+            // 距離が設定されていない場合はログ出力
+            if (is_null($userRequest->distance)) {
+                Log::warning("Distance is null for request ID: {$userRequest->id}");
+            }
 
             // `requests` テーブルを更新
             $userRequest->supporter_id = $validated['supporter_id'];
@@ -37,10 +44,11 @@ class MatchingsController extends Controller
                 'request_id' => $userRequest->id, // リクエストID
                 'requester_id' => $userRequest->requester_id, // リクエスト投稿者
                 'supporter_id' => $validated['supporter_id'], // サポーター
-                // 'meetroom_id' => $meetRoom->id, // ミートルームID
                 'status' => 3, // マッチング確定ステータス
                 'cost' => $userRequest->cost, // リクエストのコスト
                 'time' => $userRequest->time, // リクエストの時間
+                'distance' => $userRequest->distance ?? 4, // null の場合はデフォルト値 0 を設定
+                'meetroom_id' => $userRequest->meetRoom->id ?? null, // ミートルームID
                 'matched_by_user_id' => $request->user()->id, // マッチング確定を押したユーザー
                 'matched_at' => now(), // マッチング確定日時
             ]);

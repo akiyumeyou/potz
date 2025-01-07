@@ -12,18 +12,22 @@ class UserRequest extends Model
     protected $table = 'requests';
 
     protected $fillable = [
-        'category3_id',
-        'contents',
-        'date',
-        'time_start',
-        'time', // 作業時間
-        'spot',
-        'address',
-        'parking',
-        'cost', // 時間単価
-        'estimate', // 見積もり金額
-        'requester_id',
-        'status_id',
+    'status_id',
+    'supporter_id',
+    'category3_id',
+    'contents',
+    'date',
+    'time_start',
+    'time',
+    'spot',
+    'address',
+    'latitude',
+    'longitude',
+    'parking',
+    'cost',
+    'estimate',
+    'requester_id',
+    'distance',
     ];
 
 
@@ -55,7 +59,7 @@ class UserRequest extends Model
    {
        return $this->hasOne(MeetRoom::class, 'request_id');
    }
-   
+
    public function requester()
    {
        return $this->belongsTo(User::class, 'requester_id');

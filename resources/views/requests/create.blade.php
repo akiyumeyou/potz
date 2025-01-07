@@ -1,4 +1,4 @@
-<x-app-layout>
+<<x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('サポート依頼登録') }}
@@ -13,6 +13,8 @@
                         @csrf
 
                         <input type="hidden" name="original_request_id" value="{{ $originalRequest->id ?? '' }}">
+                        <input type="hidden" id="distance" value="{{ $originalRequest->distance ?? 0 }}">
+                        <input type="hidden" id="transport_rate" value="15">
 
                         <!-- 依頼カテゴリ -->
                         <div class="mb-4">
@@ -138,25 +140,49 @@
         document.getElementById('submitButton').disabled = !e.target.checked;
     });
 
- // 要素を取得
+// 要素を取得
 const categorySelect = document.getElementById('category3_id');
-const timeInput = document.getElementById('time');
-const estimateInput = document.getElementById('estimate');
-const spotSelect = document.getElementById('spot');
-const addressField = document.getElementById('address_field');
+    const timeInput = document.getElementById('time');
+    const estimateInput = document.getElementById('estimate');
+    const distanceInput = document.getElementById('distance');
+    const transportRateInput = document.getElementById('transport_rate');
+    const termsCheck = document.getElementById('termsCheck');
+    const submitButton = document.getElementById('submitButton');
 
-// 見積もり計算
-function updateEstimate() {
-    const cost = parseFloat(categorySelect.selectedOptions[0]?.getAttribute('data-cost') || 0); // カテゴリのコストを取得
-    const time = parseFloat(timeInput.value || 0); // 時間数を取得
-    const estimate = (cost * time) + 400; // 計算式: コスト × 時間 + 基本料金
-    estimateInput.value = numberWithCommas(estimate) + ' 円'; // 表示をフォーマット
-}
+    function updateEstimate() {
+        const cost = parseFloat(categorySelect.selectedOptions[0]?.getAttribute('data-cost') || 0);
+        const time = parseFloat(timeInput.value || 0);
+        const distance = parseFloat(distanceInput.value || 0);
+        const transportRate = parseFloat(transportRateInput.value || 15);
 
-// 数字をカンマ区切りにする関数
+        const transportCost = distance > 0 ? distance * transportRate * 2 : 400;
+        const estimate = cost * time + transportCost;
+
+        estimateInput.value = `${estimate.toLocaleString()} 円`;
+    }
+
+    categorySelect.addEventListener('change', updateEstimate);
+    timeInput.addEventListener('input', updateEstimate);
+    termsCheck.addEventListener('change', function () {
+        submitButton.disabled = !termsCheck.checked;
+        submitButton.classList.toggle('bg-gray-400', !termsCheck.checked);
+        submitButton.classList.toggle('bg-green-500', termsCheck.checked);
+    });
+
+    updateEstimate();
+
+// イベントリスナーを設定
+categorySelect.addEventListener('change', updateEstimate);
+timeInput.addEventListener('input', updateEstimate);
+
+// 初期表示の計算
+updateEstimate();
+
+// 数値フォーマット関数
 function numberWithCommas(x) {
-    return x.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
+
 
 // イベントリスナーを設定
 categorySelect.addEventListener('change', updateEstimate);
@@ -171,9 +197,6 @@ spotSelect.addEventListener('change', () => {
 document.addEventListener('DOMContentLoaded', updateEstimate);
 
 
-    // ボタンの状態を切り替える
-    const termsCheck = document.getElementById('termsCheck');
-    const submitButton = document.getElementById('submitButton');
 
     termsCheck.addEventListener('change', function () {
         if (termsCheck.checked) {

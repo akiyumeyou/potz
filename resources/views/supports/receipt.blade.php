@@ -66,10 +66,10 @@
                                         value="{{ old('distance', $matching->distance ?? 0) }}"
                                         class="w-16 px-2 py-1 border rounded text-right"
                                         oninput="updateTotal()">
-                                    km
+                                    km × 2
                                 </td>
                                 <td class="px-4 py-2 border text-right" id="transportationCostCell">
-                                    {{ number_format(($matching->distance ?? 0) * 15, 0) }}
+                                    {{ number_format(($matching->distance ?? 0) * 15 * 2, 0) }}
                                 </td>
                             </tr>
 
@@ -124,7 +124,7 @@
 
             // 各項目の計算
             const supportCost = cost * time;
-            const transportationCost = distance * distanceRate;
+            const transportationCost = distance * distanceRate * 2;
             const total = supportCost + transportationCost + sonotacost1 + sonotacost2 + sonotacost3;
 
             // 表示更新

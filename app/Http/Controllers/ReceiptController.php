@@ -40,7 +40,7 @@ class ReceiptController extends Controller
         $userRequest = UserRequest::findOrFail($request_id);
 
         // 各項目の計算
-        $transportation_costs = round($validated['distance'] * 15, 2); // 交通費
+        $transportation_costs = round($validated['distance'] * 15 * 2, 2); // 交通費
         $totalCost = round(
             ($matching->cost * $validated['time']) +
             $transportation_costs +

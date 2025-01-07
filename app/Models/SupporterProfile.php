@@ -19,6 +19,8 @@ class SupporterProfile extends Model
         'skill3',
         'skill4',
         'skill5',
+        'latitude',
+        'longitude',
     ];
 
     /**
