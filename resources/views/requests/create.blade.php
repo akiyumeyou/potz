@@ -1,4 +1,4 @@
-<<x-app-layout>
+<x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('サポート依頼登録') }}
@@ -6,6 +6,7 @@
     </x-slot>
 
     <div class="py-12">
+
         <div class="max-w-lg mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
@@ -141,13 +142,27 @@
     });
 
 // 要素を取得
-const categorySelect = document.getElementById('category3_id');
+    const spotSelect = document.getElementById('spot');
+    const addressField = document.getElementById('address_field');
+    const categorySelect = document.getElementById('category3_id');
     const timeInput = document.getElementById('time');
     const estimateInput = document.getElementById('estimate');
     const distanceInput = document.getElementById('distance');
     const transportRateInput = document.getElementById('transport_rate');
     const termsCheck = document.getElementById('termsCheck');
     const submitButton = document.getElementById('submitButton');
+
+    // 場所選択で住所フィールドの表示切り替え
+    if (spotSelect && addressField) {
+        addressField.classList.toggle('hidden', spotSelect.value !== 'その他');
+
+        // 場所選択で住所フィールドの表示切り替え
+        spotSelect.addEventListener('change', () => {
+            addressField.classList.toggle('hidden', spotSelect.value !== 'その他');
+        });
+    } else {
+        console.error('spotSelect または addressField が見つかりません');
+    }
 
     function updateEstimate() {
         const cost = parseFloat(categorySelect.selectedOptions[0]?.getAttribute('data-cost') || 0);
@@ -195,8 +210,6 @@ spotSelect.addEventListener('change', () => {
 
 // ページロード時に初期値を再計算
 document.addEventListener('DOMContentLoaded', updateEstimate);
-
-
 
     termsCheck.addEventListener('change', function () {
         if (termsCheck.checked) {

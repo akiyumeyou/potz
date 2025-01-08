@@ -65,7 +65,6 @@
                                     <th class="px-4 py-2 border">場所</th>
                                     <th class="px-4 py-2 border">見込み金額</th>
                                     <th class="px-4 py-2 border">打ち合わせ</th>
-                                    <th class="px-4 py-2 border">再依頼</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -99,11 +98,11 @@
                                                 <span class="text-gray-400">利用不可</span>
                                             @endif
                                         </td>
-                                        <td class="border px-4 py-2 text-center">
+                                        <!-- <td class="border px-4 py-2 text-center">
                                             <a href="{{ route('requests.createFromRequest', ['from_request' => $request->id]) }}" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
                                                 再依頼
                                             </a>
-                                        </td>
+                                        </td> -->
                                     </tr>
                                 @endforeach
                             </tbody>
