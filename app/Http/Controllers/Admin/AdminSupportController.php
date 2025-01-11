@@ -5,18 +5,35 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\UserRequest;
+use App\Models\Support;
 use Illuminate\Http\Request;
 use App\Models\MeetRoomMember;
 use App\Models\MeetRoom;
 
 class AdminSupportController extends Controller
 {
-    public function index()
-    {
-        $supports = UserRequest::with(['requester', 'supporter', 'category3'])->paginate(10);
+    public function index(Request $request)
+{
+    $filter = $request->query('filter', 'all'); // フィルタ条件を取得
+    $query = UserRequest::with(['user', 'supporter']); // 依頼者とサポーターのリレーションをロード
 
-        return view('admin.supports.index', compact('supports'));
+    // フィルタリング条件
+    if ($filter === 'new') {
+        $query->where('status_id', 1);
+    } elseif ($filter === 'in_progress') {
+        $query->whereIn('status_id', [2, 3]);
+    } elseif ($filter === 'completed') {
+        $query->where('status_id', 4);
+    } elseif ($filter === 'cancelled') {
+        $query->where('status_id', 5);
     }
+
+    $supports = $query->paginate(10);
+
+    return view('admin.supports.index', compact('supports'));
+}
+
+
 
     public function edit($id)
     {

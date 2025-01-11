@@ -9,20 +9,22 @@ class Category3 extends Model
 {
     use HasFactory;
 
-    protected $table = 'category3'; // テーブル名を指定
+    // テーブル名を明示的に指定
+    protected $table = 'category3';
+
+    // 保存可能なカラムを定義
     protected $fillable = [
-        'category3_id', // カテゴリIDをfillableに追加
-        'contents',
-        'date',
-        'time',
-        'spot',
-        'address',
-        'requester_id',
-        'status_id',
+        'category3', // カテゴリ名
+        'order_no',  // 表示順
+        'cost',      // コスト
     ];
+
+    /**
+     * UserRequest とのリレーション
+     * カテゴリに関連付けられたリクエストを取得
+     */
     public function requests()
     {
-        return $this->hasMany(Userrequest::class, 'category3_id');
+        return $this->hasMany(UserRequest::class, 'category3_id');
     }
-
 }

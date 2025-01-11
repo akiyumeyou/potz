@@ -28,6 +28,7 @@ class UserRequest extends Model
     'estimate',
     'requester_id',
     'distance',
+    'confirmed_by',
     ];
 
 
@@ -60,13 +61,14 @@ class UserRequest extends Model
        return $this->hasOne(MeetRoom::class, 'request_id');
    }
 
-   public function requester()
-   {
-       return $this->belongsTo(User::class, 'requester_id');
-   }
+//    public function requester()
+//    {
+//        return $this->belongsTo(User::class, 'requester_id');
+//    }
 
    public function supporter()
    {
        return $this->belongsTo(User::class, 'supporter_id');
    }
+
 }

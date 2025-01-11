@@ -13,35 +13,39 @@
 <div class="flex justify-center items-center h-auto">
     @if ($userRequest->status_id === 2)
         <!-- 確定ボタン -->
-        <form action="{{ route('matchings.confirm') }}" method="POST" class="inline-block">
-            @csrf
-            <input type="hidden" name="request_id" value="{{ $userRequest->id }}">
-            <input type="hidden" name="supporter_id" value="{{ Auth::id() }}">
-            <button type="submit"
-                class="w-full sm:w-auto px-8 py-3 bg-blue-500 text-white text-xl font-bold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">
-                確定する
-            </button>
-        </form>
+<form action="{{ route('matchings.confirm') }}" method="POST" class="inline-block">
+    @csrf
+    <input type="hidden" name="request_id" value="{{ $userRequest->id }}">
+    <input type="hidden" name="supporter_id" value="{{ $userRequest->supporter_id }}">
+    <input type="hidden" name="confirmed_by" value="{{ Auth::id() }}">
+    <button type="submit"
+        class="w-full sm:w-auto px-8 py-3 bg-blue-500 text-white text-xl font-bold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">
+        確定する
+    </button>
+</form>
     @elseif ($userRequest->status_id === 3)
         <!-- 成立中表示 -->
         <span class="w-full sm:w-auto px-8 py-3 bg-orange-300 text-white text-xl font-bold rounded-lg shadow-md text-center">
             成立中
         </span>
 
-        <!-- 領収書発行ボタン: サポートさんのみ -->
-        @if ($userRequest->status_id === 3 && Auth::id() === $userRequest->supporter_id)
-            <a href="{{ route('receipts.show', ['request_id' => $userRequest->id]) }}"
-               class="w-full sm:w-auto px-8 py-3 bg-blue-500 text-white text-xl font-bold rounded-lg shadow-md text-center hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">
-                領収書発行
-            </a>
-        @endif
-        @elseif ($userRequest->status_id === 4)
-        <!-- 領収書表示ボタン: サポートさんと依頼者双方 -->
-            <a href="{{ route('receipts.generatePdf', ['request_id' => $userRequest->id]) }}"
-            class="w-full sm:w-auto px-8 py-3 bg-green-500 text-white text-xl font-bold rounded-lg shadow-md text-center hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">
-                領収書を見る
+         <!-- 領収書発行ボタン: サポートさんのみ -->
+         @if (Auth::id() === $userRequest->supporter_id && Auth::user()->membership_id === 3)
+         <a href="{{ route('receipts.show', ['request_id' => $userRequest->id]) }}"
+            class="w-full sm:w-auto px-8 py-3 bg-blue-500 text-white text-xl font-bold rounded-lg shadow-md text-center hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">
+             領収書発行
+         </a>
+     @endif
+
+@elseif ($userRequest->status_id === 4)
+    <!-- 領収書表示ボタン: サポートさんと依頼者双方 -->
+    @if (Auth::id() === $userRequest->supporter_id || Auth::id() === $userRequest->requester_id)
+        <a href="{{ route('receipts.generatePdf', ['request_id' => $userRequest->id]) }}"
+           class="w-full sm:w-auto px-8 py-3 bg-green-500 text-white text-xl font-bold rounded-lg shadow-md text-center hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">
+            領収書を見る
         </a>
     @endif
+@endif
 </div>
 
         <!-- 編集セクション -->

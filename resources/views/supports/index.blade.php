@@ -19,9 +19,6 @@
                         <button id="filter-new" class="px-4 py-2 rounded text-white bg-yellow-500 hover:bg-yellow-700">
                             新規案件
                         </button>
-                        <button id="filter-all" class="px-4 py-2 rounded text-white bg-blue-500 hover:bg-blue-700">
-                            すべて
-                        </button>
                         <button id="filter-completed" class="px-4 py-2 rounded text-white bg-gray-500 hover:bg-gray-700">
                             終了
                         </button>
@@ -87,16 +84,16 @@
 
                                             @if ($request->status_id === 2 || $request->status_id === 3)
                                             <a href="{{ route('meet_rooms.show', ['request_id' => $request->id]) }}"
-                                            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
-                                                打ち合わせに入る
+                                            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 mb-2 inline-block">
+                                                打ち合わせ
                                             </a>
                                             @endif
 
                                             <!-- 再依頼ボタン -->
                                             @if ($request->status_id === 3 || $request->status_id === 4)
                                             <a href="{{ route('requests.createFromRequest', ['from_request' => $request->id]) }}"
-                                            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">
-                                                再依頼
+                                            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 inline-block">
+                                                代理再依頼
                                             </a>
                                             @endif
                                         </td>
@@ -109,7 +106,6 @@
                         @endif
                     </div>
 
-                   <!-- モバイル表示用 -->
 <!-- モバイル表示用 -->
 <div id="card-list" class="sm:hidden grid grid-cols-1 gap-4">
     @foreach ($requests->sortByDesc('date') as $request)
@@ -143,7 +139,7 @@
             @if ($request->status_id === 2 || $request->status_id === 3)
             <a href="{{ route('meet_rooms.show', ['request_id' => $request->id]) }}"
                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
-                打ち合わせに入る
+                打ち合わせ
             </a>
             @endif
 
@@ -151,7 +147,7 @@
             @if ($request->status_id === 3 || $request->status_id === 4)
             <a href="{{ route('requests.createFromRequest', ['from_request' => $request->id]) }}"
                class="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-700">
-                再依頼
+                代理再依頼
             </a>
             @endif
         </div>
@@ -178,19 +174,10 @@
    document.addEventListener('DOMContentLoaded', () => {
         const rows = document.querySelectorAll('.request-row');
 
-        // フィルタボタンのクリックイベント
-        document.getElementById('filter-own').addEventListener('click', () => {
-            filterRequests('own');
-        });
-        document.getElementById('filter-new').addEventListener('click', () => {
-            filterRequests('new');
-        });
-        document.getElementById('filter-all').addEventListener('click', () => {
-            filterRequests('all');
-        });
-        document.getElementById('filter-completed').addEventListener('click', () => {
-            filterRequests('completed');
-        });
+    // フィルタボタンのクリックイベント
+    document.getElementById('filter-own').addEventListener('click', () => filterRequests('own'));
+    document.getElementById('filter-new').addEventListener('click', () => filterRequests('new'));
+    document.getElementById('filter-completed').addEventListener('click', () => filterRequests('completed'));
 
         // フィルタ処理
         function filterRequests(filter) {
@@ -199,37 +186,33 @@
         const statusId = parseInt(row.dataset.status);
 
         // デスクトップ用フィルタ
-        if (filter === 'own' && isOwn) {
-            row.style.display = 'table-row';
-        } else if (filter === 'new' && statusId === 1) {
-            row.style.display = 'table-row';
-        } else if (filter === 'all') {
-            row.style.display = 'table-row';
-        } else if (filter === 'completed' && statusId === 4) {
-            row.style.display = 'table-row';
-        } else {
-            row.style.display = 'none';
-        }
+        if (filter === 'own' && isOwn && [2, 3].includes(statusId)) {
+                row.style.display = 'table-row';
+            } else if (filter === 'new' && statusId === 1) {
+                row.style.display = 'table-row';
+            } else if (filter === 'completed' && isOwn && statusId === 4) {
+                row.style.display = 'table-row';
+            } else {
+                row.style.display = 'none';
+            }
     });
 
     // モバイル用カードリストフィルタ
     const cards = document.querySelectorAll('.request-card');
     cards.forEach(card => {
-        const isOwn = card.dataset.isOwn === 'true';
-        const statusId = parseInt(card.dataset.status);
+            const isOwn = card.dataset.isOwn === 'true';
+            const statusId = parseInt(card.dataset.status);
 
-        if (filter === 'own' && isOwn) {
-            card.style.display = 'block';
-        } else if (filter === 'new' && statusId === 1) {
-            card.style.display = 'block';
-        } else if (filter === 'all') {
-            card.style.display = 'block';
-        } else if (filter === 'completed' && statusId === 4) {
-            card.style.display = 'block';
-        } else {
-            card.style.display = 'none';
-        }
-    });
+            if (filter === 'own' && isOwn && [2, 3].includes(statusId)) {
+                card.style.display = 'block';
+            } else if (filter === 'new' && statusId === 1) {
+                card.style.display = 'block';
+            } else if (filter === 'completed' && isOwn && statusId === 4) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
 }
 
 

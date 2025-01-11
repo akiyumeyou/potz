@@ -174,8 +174,6 @@ $userRequest->update([
     'estimate' => $estimate,
 ]);
 
-return redirect()->route('meet_rooms.show', ['request_id' => $meetRoom->request_id])
-    ->with('success', 'ルームに参加しました。');
 }
 
 // リクエストに距離を追加

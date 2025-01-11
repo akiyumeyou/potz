@@ -29,11 +29,11 @@ class User extends Authenticatable implements MustVerifyEmail
         'gender',
     ];
 
-    // SupporterProfile リレーションを定義
-    public function supporterProfile()
-    {
-        return $this->hasOne(SupporterProfile::class, 'user_id', 'id');
-    }
+// SupporterProfile リレーションを定義
+public function supporterProfile()
+{
+    return $this->hasOne(SupporterProfile::class, 'user_id', 'id');
+}
 
 public function meetRooms()
 {

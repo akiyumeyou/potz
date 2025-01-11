@@ -145,65 +145,64 @@ class RequestController extends Controller
                 [$latitude, $longitude] = $this->getCoordinates($address);
             }
 
-            // ログで確認
-            Log::info('Address to save:', ['address' => $address]);
-
-            // 元の依頼情報を取得（再依頼の場合のみ存在）
+            // 再依頼の判定
             $originalRequestId = $request->input('original_request_id');
             $originalRequest = $originalRequestId ? UserRequest::find($originalRequestId) : null;
 
-            // 依頼者とサポーターの設定
-            $isSupporterAction = Auth::user()->membership_id === 3; // サポーターかどうか
-            $requesterId = $originalRequest ? $originalRequest->requester_id : Auth::id(); // 元の依頼者を優先
-            $supporterId = $isSupporterAction ? Auth::id() : ($originalRequest->supporter_id ?? null); // サポーターの場合設定
-
-            // ステータスの設定
-            $statusId = $isSupporterAction ? 2 : 1; // サポーターの場合はステータスを２に設定
+            // 距離計算 (再依頼時は元の距離を利用)
+            $distance = $originalRequest ? $originalRequest->distance : null;
+            $transportCost = $distance ? $distance * 15 * 2 : 400;
 
             // カテゴリコスト取得
-            $cost = DB::table('category3')->where('id', $validated['category3_id'])->value('cost');
-            if (!$cost) {
-                return back()->withErrors(['category3_id' => 'カテゴリに単価が設定されていません。']);
+        $cost = DB::table('category3')->where('id', $validated['category3_id'])->value('cost');
+        if (!$cost) {
+            return back()->withErrors(['category3_id' => 'カテゴリに単価が設定されていません。']);
+        }
+
+        // 見積もり計算
+        $estimate = ($cost * $validated['time']) + $transportCost;
+
+        // ステータス設定
+        $statusId = $originalRequest && in_array($originalRequest->status_id, [3, 4]) ? 2 : 1;
+
+        if ($originalRequest) {
+            // 元の依頼から住所と緯度経度を引き継ぐ
+            $address = $originalRequest->address;
+            $latitude = $originalRequest->latitude;
+            $longitude = $originalRequest->longitude;
+        } else {
+            // 新規依頼の場合、リクエストから取得
+            if ($request->input('spot') === '自宅') {
+                $user = Auth::user();
+                $address = implode(' ', array_filter([$user->prefecture, $user->address1, $user->address2]));
+
+                if (!empty($address)) {
+                    [$latitude, $longitude] = $this->getCoordinates($address);
+                }
+            } elseif ($request->input('spot') === 'その他' && !empty($request->input('address'))) {
+                $address = $request->input('address');
+                [$latitude, $longitude] = $this->getCoordinates($address);
             }
-
- // 距離と交通費計算
- $distance = $originalRequest ? $originalRequest->distance : null; // 再依頼の場合は元のリクエストの距離を使用
- $transportCost = $distance ? $distance * 15 * 2 : 400; // 距離がある場合は計算、ない場合は仮値400円
-
- // カテゴリコスト取得
- $cost = DB::table('category3')->where('id', $validated['category3_id'])->value('cost');
- if (!$cost) {
-     return back()->withErrors(['category3_id' => 'カテゴリに単価が設定されていません。']);
- }
-
- // 見積もり金額を計算
- $estimate = ($cost * $validated['time']) + $transportCost;
-
- // ログで確認
- Log::info('Coordinates and distance:', [
-     'latitude' => $latitude,
-     'longitude' => $longitude,
-     'distance' => $distance,
- ]);
+        }
 
  // 新しい依頼の作成
  $newRequest = UserRequest::create([
-     'category3_id' => $validated['category3_id'],
-     'contents' => $validated['contents'],
-     'date' => $validated['date'],
-     'time_start' => $validated['time_start'],
-     'time' => $validated['time'],
-     'spot' => $validated['spot'] ?? null,
-     'address' => $address, // 修正
-     'latitude' => $latitude,
-     'longitude' => $longitude,
-     'parking' => $validated['parking'],
-     'cost' => $cost,
-     'estimate' => $estimate, // 再計算された見積もり金額
-     'distance' => $distance, // 再依頼元の距離を保存
-     'requester_id' => $originalRequest ? $originalRequest->requester_id : Auth::id(), // 再依頼元の依頼者ID
-     'supporter_id' => $originalRequest ? $originalRequest->supporter_id : null, // 再依頼元のサポーターID
-     'status_id' => $originalRequest ? 2 : 1, // 再依頼の場合はステータスを2
+            'category3_id' => $validated['category3_id'],
+            'contents' => $validated['contents'],
+            'date' => $validated['date'],
+            'time_start' => $validated['time_start'],
+            'time' => $validated['time'],
+            'spot' => $validated['spot'] ?? null,
+            'address' => $address,
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            'parking' => $validated['parking'],
+            'cost' => $cost,
+            'estimate' => $estimate,
+            'distance' => $distance,
+            'requester_id' => $originalRequest ? $originalRequest->requester_id : Auth::id(),
+            'supporter_id' => $originalRequest ? $originalRequest->supporter_id : null,
+            'status_id' => $statusId,
  ]);
 
             // MeetRoom 作成
@@ -212,38 +211,38 @@ class RequestController extends Controller
                 'max_supporters' => 1, // サポーター1人に設定
             ]);
 
-            // MeetRoom メンバー登録
+            // MeetRoomメンバー登録
             DB::table('meetroom_members')->insert([
-                [
-                    'meet_room_id' => $meetRoom->id,
-                    'user_id' => $requesterId, // 依頼者
-                    'role' => 'requester',
-                    'is_active' => 1,
-                    'joined_at' => now(),
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'meet_room_id' => $meetRoom->id,
-                    'user_id' => 3, // 管理者（仮ID）
-                    'role' => 'admin',
-                    'is_active' => 1,
-                    'joined_at' => now(),
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-            ]);
+            [
+                'meet_room_id' => $meetRoom->id,
+                'user_id' => $newRequest->requester_id, // 依頼者
+                'role' => 'requester',
+                'is_active' => 1,
+                'joined_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'meet_room_id' => $meetRoom->id,
+                'user_id' => 1, // 管理者は１
+                'role' => 'admin',
+                'is_active' => 1,
+                'joined_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
 
-            // サポーターも追加
-            if ($supporterId) {
-                DB::table('meetroom_members')->insert([
-                    'meet_room_id' => $meetRoom->id,
-                    'user_id' => $supporterId,
-                    'role' => 'supporter',
-                    'is_active' => 1,
-                    'joined_at' => now(),
-                ]);
-            }
+        // サポーターの追加
+        if ($newRequest->supporter_id) {
+            DB::table('meetroom_members')->insert([
+                'meet_room_id' => $meetRoom->id,
+                'user_id' => $newRequest->supporter_id,
+                'role' => 'supporter',
+                'is_active' => 1,
+                'joined_at' => now(),
+            ]);
+        }
 
             DB::commit();
 
