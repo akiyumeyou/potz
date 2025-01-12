@@ -9,7 +9,7 @@ use App\Models\Matching; // マッチングモデル
 use App\Models\MeetRoom; // ミートルームモデル
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-
+use App\Notifications\ConfirmNotification;
 
 class MatchingsController extends Controller
 {
@@ -62,6 +62,27 @@ class MatchingsController extends Controller
                 'matched_at' => now(), // マッチング確定日時
             ]);
 
+            // 通知送信
+            $url = route('requests.show', ['id' => $userRequest->id]);
+
+            // 依頼者に通知
+            $requester = $userRequest->user; // 依頼者
+            if ($requester) {
+                $requester->notify(new ConfirmNotification(
+                    '依頼が確定しました。詳細はこちらをご確認ください。',
+                    $url
+                ));
+            }
+
+            // サポーターに通知
+            $supporter = $userRequest->supporter; // サポーター
+            if ($supporter) {
+                $supporter->notify(new ConfirmNotification(
+                    'あなたが担当する依頼が確定しました。詳細はこちらをご確認ください。',
+                    $url
+                ));
+            }
+
             DB::commit(); // コミット
 
             // 成功メッセージを付けてリダイレクト
@@ -83,4 +104,3 @@ class MatchingsController extends Controller
         return view('matchings.show', compact('matching'));
     }
 }
-

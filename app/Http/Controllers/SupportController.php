@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use App\Notifications\SupportNotification;
+
 
 
 class SupportController extends Controller
@@ -173,6 +175,14 @@ $userRequest->update([
     'distance' => $distance,
     'estimate' => $estimate,
 ]);
+
+$requester = $userRequest->user; // 依頼者（ユーザーオブジェクト）
+if ($requester) {
+    $requester->notify(new SupportNotification(
+        $user->name, // サポーター名
+        route('requests.show', ['id' => $userRequest->id]) // 通知リンク先
+    ));
+}
 
 }
 

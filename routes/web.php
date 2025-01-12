@@ -17,6 +17,10 @@ use App\Http\Controllers\MatchingsController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\NotificationController;
+
+
 
 
 Route::middleware(['auth'])->group(function () {
@@ -139,5 +143,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/users/{id}/approve', [AdminUserController::class, 'approve'])->name('users.approve');
     Route::post('/users/{id}/unapprove', [AdminUserController::class, 'unapprove'])->name('users.unapprove');
 });
+
+
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('auth');
+
+Route::get('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+
+
 
 require __DIR__.'/auth.php';

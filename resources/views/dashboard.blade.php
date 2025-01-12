@@ -1,10 +1,23 @@
 <x-app-layout>
+
     <x-slot name="header">
-        <!-- お知らせ用スペース -->
         <div class="bg-[#FAF3E0] text-center py-4 text-lg font-bold text-gray-800">
-            <p>POTZからのお知らせ（ダミー表示中）</p>
+            <p>POTZからのお知らせ</p>
+            <ul>
+                @forelse (auth()->user()->unreadNotifications as $notification)
+                    <li>
+                        <a href="{{ route('notifications.read', $notification->id) }}" class="text-blue-600 hover:underline">
+                            {{ $notification->data['message'] }}
+                        </a>
+                    </li>
+                @empty
+                    <li>現在、お知らせはありません。</li>
+                @endforelse
+            </ul>
+
         </div>
     </x-slot>
+
 
     <div class="py-6">
         <!-- ボタンレイアウト -->

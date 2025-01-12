@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Matching;
 use App\Models\UserRequest; // 依頼テーブルモデルをインポート
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Notifications\ReceiptNotification;
 
 class ReceiptController extends Controller
 {
@@ -64,6 +65,17 @@ class ReceiptController extends Controller
             'syousyu_flg' => 1, // 領収済フラグ
             'closed_at' => now(), // 更新日時
         ]);
+
+// 通知送信
+$url = route('receipts.show', ['request_id' => $request_id]);
+$requester = $matching->requester; // 依頼者のリレーションを取得
+
+if ($requester) {
+    $requester->notify(new ReceiptNotification(
+        '領収書が発行されました。詳細はこちらをご確認ください。',
+        $url
+    ));
+}
 
         // 依頼テーブルのステータスを更新
         $userRequest->update([
