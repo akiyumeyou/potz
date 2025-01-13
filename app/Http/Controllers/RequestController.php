@@ -40,13 +40,22 @@ class RequestController extends Controller
         // ac_id を取得
         $acId = optional($user->supporterProfile)->ac_id;
 
-        // デバッグログ
-        logger()->info('ログイン中のユーザー:', [
-            'id' => $user->id,
-            'membership_id' => $membershipId,
-            'ac_id' => $acId,
-            'requiresProfileCompletion' => $requiresProfileCompletion,
-        ]);
+        // リクエスト一覧を取得
+    $requests = UserRequest::with(['meetRoom.members' => function ($query) use ($user) {
+        $query->where('user_id', $user->id); // ログインユーザーに関連するメンバーのみ取得
+    }])->get();
+
+    // 各リクエストに未読件数を追加
+    foreach ($requests as $request) {
+        $meetRoom = $request->meetRoom; // 関連する MeetRoom を取得
+
+        if ($meetRoom) {
+            $member = $meetRoom->members->first(); // ログインユーザーのメンバー情報を取得
+            $request->unread_count = $member ? $member->getUnreadCount() : 0;
+        } else {
+            $request->unread_count = 0; // MeetRoom が存在しない場合
+        }
+    }
 
         // ビューにデータを渡す
         return view('requests.index', compact('requests', 'user', 'membershipId', 'acId', 'requiresProfileCompletion'));

@@ -6,7 +6,7 @@
     </x-slot>
 
     <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
                     <h3 class="text-lg font-bold mb-4">依頼一覧</h3>
@@ -32,14 +32,14 @@
                                     <tr>
                                         <th class="border px-4 py-2">カテゴリ</th>
                                         <th class="border px-4 py-2">状況</th>
-                                        <th class="border px-4 py-2">サポーター</th>
+                                        <!-- <th class="border px-4 py-2">サポーター</th> -->
                                         <th class="border px-4 py-2">日</th>
                                         <th class="border px-4 py-2">時</th>
-                                        <th class="border px-4 py-2">見込み金額</th>
+                                        <th class="border px-4 py-2">予定額</th>
                                         <th class="border px-4 py-2">依頼者</th>
                                         <th class="border px-4 py-2">距離</th>
                                         <th class="border px-4 py-2">内容</th>
-                                        <th class="border px-4 py-2">アクション</th>
+                                        <th class="border px-4 py-2 w-48">アクション</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -59,11 +59,11 @@
                                             @endphp
                                             <span class="text-sm font-bold text-gray-800">{{ $statusLabels[$request->status_id] ?? '不明' }}</span>
                                         </td>
-                                        <td class="border px-4 py-2">{{ $request->supporter->name ?? '未割り当て' }}</td>
+                                        <!-- <td class="border px-4 py-2">{{ $request->supporter->name ?? '未割り当て' }}</td> -->
                                         <td class="border px-4 py-2">
                                             {{ \Carbon\Carbon::parse($request->date)->isoFormat('YYYY年MM月DD日（dddd）') }}
                                         </td>
-                                        <td class="border px-4 py-2">{{ \Carbon\Carbon::parse($request->time_start)->format('H:i') ?? '未設定' }}</td>
+                                        <td class="border px-4 py-2">{{ \Carbon\Carbon::parse($request->time_start)->format('H:i') ?? '未設定' }}（{{ $request->time }}時間）</td>
                                         <td class="border px-4 py-2">¥{{ number_format($request->estimate) }}</td>
                                         <td class="border px-4 py-2">
                                             {{ $request->user->name ?? '不明' }}（{{ $request->user->gender === 'male' ? '男性' : ($request->user->gender === 'female' ? '女性' : 'その他') }}・{{ $request->user->age ?? '不明' }}歳・{{ $request->user->address1 ?? '不明' }}）
@@ -71,7 +71,7 @@
 
                                         <td class="border px-4 py-2">{{ $request->distance }} km</td>
                                         <td class="border px-4 py-2">{{ $request->contents }}</td>
-                                        <td class="border px-4 py-2">
+                                        <td class="border px-4 py-2 relative">
                                             <!-- サポートするボタン -->
                                             @if ($request->status_id === 1)
                                             <form action="{{ route('support.joinRoom', ['id' => $request->id]) }}" method="POST">
@@ -82,20 +82,29 @@
                                             </form>
                                             @endif
 
-                                            @if ($request->status_id === 2 || $request->status_id === 3)
-                                            <a href="{{ route('meet_rooms.show', ['request_id' => $request->id]) }}"
-                                            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 mb-2 inline-block">
-                                                打ち合わせ
-                                            </a>
-                                            @endif
+                                           <!-- 打ち合わせボタン -->
+        @if ($request->status_id === 2 || $request->status_id === 3)
+        <div class="relative">
+            <a href="{{ route('meet_rooms.show', ['request_id' => $request->id]) }}"
+               class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-700 mb-2 inline-block">
+                打ち合わせ
+            </a>
+            @if ($request->unread_count > 0)
+            <!-- 未読件数（赤丸） -->
+            <span class="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full">
+                {{ $request->unread_count }}
+            </span>
+            @endif
+        </div>
+        @endif
 
-                                            <!-- 再依頼ボタン -->
-                                            @if ($request->status_id === 3 || $request->status_id === 4)
-                                            <a href="{{ route('requests.createFromRequest', ['from_request' => $request->id]) }}"
-                                            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 inline-block">
-                                                代理再依頼
-                                            </a>
-                                            @endif
+        <!-- 再依頼ボタン -->
+        @if ($request->status_id === 3 || $request->status_id === 4)
+        <a href="{{ route('requests.createFromRequest', ['from_request' => $request->id]) }}"
+           class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-700 inline-block">
+            代理再依頼
+        </a>
+        @endif
                                         </td>
                                     </tr>
                                     @endforeach
@@ -117,7 +126,7 @@
             {{ \Carbon\Carbon::parse($request->date)->isoFormat('YYYY年MM月DD日（dddd）') }}
         </p>
         <p>開始: {{ \Carbon\Carbon::parse($request->time_start)->format('H:i') ?? '未設定' }}（{{ $request->time }}時間）</p>
-        <p>めやす: ¥{{ number_format($request->estimate) }}</p>
+        <p>予定額: ¥{{ number_format($request->estimate) }}</p>
         <p>依頼者:
             {{ $request->user->name ?? '不明' }}（{{ $request->user->gender === 'male' ? '男性' : ($request->user->gender === 'female' ? '女性' : 'その他') }}・{{ $request->user->age ?? '不明' }}歳・{{ $request->user->address1 ?? '不明' }}）
         </p>
@@ -135,21 +144,36 @@
             </form>
             @endif
 
-            <!-- 打ち合わせに入るボタン -->
+      <!-- 打ち合わせに入るボタン -->
+      <td class="border px-4 py-2 relative">
+        <div class="flex items-center space-x-2">
+            <!-- 打ち合わせボタン -->
             @if ($request->status_id === 2 || $request->status_id === 3)
-            <a href="{{ route('meet_rooms.show', ['request_id' => $request->id]) }}"
-               class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
-                打ち合わせ
-            </a>
+            <div class="relative">
+                <a href="{{ route('meet_rooms.show', ['request_id' => $request->id]) }}"
+                   class="bg-blue-500 text-white px-8 py-3 rounded-lg hover:bg-blue-700 block text-center">
+                    打ち合わせ
+                </a>
+                @if ($request->unread_count > 0)
+                <!-- 未読件数（赤丸） -->
+                <span class="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                    {{ $request->unread_count }}
+                </span>
+                @endif
+            </div>
             @endif
 
             <!-- 再依頼ボタン -->
             @if ($request->status_id === 3 || $request->status_id === 4)
             <a href="{{ route('requests.createFromRequest', ['from_request' => $request->id]) }}"
-               class="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-700">
+               class="bg-green-500 text-white py-3 px-8 rounded-lg hover:bg-green-700 block text-center">
                 代理再依頼
             </a>
             @endif
+        </div>
+    </td>
+
+
         </div>
     </div>
     @endforeach

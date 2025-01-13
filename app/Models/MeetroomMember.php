@@ -20,7 +20,14 @@ class MeetRoomMember extends Model
         'is_active',
         'joined_at',
         'left_at',
+        'last_read_meet_id',
     ];
+    public function getUnreadCount()
+    {
+        return Meet::where('meet_room_id', $this->meet_room_id) // ルームをフィルタ
+            ->where('id', '>', $this->last_read_meet_id ?? 0)   // 未読条件
+            ->count();
+    }
 
     /**
      * MeetRoom とのリレーション

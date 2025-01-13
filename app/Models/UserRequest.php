@@ -71,4 +71,6 @@ class UserRequest extends Model
        return $this->belongsTo(User::class, 'supporter_id');
    }
 
+
+
 }

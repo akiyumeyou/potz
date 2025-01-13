@@ -40,6 +40,17 @@ class SupportController extends Controller
         return back()->withErrors('サポーターのプロフィールが未設定です。');
     }
 
+ // 各リクエストに未読件数を追加
+ foreach ($requests as $request) {
+    $meetRoom = $request->meetRoom; // 関連する MeetRoom を取得
+
+    if ($meetRoom) {
+        $member = $meetRoom->members->where('user_id', $user->id)->first(); // サポートさんのメンバー情報を取得
+        $request->unread_count = $member ? $member->getUnreadCount() : 0;
+    } else {
+        $request->unread_count = 0; // MeetRoom が存在しない場合
+    }
+}
 
 return view('supports.index', compact('requests', 'filter', 'user'));
 }
@@ -150,14 +161,14 @@ public function joinRoom($id)
         return redirect()->route('supports.index')->withErrors('ルームは定員に達しています。');
     }
 
-    // MeetRoomMember にサポーターを追加
-    $meetRoom->members()->firstOrCreate([
-        'user_id' => $user->id,
-    ], [
-        'role' => 'supporter',
-        'joined_at' => now(),
-        'is_active' => true,
-    ]);
+    // // MeetRoomMember にサポーターを追加
+    // $meetRoom->members()->firstOrCreate([
+    //     'user_id' => $user->id,
+    // ], [
+    //     'role' => 'supporter',
+    //     'joined_at' => now(),
+    //     'is_active' => true,
+    // ]);
 
 
 // 距離と見積もりを計算して保存
@@ -184,7 +195,30 @@ if ($requester) {
     ));
 }
 
+// MeetRoomMember を取得または作成
+$member = MeetRoomMember::firstOrCreate(
+    [
+        'meet_room_id' => $meetRoom->id,
+        'user_id' => $user->id,
+    ],
+    [
+        'role' => 'supporter',
+        'joined_at' => now(),
+        'is_active' => true,
+    ]
+);
+
+// ルーム内の最新メッセージ ID を取得
+$latestMessageId = Meet::where('meet_room_id', $meetRoom->id)->max('id');
+
+// last_read_meet_id を更新
+$member->last_read_meet_id = $latestMessageId;
+$member->save();
+
+// 打ち合わせルームのビューを表示
+return redirect()->route('meet_rooms.show', $id)->with('success', 'ルームに入りました。');
 }
+
 
 // リクエストに距離を追加
 private function addDistanceToRequests($user, $requests)

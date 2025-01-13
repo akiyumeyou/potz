@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Meet;
 use App\Models\MeetRoom;
 use App\Models\MeetroomMember;
 use App\Models\SupporterProfile;
@@ -10,28 +11,45 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Models\UserRequest;
 
-
 class MeetRoomController extends Controller
 {
 
     /**
      * チャットルームを表示
      */
-    public function show($request_id)
+    public function show($requestId)
     {
-        // request_id で MeetRoom を検索
-        $meetRoom = MeetRoom::where('request_id', $request_id)->first();
+        // リクエストIDからMeetRoomを取得
+        $meetRoom = MeetRoom::where('request_id', $requestId)->firstOrFail();
 
-        if (!$meetRoom) {
-            abort(404, 'MeetRoom not found.');
+        // 現在ログイン中のユーザーIDを取得
+        $userId = Auth::id();
+
+        // 該当ユーザーのMeetRoomMember情報を取得
+        $member = MeetRoomMember::where('meet_room_id', $meetRoom->id)
+            ->where('user_id', $userId)
+            ->first();
+
+        if ($member) {
+            // 最新のメッセージIDを取得
+            $lastMessageId = Meet::where('meet_room_id', $meetRoom->id)
+                ->latest('id')
+                ->value('id');
+
+            // last_read_meet_id を更新
+            if ($lastMessageId) {
+                $member->last_read_meet_id = $lastMessageId; // モデルに値をセット
+                $member->save(); // 保存処理
+            }
         }
 
         // リクエスト情報を取得
-        $userRequest = UserRequest::findOrFail($request_id);
+        $userRequest = UserRequest::findOrFail($requestId);
 
         // ビューにデータを渡す
         return view('requests.show', compact('meetRoom', 'userRequest'));
     }
+
 
     // メッセージを投稿
     public function store(Request $request, $roomId)
@@ -89,14 +107,11 @@ class MeetRoomController extends Controller
         }
 
         // supporter_profiles テーブルを参照し、認証状態を確認
-        $supporterProfile = SupporterProfile::where('user_id', $user->id)->first();
+        $supporterProfile = SupporterProfile::where('user_id', Auth::id())->first();
 
         if (!$supporterProfile || $supporterProfile->ac_id != 2) {
             return redirect()->route('home')->with('error', '認証が完了していません。');
         }
-
-        // ルーム一覧を取得
-        $meetRooms = MeetRoom::all();
 
         // ビューにデータを渡す
         return view('requests.index', compact('meetRooms', 'user'));
@@ -163,4 +178,35 @@ class MeetRoomController extends Controller
 
         return redirect()->back()->with('success', '画像を送信しました');
     }
+    public function updateReadStatus(Request $request, $roomId)
+    {
+        $userId = Auth::id(); // 現在のログインユーザーID
+        $meetRoomMember = MeetRoomMember::where('meet_room_id', $roomId)
+            ->where('user_id', $userId)
+            ->firstOrFail();
+
+        // 最新のメッセージIDを取得
+        $lastMessageId = Meet::where('meet_room_id', $roomId)
+            ->latest('id')
+            ->value('id');
+
+        // last_read_meet_id を更新
+        $meetRoomMember->update(['last_read_meet_id' => $lastMessageId]);
+
+        return redirect()->back()->with('success', '既読を更新しました');
+    }
+    public function getUnreadCount(Request $request, $roomId)
+    {
+        $userId = Auth::id(); // ログインユーザーID
+        $meetRoomMember = MeetRoomMember::where('meet_room_id', $roomId)
+            ->where('user_id', $userId)
+            ->firstOrFail();
+
+        // 未読件数を計算
+        $unreadCount = $meetRoomMember->getUnreadCount();
+
+        return response()->json(['unread_count' => $unreadCount]);
+    }
+
+
 }

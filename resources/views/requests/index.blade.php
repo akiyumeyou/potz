@@ -83,21 +83,36 @@
                                         @endphp
                                         <span class="text-sm font-bold text-gray-800">{{ $statusLabels[$request->status_id] ?? '不明' }}</span>
                                     </td>
-                                        <td class="border px-4 py-2">
-                                            {{ \Carbon\Carbon::parse($request->date)->isoFormat('YYYY年MM月DD日（dddd）') }}
-                                            {{ $request->time_start ?? '' }}から{{ $request->time ?? '' }}時間
-                                        </td>
-                                        <td class="border px-4 py-2">{{ $request->spot ?? '未指定' }}</td>
-                                        <td class="border px-4 py-2 text-right">{{ $request->estimate ? ceil($request->estimate) . '円' : '未指定' }}</td>
-                                        <td class="border px-4 py-2 text-center">
-                                            @if (in_array($request->status_id, [1, 2, 3]))
-                                                <a href="{{ route('meet_rooms.show', $request->id) }}" class="bg-blue-500 text-white px-4 py-2 rounded">
-                                                    打ち合わせ
-                                                </a>
-                                            @else
-                                                <span class="text-gray-400">利用不可</span>
+                                    <td class="border px-4 py-2">
+                                        {{ \Carbon\Carbon::parse($request->date)->isoFormat('YYYY年MM月DD日（dddd）') }}
+                                        {{ $request->time_start ?? '' }}から{{ $request->time ?? '' }}時間
+                                    </td>
+                                    <td class="border px-4 py-2">{{ $request->spot ?? '未指定' }}</td>
+                                    <td class="border px-4 py-2 text-right">{{ $request->estimate ? ceil($request->estimate) . '円' : '未指定' }}</td>
+                                    <td class="border px-4 py-2 text-center">
+                                        @if (in_array($request->status_id, [1, 2, 3]))
+                                        <div class="flex items-center justify-start space-x-2">
+                                            <!-- ボタン -->
+                                            <a href="{{ route('meet_rooms.show', $request->id) }}"
+                                               class="bg-blue-500 text-white px-6 py-3 rounded text-lg font-bold hover:bg-blue-600">
+                                                打ち合わせ
+                                            </a>
+
+                                            <!-- 未読件数 (赤丸) -->
+                                            @if ($request->unread_count > 0)
+                                                <span class="flex items-center justify-center bg-red-500 text-white text-sm font-bold w-6 h-6 rounded-full">
+                                                    {{ $request->unread_count }}
+                                                </span>
                                             @endif
-                                        </td>
+                                        </div>
+                                        @else
+                                        <a href="{{ route('receipts.generatePdf', ['request_id' => $request->id]) }}"
+                                            class="text-blue-500 underline hover:text-blue-700">
+                                             領収書参照
+                                        </a>
+                                        @endif
+                                    </td>
+
                                         <!-- <td class="border px-4 py-2 text-center">
                                             <a href="{{ route('requests.createFromRequest', ['from_request' => $request->id]) }}" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
                                                 再依頼
@@ -118,12 +133,22 @@
                                 <p class="text-sm">場所: {{ $request->spot ?? '未指定' }}</p>
                                 <p class="text-sm">見込み金額: {{ $request->estimate ? ceil($request->estimate) . '円' : '未指定' }}</p>
                                 <div class="flex justify-between mt-2">
-                                    <a href="{{ route('meet_rooms.show', $request->id) }}" class="bg-blue-500 text-white px-4 py-2 rounded">
-                                        打ち合わせ
-                                    </a>
-                                    <a href="{{ route('requests.create', ['from_request' => $request->id]) }}" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                                    <!-- 打ち合わせボタン -->
+                                    <div class="relative">
+                                        <a href="{{ route('meet_rooms.show', $request->id) }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                                            打ち合わせ
+                                        </a>
+                                        @if ($request->unread_count > 0)
+                                            <!-- 未読件数（赤丸） -->
+                                            <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                                                {{ $request->unread_count }}
+                                            </span>
+                                        @endif
+                                    </div>
+
+                                    <!-- <a href="{{ route('requests.create', ['from_request' => $request->id]) }}" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
                                         再依頼
-                                    </a>
+                                    </a> -->
                                 </div>
                             </div>
                         @endforeach
