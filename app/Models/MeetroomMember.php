@@ -22,6 +22,9 @@ class MeetRoomMember extends Model
         'left_at',
         'last_read_meet_id',
     ];
+    /**
+     * メンバーごとに既読メッセージを管理
+     */
     public function getUnreadCount()
     {
         return Meet::where('meet_room_id', $this->meet_room_id) // ルームをフィルタ

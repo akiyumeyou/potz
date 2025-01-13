@@ -66,12 +66,32 @@ class RequestController extends Controller
      * 依頼作成フォームを表示
     */
     public function create()
-    {
-        // カテゴリデータを取得
-        $categories = DB::table('category3')->select('id', 'category3', 'cost')->get();
+{
+    $user = Auth::user();
 
-        return view('requests.create', compact('categories'));
-    }
+    // カテゴリデータを取得
+    $categories = DB::table('category3')->select('id', 'category3', 'cost')->get();
+
+    $requestHistories = DB::table('requests')
+    ->select('category3_id', DB::raw('MAX(created_at) as max_created_at'))
+    ->where('requester_id', $user->id)
+    ->groupBy('category3_id')
+    ->orderBy('max_created_at', 'desc')
+    ->take(3)
+    ->get();
+
+    // 取得したカテゴリごとの最新リクエストを基に、詳細情報を取得
+    $requestHistories = $requestHistories->map(function ($history) {
+        return UserRequest::where('category3_id', $history->category3_id)
+            ->where('created_at', $history->max_created_at)
+            ->first();
+    });
+
+
+
+    return view('requests.create', compact('categories', 'requestHistories'));
+}
+
 
 /**
      * 再依頼フォームを表示
@@ -228,6 +248,7 @@ class RequestController extends Controller
                 'role' => 'requester',
                 'is_active' => 1,
                 'joined_at' => now(),
+                'last_read_meet_id' => 0,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -237,6 +258,7 @@ class RequestController extends Controller
                 'role' => 'admin',
                 'is_active' => 1,
                 'joined_at' => now(),
+                'last_read_meet_id' => 0,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

@@ -5,6 +5,39 @@
         </h2>
     </x-slot>
 
+    <!-- 履歴から依頼ボタンを中央に配置 -->
+    <div class="flex justify-center my-6">
+        <button id="history-button" class="bg-blue-500 text-white px-6 py-3 rounded hover:bg-blue-700 text-lg">
+            履歴から依頼
+        </button>
+    </div>
+
+    <!-- モーダルの構造 -->
+    <div id="history-modal" class="hidden fixed inset-0 z-50 bg-gray-900 bg-opacity-50 flex justify-center items-center">
+        <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-lg p-6 relative">
+            <h2 class="text-lg font-bold mb-4">過去の履歴一覧</h2>
+            <div class="space-y-4">
+                @foreach ($requestHistories as $history)
+                    <div class="border rounded p-4 shadow history-item">
+                        <p class="font-semibold text-gray-800">
+                            {{ \Carbon\Carbon::parse($history->created_at)->isoFormat('YYYY年MM月DD日（dddd）') }}
+                        </p>
+                        <p class="text-gray-600">{{ $history->category3->category3 ?? '未設定' }}</p>
+                        <p class="text-gray-500">{{ $history->contents }}</p>
+                        <button class="bg-blue-500 text-white px-4 py-2 rounded mt-2"
+                                onclick="useHistory({{ json_encode($history) }})">
+                            この履歴を使用
+                        </button>
+                    </div>
+                @endforeach
+            </div>
+            <!-- 閉じるボタン -->
+            <button id="close-modal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700">×</button>
+        </div>
+    </div>
+
+
+
     <div class="py-12">
 
         <div class="max-w-lg mx-auto sm:px-6 lg:px-8">
@@ -134,93 +167,107 @@
     </div>
 </x-app-layout>
 
-
 <script>
-    // 利用規約に同意しないとボタンを押せない13時
-    document.getElementById('termsCheck').addEventListener('change', function (e) {
-        document.getElementById('submitButton').disabled = !e.target.checked;
-    });
+    // 必要な要素を取得
+    const spotSelect = document.getElementById('spot'); // 場所選択
+    const addressField = document.getElementById('address_field'); // その他住所入力フィールド
+    const categorySelect = document.getElementById('category3_id'); // カテゴリ選択
+    const timeInput = document.getElementById('time'); // 作業時間入力
+    const timeStartInput = document.getElementById('time_start'); // 開始時間
+    const estimateInput = document.getElementById('estimate'); // 見積もり金額
+    const distanceInput = document.getElementById('distance'); // 距離
+    const transportRateInput = document.getElementById('transport_rate'); // 輸送単価
+    const termsCheck = document.getElementById('termsCheck'); // 利用規約チェック
+    const submitButton = document.getElementById('submitButton'); // 登録ボタン
 
-// 要素を取得
-    const spotSelect = document.getElementById('spot');
-    const addressField = document.getElementById('address_field');
-    const categorySelect = document.getElementById('category3_id');
-    const timeInput = document.getElementById('time');
-    const estimateInput = document.getElementById('estimate');
-    const distanceInput = document.getElementById('distance');
-    const transportRateInput = document.getElementById('transport_rate');
-    const termsCheck = document.getElementById('termsCheck');
-    const submitButton = document.getElementById('submitButton');
-
-    // 場所選択で住所フィールドの表示切り替え
+    // **1. 場所選択による住所フィールドの表示切り替え**
     if (spotSelect && addressField) {
+        // ページロード時の初期設定
         addressField.classList.toggle('hidden', spotSelect.value !== 'その他');
 
-        // 場所選択で住所フィールドの表示切り替え
+        // 場所変更時の動作
         spotSelect.addEventListener('change', () => {
-            addressField.classList.toggle('hidden', spotSelect.value !== 'その他');
+            const isOther = spotSelect.value === 'その他';
+            addressField.classList.toggle('hidden', !isOther);
+
+            // その他が選ばれた場合、アドレスをセット
+            if (!isOther) {
+                document.getElementById('address').value = ''; // 入力内容をクリア
+            }
         });
-    } else {
-        console.error('spotSelect または addressField が見つかりません');
     }
 
+    // **2. 見積もり金額の計算ロジック**
     function updateEstimate() {
         const cost = parseFloat(categorySelect.selectedOptions[0]?.getAttribute('data-cost') || 0);
         const time = parseFloat(timeInput.value || 0);
         const distance = parseFloat(distanceInput.value || 0);
         const transportRate = parseFloat(transportRateInput.value || 15);
 
+        // 輸送費の計算
         const transportCost = distance > 0 ? distance * transportRate * 2 : 400;
-        const estimate = cost * time + transportCost;
 
-        estimateInput.value = `${estimate.toLocaleString()} 円`;
+        // 見積もり金額を計算
+        const estimate = (cost * time) + transportCost;
+
+        // 見積もり金額をセット（カンマ区切り）
+        estimateInput.value = `${numberWithCommas(estimate)} 円`;
     }
 
+    // 数値をカンマ区切りでフォーマット
+    function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    // **3. 履歴モーダル**
+    function openModal() {
+        document.getElementById('history-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+        document.getElementById('history-modal').classList.add('hidden');
+    }
+
+    function useHistory(history) {
+        // 履歴からフォームに値をセット
+        document.getElementById('category3_id').value = history.category3_id;
+        document.getElementById('contents').value = history.contents;
+        document.getElementById('spot').value = history.spot;
+        document.getElementById('time_start').value = history.time_start; // 開始時間をセット
+        document.getElementById('time').value = history.time; // 作業時間をセット
+        document.querySelector(`input[name="parking"][value="${history.parking}"]`).checked = true; // 駐車場
+        document.getElementById('date').value = getTomorrowDate(); // 明日の日付をセット
+        updateEstimate(); // 見積もり金額を再計算
+        closeModal(); // モーダルを閉じる
+    }
+
+    // **4. 明日の日付を取得**
+    function getTomorrowDate() {
+        const today = new Date();
+        today.setDate(today.getDate() + 1);
+        return today.toISOString().split('T')[0];
+    }
+
+    // **5. ページロード時の初期処理**
+    document.addEventListener('DOMContentLoaded', () => {
+        // 見積もり計算の初期化
+        updateEstimate();
+
+        // 履歴ボタンイベント
+        document.getElementById('history-button').addEventListener('click', openModal);
+    });
+
+    // **6. 利用規約のチェック状態に応じて登録ボタンの有効化**
+    termsCheck.addEventListener('change', function () {
+        const isChecked = termsCheck.checked;
+        submitButton.disabled = !isChecked;
+        submitButton.classList.toggle('bg-gray-400', !isChecked);
+        submitButton.classList.toggle('bg-green-500', isChecked);
+    });
+
+    // 見積もり更新のイベント設定
     categorySelect.addEventListener('change', updateEstimate);
     timeInput.addEventListener('input', updateEstimate);
-    termsCheck.addEventListener('change', function () {
-        submitButton.disabled = !termsCheck.checked;
-        submitButton.classList.toggle('bg-gray-400', !termsCheck.checked);
-        submitButton.classList.toggle('bg-green-500', termsCheck.checked);
-    });
-
-    updateEstimate();
-
-// イベントリスナーを設定
-categorySelect.addEventListener('change', updateEstimate);
-timeInput.addEventListener('input', updateEstimate);
-
-// 初期表示の計算
-updateEstimate();
-
-// 数値フォーマット関数
-function numberWithCommas(x) {
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
-
-
-// イベントリスナーを設定
-categorySelect.addEventListener('change', updateEstimate);
-timeInput.addEventListener('change', updateEstimate);
-
-// 場所選択で住所フィールドの表示切り替え
-spotSelect.addEventListener('change', () => {
-    addressField.classList.toggle('hidden', spotSelect.value !== 'その他');
-});
-
-// ページロード時に初期値を再計算
-document.addEventListener('DOMContentLoaded', updateEstimate);
-
-    termsCheck.addEventListener('change', function () {
-        if (termsCheck.checked) {
-            submitButton.classList.remove('bg-gray-400', 'cursor-not-allowed'); // グレーを削除
-            submitButton.classList.add('bg-green-500', 'hover:bg-green-600'); // 緑色を追加
-            submitButton.disabled = false; // ボタン有効化
-        } else {
-            submitButton.classList.remove('bg-green-500', 'hover:bg-green-600'); // 緑色を削除
-            submitButton.classList.add('bg-gray-400', 'cursor-not-allowed'); // グレーを追加
-            submitButton.disabled = true; // ボタン無効化
-        }
-    });
 
 </script>
+
