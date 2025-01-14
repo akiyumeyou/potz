@@ -45,17 +45,22 @@ class RequestController extends Controller
         $query->where('user_id', $user->id); // ログインユーザーに関連するメンバーのみ取得
     }])->get();
 
-    // 各リクエストに未読件数を追加
     foreach ($requests as $request) {
         $meetRoom = $request->meetRoom; // 関連する MeetRoom を取得
 
         if ($meetRoom) {
-            $member = $meetRoom->members->first(); // ログインユーザーのメンバー情報を取得
-            $request->unread_count = $member ? $member->getUnreadCount() : 0;
+            // メンバー情報を取得
+            $member = $meetRoom->members->where('user_id', Auth::id())->first();
+
+            // 未読件数を計算
+            $request->unread_count = $member && method_exists($member, 'getUnreadCount')
+                ? $member->getUnreadCount()
+                : 0;
         } else {
             $request->unread_count = 0; // MeetRoom が存在しない場合
         }
     }
+
 
         // ビューにデータを渡す
         return view('requests.index', compact('requests', 'user', 'membershipId', 'acId', 'requiresProfileCompletion'));
