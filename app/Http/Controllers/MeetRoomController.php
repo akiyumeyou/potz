@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Meet;
 use App\Models\MeetRoom;
-use App\Models\MeetroomMember;
+use App\Models\MeetRoomMember;
 use App\Models\SupporterProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
