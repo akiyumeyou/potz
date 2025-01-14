@@ -41,9 +41,12 @@ class RequestController extends Controller
         $acId = optional($user->supporterProfile)->ac_id;
 
         // リクエスト一覧を取得
-    $requests = UserRequest::with(['meetRoom.members' => function ($query) use ($user) {
-        $query->where('user_id', $user->id); // ログインユーザーに関連するメンバーのみ取得
-    }])->get();
+        $requests = UserRequest::where('requester_id', Auth::id()) // ログイン中のユーザーの依頼のみ
+        ->orderBy('date', 'desc') // 新しい日付順に並べる
+        ->orderBy('time_start', 'desc') // 同日の場合、時間の降順
+        ->with(['meetRoom.members']) // MeetRoom とそのメンバーを取得
+        ->get();
+
 
     foreach ($requests as $request) {
         $meetRoom = $request->meetRoom; // 関連する MeetRoom を取得
@@ -70,32 +73,44 @@ class RequestController extends Controller
     /**
      * 依頼作成フォームを表示
     */
-    public function create()
-{
-    $user = Auth::user();
+    public function create(Request $request)
+    {
+        $user = Auth::user();
 
-    // カテゴリデータを取得
-    $categories = DB::table('category3')->select('id', 'category3', 'cost')->get();
+        // カテゴリデータを取得
+        $categories = DB::table('category3')->select('id', 'category3', 'cost')->get();
 
-    $requestHistories = DB::table('requests')
-    ->select('category3_id', DB::raw('MAX(created_at) as max_created_at'))
-    ->where('requester_id', $user->id)
-    ->groupBy('category3_id')
-    ->orderBy('max_created_at', 'desc')
-    ->take(3)
-    ->get();
+        // 「代理依頼」かどうかをチェック
+        $fromRequestId = $request->input('from_request');
+        if ($fromRequestId) {
+            // 代理依頼の場合、元のリクエストを取得
+            $originalRequest = UserRequest::with('category3')->findOrFail($fromRequestId);
 
-    // 取得したカテゴリごとの最新リクエストを基に、詳細情報を取得
-    $requestHistories = $requestHistories->map(function ($history) {
-        return UserRequest::where('category3_id', $history->category3_id)
-            ->where('created_at', $history->max_created_at)
-            ->first();
-    });
+            // 代理依頼の場合、履歴は表示しない
+            return view('requests.create', compact('categories', 'originalRequest'))->with('requestHistories', collect());
+        }
 
+        // 通常の依頼作成の場合、カテゴリごとの最新のリクエスト履歴を取得
+        $requestHistories = DB::table('requests')
+            ->select('category3_id', DB::raw('MAX(created_at) as max_created_at'))
+            ->where('requester_id', $user->id)
+            ->groupBy('category3_id')
+            ->orderBy('max_created_at', 'desc')
+            ->take(3)
+            ->get();
 
+        // 各カテゴリごとの最新リクエストの詳細情報を取得
+        $requestHistories = $requestHistories->map(function ($history) {
+            return UserRequest::with('category3')
+                ->where('category3_id', $history->category3_id)
+                ->where('created_at', $history->max_created_at)
+                ->first();
+        })->filter(); // null の値を除外
 
-    return view('requests.create', compact('categories', 'requestHistories'));
-}
+        // ビューにデータを渡す
+        return view('requests.create', compact('categories', 'requestHistories'));
+    }
+
 
 
 /**

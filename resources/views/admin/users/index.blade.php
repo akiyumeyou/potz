@@ -24,7 +24,7 @@
                     <td class="py-2">
                         @if ($user->membership_id == 3 && optional($user->supporterProfile)->ac_id == 1)
                 <a href="{{ route('admin.users.show', $user->id) }}"
-                   class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">認証</a>
+                   class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">未認証</a>
                         @elseif ($user->membership_id == 3 && optional($user->supporterProfile)->ac_id == 2)
                             <a href="{{ route('admin.users.show', $user->id) }}"
                             class="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600">認証済</a>

@@ -6,6 +6,8 @@
     </x-slot>
 
     <!-- 履歴から依頼ボタンを中央に配置 -->
+    @if (!request('from_request'))
+    <!-- 履歴から依頼ボタンを中央に配置 -->
     <div class="flex justify-center my-6">
         <button id="history-button" class="bg-blue-500 text-white px-6 py-3 rounded hover:bg-blue-700 text-lg">
             履歴から依頼
@@ -17,7 +19,7 @@
         <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-lg p-6 relative">
             <h2 class="text-lg font-bold mb-4">過去の履歴一覧</h2>
             <div class="space-y-4">
-                @foreach ($requestHistories as $history)
+                @forelse ($requestHistories ?? [] as $history)
                     <div class="border rounded p-4 shadow history-item">
                         <p class="font-semibold text-gray-800">
                             {{ \Carbon\Carbon::parse($history->created_at)->isoFormat('YYYY年MM月DD日（dddd）') }}
@@ -29,13 +31,14 @@
                             この履歴を使用
                         </button>
                     </div>
-                @endforeach
+                @empty
+                    <p class="text-gray-500">履歴がありません。</p>
+                @endforelse
             </div>
-            <!-- 閉じるボタン -->
-            <button id="close-modal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700">×</button>
+            <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-700" onclick="closeModal()">×</button>
         </div>
     </div>
-
+@endif
 
 
     <div class="py-12">

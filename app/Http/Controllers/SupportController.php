@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\MeetRoom;
+use App\Models\Meet;
 use App\Models\UserRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use App\Notifications\SupportNotification;
-
+use App\Models\MeetRoomMember;
 
 
 class SupportController extends Controller
@@ -201,16 +202,16 @@ if ($requester) {
     ));
 }
 
-// MeetRoomMember を取得または作成
+// MeetRoomMember の作成または取得
 $member = MeetRoomMember::firstOrCreate(
     [
         'meet_room_id' => $meetRoom->id,
-        'user_id' => $user->id,
+        'user_id' => $user->id, // サポーターの ID を指定
     ],
     [
         'role' => 'supporter',
-        'joined_at' => now(),
         'is_active' => true,
+        'joined_at' => now(),
     ]
 );
 

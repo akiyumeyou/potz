@@ -85,10 +85,11 @@
                                     </td>
                                     <td class="border px-4 py-2">
                                         {{ \Carbon\Carbon::parse($request->date)->isoFormat('YYYY年MM月DD日（dddd）') }}
-                                        {{ $request->time_start ?? '' }}から{{ $request->time ?? '' }}時間
+                                        {{ \Carbon\Carbon::parse($request->time_start)->format('H:i') }}から
+                    {{ rtrim($request->time, '.0') }}時間
                                     </td>
                                     <td class="border px-4 py-2">{{ $request->spot ?? '未指定' }}</td>
-                                    <td class="border px-4 py-2 text-right">{{ $request->estimate ? ceil($request->estimate) . '円' : '未指定' }}</td>
+                                    <td class="border px-4 py-2 text-right">{{ number_format($request->estimate) }}円</td>
                                     <td class="border px-4 py-2 text-center">
                                         @if (in_array($request->status_id, [1, 2, 3]))
                                         <div class="flex items-center justify-start space-x-2">
@@ -129,9 +130,10 @@
                         @foreach ($requests as $request)
                             <div class="border rounded p-4 shadow">
                                 <p class="text-lg font-bold">{{ $request->category3->category3 ?? '未設定' }}</p>
-                                <p class="text-sm">{{ \Carbon\Carbon::parse($request->date)->isoFormat('YYYY年MM月DD日（dddd）') }} {{ $request->time_start ?? '' }}から{{ $request->time ?? '' }}時間</p>
+                                <p class="text-sm">{{ \Carbon\Carbon::parse($request->date)->isoFormat('YYYY年MM月DD日（dddd）') }} {{ \Carbon\Carbon::parse($request->time_start)->format('H:i') }}から
+                                    {{ rtrim($request->time, '.0') }}時間</p>
                                 <p class="text-sm">場所: {{ $request->spot ?? '未指定' }}</p>
-                                <p class="text-sm">見込み金額: {{ $request->estimate ? ceil($request->estimate) . '円' : '未指定' }}</p>
+                                <p class="text-sm">見込み金額: {{ number_format($request->estimate) }}円</p>
                                 <div class="flex justify-between mt-2">
                                     <!-- 打ち合わせボタン -->
                                     <div class="relative">
