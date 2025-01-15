@@ -413,7 +413,7 @@ class RequestController extends Controller
             $data = $response->json();
 
             // レスポンスをログに記録
-            Log::info('Google Maps Geocoding API Response:', $data);
+            // Log::info('Google Maps Geocoding API Response:', $data);
 
             // レスポンスから緯度経度を取得
             if (!empty($data['results'])) {
