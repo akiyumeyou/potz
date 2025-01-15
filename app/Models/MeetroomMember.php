@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
+
 
 class MeetRoomMember extends Model
 {
@@ -25,12 +27,29 @@ class MeetRoomMember extends Model
     /**
      * メンバーごとに既読メッセージを管理
      */
+    //
     public function getUnreadCount()
-    {
-        return Meet::where('meet_room_id', $this->meet_room_id) // ルームをフィルタ
-            ->where('id', '>', $this->last_read_meet_id ?? 0)   // 未読条件
-            ->count();
-    }
+{
+    // ログイン情報を記録
+    Log::info('Calculating unread count for member:', [
+        'meet_room_id' => $this->meet_room_id,
+        'user_id' => $this->user_id,
+        'last_read_meet_id' => $this->last_read_meet_id,
+    ]);
+
+    // 未読メッセージのカウントを計算
+    $unreadCount = Meet::where('meet_room_id', $this->meet_room_id)
+        ->where('id', '>', $this->last_read_meet_id ?? 0)
+        ->count();
+
+    // 計算結果をログ出力
+    Log::info('Unread message count calculated:', [
+        'unread_count' => $unreadCount,
+    ]);
+
+    return $unreadCount;
+}
+
 
     /**
      * MeetRoom とのリレーション

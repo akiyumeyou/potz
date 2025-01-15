@@ -195,18 +195,6 @@ class MeetRoomController extends Controller
 
         return redirect()->back()->with('success', '既読を更新しました');
     }
-    public function getUnreadCount(Request $request, $roomId)
-    {
-        $userId = Auth::id(); // ログインユーザーID
-        $meetRoomMember = MeetRoomMember::where('meet_room_id', $roomId)
-            ->where('user_id', $userId)
-            ->firstOrFail();
-
-        // 未読件数を計算
-        $unreadCount = $meetRoomMember->getUnreadCount();
-
-        return response()->json(['unread_count' => $unreadCount]);
-    }
 
 
 }
