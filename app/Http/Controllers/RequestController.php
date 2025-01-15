@@ -54,11 +54,17 @@ class RequestController extends Controller
         if ($meetRoom) {
             // メンバー情報を取得
             $member = $meetRoom->members->where('user_id', Auth::id())->first();
+      // ログ: MeetRoom と User ID を記録
+      \Log::info('MeetRoom ID: ' . $meetRoom->id . ', User ID: ' . Auth::id());
+
 
             // 未読件数を計算
             $request->unread_count = $member && method_exists($member, 'getUnreadCount')
                 ? $member->getUnreadCount()
                 : 0;
+                // ログ: 未読件数を記録
+        \Log::info('Request ID: ' . $request->id . ', Unread Count: ' . $request->unread_count);
+
         } else {
             $request->unread_count = 0; // MeetRoom が存在しない場合
         }
