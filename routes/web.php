@@ -84,9 +84,9 @@ Route::get('/senryus', [SenryuController::class, 'index'])->name('senryus.index'
 
 /// 認証が必要なルート
 Route::middleware(['auth'])->group(function () {
-    // リクエスト管理
-    Route::prefix('requests')->group(function () {
+        Route::prefix('requests')->group(function () {
         Route::get('/', [RequestController::class, 'index'])->name('requests.index'); // 依頼一覧
+        Route::post('/{id}/thank', [RequestController::class, 'addThank'])->name('requests.thank'); // 
         Route::get('/create', [RequestController::class, 'create'])->name('requests.create'); // 新規依頼作成
 // 依頼者が再依頼する
 Route::get('/requests/create/{from_request}', [RequestController::class, 'createFromRequest'])->name('requests.createFromRequest');

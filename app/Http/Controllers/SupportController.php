@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\MeetRoom;
 use App\Models\Meet;
 use App\Models\UserRequest;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -57,9 +58,10 @@ class SupportController extends Controller
         $request->unread_count = 0; // MeetRoom が存在しない場合
     }
 }
+// サポーターの「ありがとう」の合計を取得
+$totalLikes = User::sum('likes_count');
 
-
-return view('supports.index', compact('requests', 'filter', 'user'));
+return view('supports.index', compact('requests', 'filter', 'user', 'totalLikes'));
 }
 
 

@@ -1,4 +1,10 @@
 <x-app-layout>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    @php
+    $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true);
+    @endphp
+    @vite(['resources/js/thank.js'])
+
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('サポート') }}
@@ -111,6 +117,15 @@
                                             class="text-blue-500 underline hover:text-blue-700">
                                              領収書参照
                                         </a>
+                                        <button
+                                        class="thank-button {{ $request->is_liked ? 'liked' : '' }}"
+                                        data-request-id="{{ $request->id }}"
+                                        {{ $request->is_liked ? 'disabled' : '' }}
+                                    >
+                                        <span class="heart-icon">
+                                            {{ $request->is_liked ? '❤️' : '🤍' }}
+                                        </span>
+                                        </button>
                                         @endif
                                     </td>
 

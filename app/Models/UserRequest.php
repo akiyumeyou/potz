@@ -29,6 +29,7 @@ class UserRequest extends Model
     'requester_id',
     'distance',
     'confirmed_by',
+    'is_liked',
     ];
 
 

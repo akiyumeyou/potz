@@ -9,6 +9,7 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/senryu.js',
                 'resources/css/senryu.css',
+                'resources/js/thank.js',
             ],
             refresh: true,
         }),

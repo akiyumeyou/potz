@@ -2,6 +2,7 @@
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('サポート - 依頼一覧') }}
+            <span class="text-green-600 font-bold">ありがとうの数: {{ $totalLikes }}</span>
         </h2>
     </x-slot>
 

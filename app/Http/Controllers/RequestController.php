@@ -429,4 +429,27 @@ class RequestController extends Controller
 
         return [null, null]; // デフォルト値
     }
+    public function addThank($id)
+    {
+        // デバッグ: リクエストIDをログ出力
+        \Log::info("Request ID: $id");
+
+        $userRequest = UserRequest::find($id);
+
+        if (!$userRequest || $userRequest->status_id !== 4) {
+            return response()->json(['success' => false, 'message' => 'Invalid request'], 400);
+        }
+
+        if ($userRequest->is_liked) {
+            return response()->json(['success' => false, 'message' => 'Already liked'], 400);
+        }
+
+        $userRequest->update(['is_liked' => true]);
+
+        $supporter = $userRequest->supporter;
+        $supporter->increment('likes_count');
+
+        return response()->json(['success' => true, 'message' => 'Thank you added successfully!'], 200);
+    }
+
 }
