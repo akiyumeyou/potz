@@ -45,38 +45,37 @@ class SupportController extends Controller
     foreach ($requests as $request) {
         $meetRoom = $request->meetRoom; // 関連する MeetRoom を取得
 
-        if ($meetRoom) {
-            // ログ: MeetRoom とリクエスト情報を記録
-            \Log::info('Processing MeetRoom and Request', [
-                'meet_room_id' => $meetRoom->id,
-                'request_id' => $request->id,
-            ]);
+        // リクエストと関連する MeetRoom の情報をログ出力
+        Log::info('Processing Request and MeetRoom', [
+            'request_id' => $request->id,
+            'meet_room_id' => $meetRoom ? $meetRoom->id : 'null',
+        ]);
 
-            // メンバー情報を取得
+        if ($meetRoom) {
+            // 現在のユーザーに関連するメンバー情報を取得
             $member = $meetRoom->members->where('user_id', Auth::id())->first();
+
+            // ユーザー情報をログ出力
+            Log::info('MeetRoom Member Information', [
+                'user_id' => Auth::id(),
+                'member_id' => $member ? $member->id : 'null',
+            ]);
 
             if ($member) {
                 // 未読件数を計算
-                $request->unread_count = method_exists($member, 'getUnreadCount')
-                    ? $member->getUnreadCount()
-                    : 0;
+                $unreadCount = $member->unreadMeets()->count();
 
-                // ログ: 未読件数を記録
-                \Log::info('Unread count for Request', [
+                // 未読件数をログ出力
+                Log::info('Unread Count for Request', [
                     'request_id' => $request->id,
-                    'unread_count' => $request->unread_count,
+                    'unread_count' => $unreadCount,
                 ]);
+
+                $request->unread_count = $unreadCount;
             } else {
-                \Log::warning('No member found for MeetRoom', [
-                    'meet_room_id' => $meetRoom->id,
-                    'user_id' => Auth::id(),
-                ]);
                 $request->unread_count = 0;
             }
         } else {
-            \Log::warning('No MeetRoom associated with Request', [
-                'request_id' => $request->id,
-            ]);
             $request->unread_count = 0; // MeetRoom が存在しない場合
         }
     }

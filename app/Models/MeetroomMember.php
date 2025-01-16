@@ -28,30 +28,38 @@ class MeetRoomMember extends Model
      * メンバーごとに既読メッセージを管理
      */
     //
-    public function getUnreadCount()
+    // public function getUnreadCount()
+    // {
+    //     // ログ: メソッドが呼び出されたことを記録
+    //     \Log::info('getUnreadCount called', [
+    //         'meet_room_id' => $this->meet_room_id,
+    //         'user_id' => $this->user_id,
+    //         'last_read_meet_id' => $this->last_read_meet_id,
+    //     ]);
+
+    //     // 未読メッセージのカウントを計算
+    //     $unreadCount = Meet::where('meet_room_id', $this->meet_room_id)
+    //         ->where('id', '>', $this->last_read_meet_id ?? 0)
+    //         ->count();
+
+    //     // ログ: 計算結果を記録
+    //     \Log::info('Unread message count calculated', [
+    //         'meet_room_id' => $this->meet_room_id,
+    //         'user_id' => $this->user_id,
+    //         'last_read_meet_id' => $this->last_read_meet_id,
+    //         'unread_count' => $unreadCount,
+    //     ]);
+
+    //     return $unreadCount;
+    // }
+
+
+    public function unreadMeets()
     {
-        // ログ: メソッドが呼び出されたことを記録
-        \Log::info('getUnreadCount called', [
-            'meet_room_id' => $this->meet_room_id,
-            'user_id' => $this->user_id,
-            'last_read_meet_id' => $this->last_read_meet_id,
-        ]);
-
-        // 未読メッセージのカウントを計算
-        $unreadCount = Meet::where('meet_room_id', $this->meet_room_id)
-            ->where('id', '>', $this->last_read_meet_id ?? 0)
-            ->count();
-
-        // ログ: 計算結果を記録
-        \Log::info('Unread message count calculated', [
-            'meet_room_id' => $this->meet_room_id,
-            'user_id' => $this->user_id,
-            'last_read_meet_id' => $this->last_read_meet_id,
-            'unread_count' => $unreadCount,
-        ]);
-
-        return $unreadCount;
+        return $this->hasMany(Meet::class, 'meet_room_id', 'meet_room_id')
+            ->where('id', '>', $this->last_read_meet_id ?? 0);
     }
+
 
 
 

@@ -47,28 +47,43 @@ class RequestController extends Controller
         ->with(['meetRoom.members']) // MeetRoom とそのメンバーを取得
         ->get();
 
+        foreach ($requests as $request) {
+            $meetRoom = $request->meetRoom; // 関連する MeetRoom を取得
 
-    foreach ($requests as $request) {
-        $meetRoom = $request->meetRoom; // 関連する MeetRoom を取得
+            // リクエストと関連する MeetRoom の情報をログ出力
+            Log::info('Processing Request and MeetRoom', [
+                'request_id' => $request->id,
+                'meet_room_id' => $meetRoom ? $meetRoom->id : 'null',
+            ]);
 
-        if ($meetRoom) {
-            // メンバー情報を取得
-            $member = $meetRoom->members->where('user_id', Auth::id())->first();
-      // ログ: MeetRoom と User ID を記録
-      \Log::info('MeetRoom ID: ' . $meetRoom->id . ', User ID: ' . Auth::id());
+            if ($meetRoom) {
+                // 現在のユーザーに関連するメンバー情報を取得
+                $member = $meetRoom->members->where('user_id', Auth::id())->first();
 
+                // ユーザー情報をログ出力
+                Log::info('MeetRoom Member Information', [
+                    'user_id' => Auth::id(),
+                    'member_id' => $member ? $member->id : 'null',
+                ]);
 
-            // 未読件数を計算
-            $request->unread_count = $member && method_exists($member, 'getUnreadCount')
-                ? $member->getUnreadCount()
-                : 0;
-                // ログ: 未読件数を記録
-        \Log::info('Request ID: ' . $request->id . ', Unread Count: ' . $request->unread_count);
+                if ($member) {
+                    // 未読件数を計算
+                    $unreadCount = $member->unreadMeets()->count();
 
-        } else {
-            $request->unread_count = 0; // MeetRoom が存在しない場合
+                    // 未読件数をログ出力
+                    Log::info('Unread Count for Request', [
+                        'request_id' => $request->id,
+                        'unread_count' => $unreadCount,
+                    ]);
+
+                    $request->unread_count = $unreadCount;
+                } else {
+                    $request->unread_count = 0;
+                }
+            } else {
+                $request->unread_count = 0; // MeetRoom が存在しない場合
+            }
         }
-    }
 
 
         // ビューにデータを渡す
