@@ -10,10 +10,19 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Services\MeetRoomService;
+
 use Exception;
 
 class RequestController extends Controller
 {
+    private $meetRoomService;
+
+    public function __construct(MeetRoomService $meetRoomService)
+    {
+        $this->meetRoomService = $meetRoomService;
+    }
+
     /**
      * 依頼一覧を表示
     */
@@ -32,6 +41,8 @@ class RequestController extends Controller
         // ログイン中のユーザーの依頼を取得（降順でソート）
         $requests = UserRequest::where('requester_id', $user->id)
             ->orderBy('date', 'desc') // 日付の降順でソート
+            ->orderBy('time_start', 'desc') // 同日の場合、時間の降順
+            ->with(['meetRoom.members']) // MeetRoom とそのメンバーを取得
             ->get();
 
         // membership_id を取得
@@ -40,13 +51,7 @@ class RequestController extends Controller
         // ac_id を取得
         $acId = optional($user->supporterProfile)->ac_id;
 
-        // リクエスト一覧を取得
-        $requests = UserRequest::where('requester_id', Auth::id()) // ログイン中のユーザーの依頼のみ
-        ->orderBy('date', 'desc') // 新しい日付順に並べる
-        ->orderBy('time_start', 'desc') // 同日の場合、時間の降順
-        ->with(['meetRoom.members']) // MeetRoom とそのメンバーを取得
-        ->get();
-
+        // 各リクエストに未読件数を追加
         foreach ($requests as $request) {
             $meetRoom = $request->meetRoom; // 関連する MeetRoom を取得
 
@@ -67,8 +72,11 @@ class RequestController extends Controller
                 ]);
 
                 if ($member) {
-                    // 未読件数を計算
-                    $unreadCount = $member->unreadMeets()->count();
+                    // サービスクラスを利用して未読件数を計算
+                    $unreadCount = $this->meetRoomService->getUnreadCount(
+                        $meetRoom->id,
+                        $member->last_read_meet_id
+                    );
 
                     // 未読件数をログ出力
                     Log::info('Unread Count for Request', [
@@ -78,13 +86,14 @@ class RequestController extends Controller
 
                     $request->unread_count = $unreadCount;
                 } else {
-                    $request->unread_count = 0;
+                    $request->unread_count = 0; // メンバーが存在しない場合
+                    Log::info('No Member Found for MeetRoom', ['meet_room_id' => $meetRoom->id]);
                 }
             } else {
                 $request->unread_count = 0; // MeetRoom が存在しない場合
+                Log::info('No MeetRoom Found for Request', ['request_id' => $request->id]);
             }
         }
-
 
         // ビューにデータを渡す
         return view('requests.index', compact('requests', 'user', 'membershipId', 'acId', 'requiresProfileCompletion'));

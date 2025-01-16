@@ -24,15 +24,15 @@ class MeetRoomMember extends Model
         'left_at',
         'last_read_meet_id',
     ];
-    /**
-     * メンバーごとに既読メッセージを管理1/16
-     */
-    //
-    public function unreadMeets()
-    {
-        return $this->hasMany(Meet::class, 'meet_room_id', 'meet_room_id')
-            ->where('id', '>', $this->last_read_meet_id ?? 0);
-    }
+    // /**
+    //  * メンバーごとに既読メッセージを管理1/16
+    //  */
+    // //
+    // public function unreadMeets()
+    // {
+    //     return $this->hasMany(Meet::class, 'meet_room_id', 'meet_room_id')
+    //         ->where('id', '>', $this->last_read_meet_id ?? 0);
+    // }
 
     /**
      * MeetRoom とのリレーション

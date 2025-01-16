@@ -11,11 +11,18 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use App\Notifications\SupportNotification;
-use App\Models\MeetRoomMember;
+use App\Services\MeetRoomService;
 
 
 class SupportController extends Controller
 {
+    private $meetRoomService; // サービスを保持するプロパティ
+
+    // コンストラクタで依存性注入
+    public function __construct(MeetRoomService $meetRoomService)
+    {
+        $this->meetRoomService = $meetRoomService;
+    }
 
  // サポーター用依頼一覧の表示
  public function index(Request $request)
@@ -53,17 +60,20 @@ class SupportController extends Controller
 
         if ($meetRoom) {
             // 現在のユーザーに関連するメンバー情報を取得
-            $member = $meetRoom->members->where('user_id', Auth::id())->first();
+            $member = $meetRoom->members->where('user_id', $user->id)->first();
 
             // ユーザー情報をログ出力
             Log::info('MeetRoom Member Information', [
-                'user_id' => Auth::id(),
+                'user_id' => $user->id,
                 'member_id' => $member ? $member->id : 'null',
             ]);
 
             if ($member) {
                 // 未読件数を計算
-                $unreadCount = $member->unreadMeets()->count();
+                $unreadCount = $this->meetRoomService->getUnreadCount(
+                    $meetRoom->id,
+                    $member->last_read_meet_id
+                );
 
                 // 未読件数をログ出力
                 Log::info('Unread Count for Request', [
@@ -73,10 +83,12 @@ class SupportController extends Controller
 
                 $request->unread_count = $unreadCount;
             } else {
-                $request->unread_count = 0;
+                $request->unread_count = 0; // メンバーが存在しない場合
+                Log::info('No Member Found for MeetRoom', ['meet_room_id' => $meetRoom->id]);
             }
         } else {
             $request->unread_count = 0; // MeetRoom が存在しない場合
+            Log::info('No MeetRoom Found for Request', ['request_id' => $request->id]);
         }
     }
 
