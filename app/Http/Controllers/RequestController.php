@@ -55,21 +55,21 @@ class RequestController extends Controller
         foreach ($requests as $request) {
             $meetRoom = $request->meetRoom; // 関連する MeetRoom を取得
 
-            // リクエストと関連する MeetRoom の情報をログ出力
-            Log::info('Processing Request and MeetRoom', [
-                'request_id' => $request->id,
-                'meet_room_id' => $meetRoom ? $meetRoom->id : 'null',
-            ]);
+                // // リクエストと関連する MeetRoom の情報をログ出力
+                // Log::info('Processing Request and MeetRoom', [
+                //     'request_id' => $request->id,
+                //     'meet_room_id' => $meetRoom ? $meetRoom->id : 'null',
+                // ]);
 
             if ($meetRoom) {
                 // 現在のユーザーに関連するメンバー情報を取得
                 $member = $meetRoom->members->where('user_id', Auth::id())->first();
 
-                // ユーザー情報をログ出力
-                Log::info('MeetRoom Member Information', [
-                    'user_id' => Auth::id(),
-                    'member_id' => $member ? $member->id : 'null',
-                ]);
+                // // ユーザー情報をログ出力
+                // Log::info('MeetRoom Member Information', [
+                //     'user_id' => Auth::id(),
+                //     'member_id' => $member ? $member->id : 'null',
+                // ]);
 
                 if ($member) {
                     // サービスクラスを利用して未読件数を計算
@@ -78,11 +78,11 @@ class RequestController extends Controller
                         $member->last_read_meet_id
                     );
 
-                    // 未読件数をログ出力
-                    Log::info('Unread Count for Request', [
-                        'request_id' => $request->id,
-                        'unread_count' => $unreadCount,
-                    ]);
+                // // 未読件数をログ出力
+                // Log::info('Unread Count for Request', [
+                //     'request_id' => $request->id,
+                //     'unread_count' => $unreadCount,
+                // ]);
 
                     $request->unread_count = $unreadCount;
                 } else {

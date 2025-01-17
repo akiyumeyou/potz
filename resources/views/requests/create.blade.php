@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('サポート依頼登録') }}
+            {{ __('サポートを頼む') }}
         </h2>
     </x-slot>
 
@@ -10,7 +10,7 @@
     <!-- 履歴から依頼ボタンを中央に配置 -->
     <div class="flex justify-center my-6">
         <button id="history-button" class="bg-blue-500 text-white px-6 py-3 rounded hover:bg-blue-700 text-lg">
-            履歴から依頼
+            履歴から頼む
         </button>
     </div>
 
@@ -55,7 +55,7 @@
 
                         <!-- 依頼カテゴリ -->
                         <div class="mb-4">
-                            <label for="category3_id" class="block text-lg font-bold text-gray-700 mb-2">依頼カテゴリ</label>
+                            <label for="category3_id" class="block text-lg font-bold text-gray-700 mb-2">カテゴリ</label>
                             <select name="category3_id" id="category3_id" class="form-control text-lg w-full" required>
                                 <option value="">選択してください</option>
                                 @foreach ($categories as $category)
@@ -97,7 +97,7 @@
 
                         <!-- 作業時間 -->
                         <div class="mb-4">
-                            <label for="time" class="block text-lg font-bold text-gray-700 mb-2">サポート依頼時間数</label>
+                            <label for="time" class="block text-lg font-bold text-gray-700 mb-2">頼む時間数</label>
                             <select name="time" id="time" class="form-control text-lg w-full" required>
                                 <option value="">時間を選択</option>
                                 @for ($i = 0.5; $i <= 8.0; $i += 0.5)
@@ -141,7 +141,7 @@
 
                         <!-- 見積もり金額 -->
                         <div class="mb-4">
-                            <label for="estimate" class="block text-lg font-bold text-gray-700 mb-2">見積もり金額</label>
+                            <label for="estimate" class="block text-lg font-bold text-gray-700 mb-2">めやす金額（交通費：仮４００円加算）</label>
                             <input type="text" id="estimate" name="estimate" class="form-control text-lg w-full"
                                 value="{{ isset($originalRequest) ? number_format($originalRequest->estimate, 0) . ' 円' : '' }}" readonly>
                         </div>
@@ -160,7 +160,7 @@
                             id="submitButton"
                             class="btn text-lg w-full py-2 bg-gray-400 text-white cursor-not-allowed"
                             disabled>
-                            サポート依頼登録
+                            サポートを登録
                         </button>
 
                     </form>

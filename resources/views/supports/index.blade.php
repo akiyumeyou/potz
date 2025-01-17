@@ -240,6 +240,10 @@
         });
 }
 
+    // 数値をカンマ区切りでフォーマット
+    function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
 
         // 初期状態で「自分の案件」を表示
         filterRequests('own');

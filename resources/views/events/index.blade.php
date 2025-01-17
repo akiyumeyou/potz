@@ -24,7 +24,7 @@
 
     <body class="bg-gray-100">
         <div class="container mx-auto px-4 py-8">
-            <h1 class="text-3xl font-bold mb-6">イベント一覧</h1>
+            <h1 class="text-xl font-bold mb-6">オンライン開催予定</h1>
 
             @if (session('success'))
                 <div class="alert alert-success bg-green-100 text-green-800 p-4 rounded mb-4">

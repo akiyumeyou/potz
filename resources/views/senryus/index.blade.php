@@ -1,13 +1,11 @@
 <x-app-layout>
-    <!DOCTYPE html>
+    <!-- <!DOCTYPE html>
     <html lang="ja">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-
-        <title>川柳一覧</title>
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet"> -->
         <style>
             .senryu-text {
                 writing-mode: vertical-rl;
@@ -62,13 +60,13 @@
                 cursor: pointer;
             }
         </style>
-    </head>
-    <body class="bg-yellow-50 flex flex-col items-center justify-center min-h-screen py-20">
+    <body class="bg-yellow-100 flex flex-col items-center justify-center min-h-screen py-20">
         <header class="mb-10">
+            <h1 class="text-xl font-bold mb-6">シルバー川柳</h1>
             <nav class="mt-4 flex justify-end pr-10">
                 @if (Auth::check() && Auth::user()->membership_id >= 2)
                     <a href="{{ route('senryus.create') }}"
-                        class="text-white bg-orange-500 hover:bg-orange-400 px-6 py-3 rounded-lg shadow-lg text-lg font-bold">
+                        class="text-white bg-orange-500 hover:bg-orange-400 px-6 py-2 rounded-lg shadow-lg text-lg font-bold">
                         新規投稿
                     </a>
                 @endif
@@ -146,5 +144,4 @@
             });
         </script>
     </body>
-    </html>
 </x-app-layout>

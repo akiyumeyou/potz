@@ -66,10 +66,10 @@
             <x-input-error class="mt-2" :messages="$errors->get('membership_id')" />
         </div>
 
-        <!-- 姓名 -->
+        <!-- 氏名 -->
         <div class="mt-4">
-            <label for="real_name" class="block text-sm font-medium text-gray-700">姓名 <span class="text-red-500">*</span></label>
-            <input type="text" name="real_name" id="real_name" value="{{ old('real_name', $user->real_name) }}" class="form-input mt-1 block w-full">
+            <label for="real_name" class="block text-sm font-medium text-gray-700">氏名 <span class="text-red-500">*</span></label>
+            <input type="text" name="real_name" id="real_name" required value="{{ old('real_name', $user->real_name) }}" class="form-input mt-1 block w-full">
         </div>
 
         <!-- カナ -->
@@ -97,34 +97,42 @@
                     <span class="ml-2">{{ __('その他') }}</span>
                 </label>
             </div>
+
         <!-- 都道府県 -->
         <div class="mt-4">
-            <label for="prefecture" class="block text-sm font-medium text-gray-700">都道府県</label>
-            <input type="text" name="prefecture" id="prefecture" value="{{ old('prefecture', $user->prefecture) }}" class="form-input mt-1 block w-full">
+            <label for="prefecture" class="block text-sm font-medium text-gray-700">
+                都道府県 <span class="text-red-500">*</span>
+            </label>
+            <input type="text" name="prefecture" id="prefecture" required value="{{ old('prefecture', $user->prefecture) }}" class="form-input mt-1 block w-full">
+            <x-input-error class="mt-2" :messages="$errors->get('prefecture')" />
         </div>
 
         <!-- 住所1 -->
         <div class="mt-4">
             <label for="address1" class="block text-sm font-medium text-gray-700">住所１<span class="text-red-500">*</span></label>
-            <input type="text" name="address1" id="address" value="{{ old('address1', $user->address1) }}" class="form-input mt-1 block w-full">
+            <input type="text" name="address1" id="address" required value="{{ old('address1', $user->address1) }}" class="form-input mt-1 block w-full">
         </div>
 
         <!-- 住所2 -->
         <div class="mt-4">
-            <label for="address2" class="block text-sm font-medium text-gray-700">住所２</label>
-            <input type="text" name="address2" id="address" value="{{ old('address2', $user->address2) }}" class="form-input mt-1 block w-full">
+            <label for="address2" class="block text-sm font-medium text-gray-700">
+                住所2
+            </label>
+            <input type="text" name="address2" id="address2" required value="{{ old('address2', $user->address2) }}" class="form-input mt-1 block w-full">
+            <x-input-error class="mt-2" :messages="$errors->get('address2')" />
         </div>
 
         <!-- 電話番号 -->
         <div class="mt-4">
             <label for="tel" class="block text-sm font-medium text-gray-700">電話番号 <span class="text-red-500">*</span></label>
-            <input type="text" name="tel" id="tel" value="{{ old('tel', $user->tel) }}" class="form-input mt-1 block w-full">
+            <input type="text" name="tel" id="tel" required value="{{ old('tel', $user->tel) }}" class="form-input mt-1 block w-full">
         </div>
         <!-- 生年月日 -->
         <div>
-            <x-input-label for="birthday" :value="__('生年月日')" />
-            <x-text-input id="birthday" name="birthday" type="date" class="mt-1 block w-full"
-                          :value="old('birthday', $user->birthday)" />
+            <label for="birthday" class="block text-sm font-medium text-gray-700">
+                生年月日 <span class="text-red-500">*</span>
+            </label>
+            <input type="date" name="birthday" id="birthday" required value="{{ old('birthday', $user->birthday) }}" class="form-input mt-1 block w-full">
             <x-input-error class="mt-2" :messages="$errors->get('birthday')" />
         </div>
 
@@ -144,7 +152,6 @@
 
     </form>
    <!-- サポートプロフィール案内 -->
-    <!-- サポートプロフィールエリア -->
     <div id="supporter-section" class="mt-6 p-4 bg-yellow-50 border border-yellow-300 rounded hidden">
         <p class="text-yellow-800 font-semibold">
             {{ __('サポート活動するには認証が必要です。こちらから登録申請してください。') }}
@@ -185,7 +192,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('profileForm');
     const membershipRadios = document.querySelectorAll('input[name="membership_id"]');
     const supporterSection = document.getElementById('supporter-section');
-    const fieldsToValidate = ['name', 'email', 'real_name', 'tel', 'address1'];
+    const fieldsToValidate = ['name', 'email', 'real_name', 'tel', 'prefecture', 'address1', 'address2'	, 'birthday'];
 
     // サポートプロフィールエリアの表示切り替え
     membershipRadios.forEach(radio => {
@@ -199,24 +206,31 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // フォームの必須項目バリデーション
     form.addEventListener('submit', function (e) {
         let isValid = true;
 
-        fieldsToValidate.forEach(field => {
-            const input = document.getElementById(field);
-            if (!input || input.value.trim() === '') {
+        fieldsToValidate.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field && field.value.trim() === '') {
                 isValid = false;
-                input.classList.add('border-red-500');
-                input.focus(); // 最初の未入力項目にフォーカス
+                field.classList.add('border-red-500');
+                alert(`${fieldId}は必須項目です`); // フィールド名を動的に表示
+                field.focus(); // 最初の未入力項目にフォーカス
+                e.preventDefault(); // フォーム送信を停止
+                return; // 他の項目をチェックせず終了
             } else {
-                input.classList.remove('border-red-500');
+                field.classList.remove('border-red-500');
             }
         });
 
-        if (!isValid) {
-            e.preventDefault(); // フォーム送信を停止
-        }
+        // 任意項目のスタイリングリセット
+        optionalFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.classList.remove('border-red-500');
+            }
+        });
+
     });
 
     // 初期表示の状態更新

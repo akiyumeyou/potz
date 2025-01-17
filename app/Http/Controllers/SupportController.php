@@ -204,15 +204,6 @@ public function joinRoom($id)
         return redirect()->route('supports.index')->withErrors('ルームは定員に達しています。');
     }
 
-    // // MeetRoomMember にサポーターを追加
-    // $meetRoom->members()->firstOrCreate([
-    //     'user_id' => $user->id,
-    // ], [
-    //     'role' => 'supporter',
-    //     'joined_at' => now(),
-    //     'is_active' => true,
-    // ]);
-
 
 // 距離と見積もりを計算して保存
 $distance = $this->calculateDistance(

@@ -22,4 +22,5 @@ class AppServiceProvider extends ServiceProvider
     {
         // メール認証完了時の処理
     }
+    
 }

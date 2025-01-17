@@ -7,9 +7,31 @@
 
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('サポート') }}
+            {{ __('サポートの窓口') }}
         </h2>
     </x-slot>
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-5">
+        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="p-5 text-3xl text-green-900">
+                @if ($membershipId >= 3 && $acId === 2)
+                <a href="{{ route('supports.index') }}"
+                class="inline-block bg-orange-400 text-white font-bold py-4 px-20 rounded-lg hover:bg-orange-500 text-lg">
+                    {{ __('サポートを検索') }}
+                </a>
+
+            @elseif ($membershipId >= 3 && $acId !== 2)
+                <p class="text-gray-500">
+                    {{ __('プロフィールから認証画像の登録をしてください。') }}
+                </p>
+            @else
+                <p class="text-gray-500">
+                    {{ __('↓↓ボタンを押す') }}
+                </p>
+            @endif
+
+            </div>
+        </div>
+    </div>
 
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-5">
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -22,36 +44,15 @@
                         </a>
                     </div>
                 @else
-                    <a href="{{ route('requests.create') }}" class="text-blue-500 hover:underline">
-                        {{ __('ちょっと助けて依頼') }}
-                    </a>
+                <a href="{{ route('requests.create') }}"
+                class="inline-block bg-green-500 text-white font-bold py-4 px-20 rounded-lg hover:bg-orange-500 text-lg">
+                {{ __('サポートを頼む') }}
+            </a>
+
                 @endif
             </div>
         </div>
     </div>
-
-
-<div class="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-5">
-    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-        <div class="p-5 text-3xl text-green-900">
-            @if ($membershipId >= 3 && $acId === 2)
-            <a href="{{ route('supports.index') }}" class="text-orange-500 hover:underline">
-                {{ __('サポート検索') }}
-            </a>
-
-        @elseif ($membershipId >= 3 && $acId !== 2)
-            <p class="text-gray-500">
-                {{ __('プロフィールから認証画像の登録をしてください。') }}
-            </p>
-        @else
-            <p class="text-gray-500">
-                {{ __('依頼のみできます') }}
-            </p>
-        @endif
-
-        </div>
-    </div>
-</div>
 
     <!-- 依頼一覧 -->
     <div class="py-6">
@@ -123,7 +124,7 @@
                                         {{ $request->is_liked ? 'disabled' : '' }}
                                     >
                                         <span class="heart-icon">
-                                            {{ $request->is_liked ? '❤️' : '🤍' }}
+                                            {{ $request->is_liked ? '❤️' : '🤍' }}ありがとうを送る
                                         </span>
                                         </button>
                                         @endif
