@@ -6,6 +6,7 @@ use App\Models\MeetRoom;
 use App\Models\Meet;
 use App\Models\UserRequest;
 use App\Models\User; // User モデルのインポート
+use App\Models\MeetRoomMember;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Carbon\Carbon;

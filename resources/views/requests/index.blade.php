@@ -124,7 +124,7 @@
                                         {{ $request->is_liked ? 'disabled' : '' }}
                                     >
                                         <span class="heart-icon">
-                                            {{ $request->is_liked ? '❤️' : '🤍' }}ありがとうを送る
+                                            {{ $request->is_liked ? '❤️' : '🤍' }}ありがとう
                                         </span>
                                         </button>
                                         @endif
@@ -153,6 +153,7 @@
                                 <div class="flex justify-between mt-2">
                                     <!-- 打ち合わせボタン -->
                                     <div class="relative">
+                                        @if (in_array($request->status_id, [1, 2, 3]))
                                         <a href="{{ route('meet_rooms.show', $request->id) }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
                                             打ち合わせ
                                         </a>
@@ -161,6 +162,23 @@
                                             <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
                                                 {{ $request->unread_count }}
                                             </span>
+                                        @endif
+                                        @else
+                                        <a href="{{ route('receipts.generatePdf', ['request_id' => $request->id]) }}"
+                                            target="_blank"
+                                            class="text-blue-500 underline hover:text-blue-700">
+                                            領収書参照
+                                         </a>
+                                         <button
+                                         class="thank-button text-gray-700 border border-gray-300 rounded-lg px-4 py-2 {{ $request->is_liked ? 'bg-gray-200 cursor-not-allowed' : 'hover:bg-gray-100' }}"
+                                         data-request-id="{{ $request->id }}"
+                                         {{ $request->is_liked ? 'disabled' : '' }}
+                                     >
+                                         <span class="heart-icon">
+                                             {{ $request->is_liked ? '❤️' : '🤍' }}
+                                         </span>
+                                         {{ $request->is_liked ? '' : 'ありがとうを送る' }}
+                                     </button>
                                         @endif
                                     </div>
 
