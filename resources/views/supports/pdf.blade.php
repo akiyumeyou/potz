@@ -83,7 +83,7 @@
 
         <!-- 合計金額 -->
         <div class="text-center mb-6">
-            <p class="text-5xl font-bold">合計金額: {{ number_format($matching->costkei, 0) }} 円</p>
+            <p class="text-5xl font-bold">領収金額: {{ number_format($matching->costkei, 0) }} 円</p>
         </div>
 
         <!-- 内訳テーブル -->
@@ -125,7 +125,7 @@
         <!-- 領収日 -->
         <div class="mt-6">
             <p class="text-3xl">日付: {{ now()->format('Y年m月d日') }}</p>
-            <p class="text-2xl">上記金額を領収いたしました。</p>
+            <p class="text-2xl">但：上記金額を領収いたしました。</p>
         </div>
 
         <!-- サポーター名 -->

@@ -1,7 +1,7 @@
-<div class="py-12"></div>
+<div class="py-1"></div>
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white shadow-sm sm:rounded-lg">
-            <div class="p-6 bg-white border-b border-gray-200">
+            <div class="p-2 bg-white border-b border-gray-200">
                 <h3 class="text-xl font-bold mb-4">依頼内容： {{ $userRequest->category3->category3 ?? '未設定' }}</h3>
             </div>
 
@@ -10,10 +10,10 @@
                     <thead>
                         <tr class="bg-gray-100">
                             <th class="border border-gray-300 px-4 py-2">内容</th>
-                            <th class="border border-gray-300 px-4 py-2">日時</th>
-                            <th class="border border-gray-300 px-4 py-2">開始時刻</th>
-                            <th class="border border-gray-300 px-4 py-2">支援時間</th>
-                           <th class="border border-gray-300 px-4 py-2">見込み金額</th>
+                            <th class="border border-gray-300 px-4 py-2">日</th>
+                            <th class="border border-gray-300 px-4 py-2">開始</th>
+                            <th class="border border-gray-300 px-4 py-2">時間</th>
+                           <th class="border border-gray-300 px-4 py-2">予定金額</th>
                             <th class="border border-gray-300 px-4 py-2">訪問先</th>
                         </tr>
                     </thead>
@@ -65,7 +65,7 @@
                             <td class="border border-gray-300 px-4 py-2">
 
                                 <button class="bg-gray-500 text-white px-2 py-1 rounded hover:bg-gray-700" onclick="showDetails()">
-                                    詳細確認
+                                    見る
                                 </button>
                             </td>
                         </tr>

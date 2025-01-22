@@ -2,7 +2,7 @@
 
     <x-slot name="header">
         <div class="bg-[#FAF3E0] text-center py-4 text-lg font-bold text-gray-800">
-            <p>POTZからのお知らせ</p>
+            <p>お知らせ</p>
             <ul>
                 @forelse (auth()->user()->unreadNotifications as $notification)
                     <li>
@@ -65,4 +65,8 @@
             </div>
         </div>
     </div>
+    <!-- <footer id="footer" class="w-full bg-green-800 text-white text-center p-2 fixed bottom-0">
+        <img src="{{ asset('img/logo.png') }}" alt="potz" class="inline-block w-8 h-8">
+        <a href="https://potz.jp/" class="text-white underline">https://potz.jp/</a>
+    </footer> -->
 </x-app-layout>

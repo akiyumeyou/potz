@@ -15,13 +15,13 @@
                     <!-- フィルタボタン -->
                     <div class="flex space-x-4 mb-6">
                         <button id="filter-own" class="px-4 py-2 rounded text-white bg-green-500 hover:bg-green-700">
-                            自分の案件
+                            私のサポート予定
                         </button>
                         <button id="filter-new" class="px-4 py-2 rounded text-white bg-yellow-500 hover:bg-yellow-700">
-                            新規案件
+                            新しい依頼を探す
                         </button>
                         <button id="filter-completed" class="px-4 py-2 rounded text-white bg-gray-500 hover:bg-gray-700">
-                            終了
+                            過去のサポート
                         </button>
                     </div>
 
@@ -30,13 +30,14 @@
                         @if ($requests->isNotEmpty())
                             <table class="table-auto w-full border-collapse border border-gray-300">
                                 <thead>
+                                    <p>金額は交通費を自動計算し加算しています。公共交通機関利用など精算時に変更する場合がございます。</p>
                                     <tr>
-                                        <th class="border px-4 py-2">カテゴリ</th>
-                                        <th class="border px-4 py-2">状況</th>
+                                        <th class="border px-4 py-2">サポート</th>
+                                        <th class="border px-4 py-2">すること</th>
                                         <!-- <th class="border px-4 py-2">サポーター</th> -->
                                         <th class="border px-4 py-2">日</th>
                                         <th class="border px-4 py-2">時</th>
-                                        <th class="border px-4 py-2">予定額</th>
+                                        <th class="border px-4 py-2">金額</th>
                                         <th class="border px-4 py-2">依頼者</th>
                                         <th class="border px-4 py-2">距離</th>
                                         <th class="border px-4 py-2">内容</th>
@@ -52,9 +53,9 @@
                                         <td class="border px-4 py-2">
                                             @php
                                                 $statusLabels = [
-                                                    1 => '新規依頼',
-                                                    2 => '打ち合わせ中',
-                                                    3 => 'マッチング確定',
+                                                    1 => '新しい依頼',
+                                                    2 => '確定させて',
+                                                    3 => '当日よろしく',
                                                     4 => '終了',
                                                 ];
                                             @endphp
@@ -112,7 +113,7 @@
                                 </tbody>
                             </table>
                         @else
-                            <p>依頼が登録されていません。</p>
+                            <p>サポート依頼が登録されていません。</p>
                         @endif
                     </div>
 

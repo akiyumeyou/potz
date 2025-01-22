@@ -141,7 +141,7 @@
 
                         <!-- 見積もり金額 -->
                         <div class="mb-4">
-                            <label for="estimate" class="block text-lg font-bold text-gray-700 mb-2">めやす金額（交通費：仮４００円加算）</label>
+                            <label for="estimate" class="block text-lg font-bold text-gray-700 mb-2">めやす金額（交通費仮４００円加算済）</label>
                             <input type="text" id="estimate" name="estimate" class="form-control text-lg w-full"
                                 value="{{ isset($originalRequest) ? number_format($originalRequest->estimate, 0) . ' 円' : '' }}" readonly>
                         </div>
@@ -266,6 +266,9 @@
         submitButton.disabled = !isChecked;
         submitButton.classList.toggle('bg-gray-400', !isChecked);
         submitButton.classList.toggle('bg-green-500', isChecked);
+        // カーソルスタイルの切り替え
+        submitButton.classList.toggle('cursor-not-allowed', !isChecked);
+        submitButton.classList.toggle('cursor-pointer', isChecked);
     });
 
     // 見積もり更新のイベント設定

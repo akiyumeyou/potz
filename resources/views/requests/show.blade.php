@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2>チャットルーム</h2>
+        <h2>打ち合わせ</h2>
     </x-slot>
 
   <!-- 成功メッセージ -->
@@ -26,7 +26,7 @@
     @elseif ($userRequest->status_id === 3)
         <!-- 成立中表示 -->
         <span class="w-full sm:w-auto px-8 py-3 bg-orange-300 text-white text-xl font-bold rounded-lg shadow-md text-center">
-            成立中
+            確定中
         </span>
 
          <!-- 領収書発行ボタン: サポートさんのみ -->
@@ -52,35 +52,44 @@
         @if (!in_array($userRequest->status_id, [3, 4]))
             @include('requests.edit')
         @else
-            <p class="text-red-500 font-bold">マッチング成立後は編集できません。</p>
+            <p class="text-red-500 font-bold">確定後の変更は双方でよく確認してください</p>
+            @include('requests.edit')
         @endif
 
 
         </div>
 
-    <!-- チャット履歴 -->
-    <div class="chat-container bg-white shadow-xl sm:rounded-lg p-6" style="height: 60%; overflow-y: auto; background-color: #f9f5e7;">
-        <ul id="message-list" class="space-y-4">
-            @foreach ($meetRoom->meets as $chat)
-                <li class="chat-message-container flex {{ Auth::id() == $chat->sender_id ? 'justify-end' : 'justify-start' }}">
-                    @if (Auth::id() != $chat->sender_id)
-                        <span class="chat-username text-sm text-gray-500 mr-2">{{ $chat->sender->name }}</span>
-                    @endif
-                    <div class="p-2 border rounded-lg max-w-xs {{ Auth::id() == $chat->sender_id ? 'bg-blue-100 text-right' : 'bg-gray-100 text-left' }}">
-                        @if ($chat->image)
-                            <img src="{{ asset('storage/' . $chat->image) }}" alt="Uploaded Image" class="mb-2 max-w-full rounded-lg">
-                        @endif
-                        <!-- <p>{!! nl2br(e($chat->message)) !!}</p> -->
-                        <p>{!! nl2br(formatLinks(e($chat->message))) !!}</p>
+        <!-- チャット履歴 -->
+        <div class="chat-container bg-white shadow-xl sm:rounded-lg p-6" style="height: 60%; overflow-y: auto; background-color: #f9f5e7;">
+            <ul id="message-list" class="space-y-4">
+                @foreach ($meetRoom->meets as $chat)
+                    <li class="flex {{ Auth::id() == $chat->sender_id ? 'justify-end' : 'justify-start' }} items-start">
+                        <!-- メッセージ全体 -->
+                        <div class="max-w-[80%]">
+                            <!-- ユーザー名 -->
+                            @if (Auth::id() != $chat->sender_id)
+                                <span class="block text-sm text-gray-500">{{ $chat->sender->name }}</span>
+                            @endif
 
-                    </div>
-                    <div class="chat-timestamp text-xs text-gray-400 mt-1">
-                        {{ $chat->created_at->format('Y/m/d H:i') }}
-                    </div>
-                </li>
-            @endforeach
-        </ul>
-    </div>
+                            <!-- メッセージ本体 -->
+                            <div class="p-4 rounded-lg {{ Auth::id() == $chat->sender_id ? 'bg-green-200 text-left' : 'bg-white text-left' }} break-words">
+                                @if ($chat->image)
+                                    <img src="{{ asset('storage/' . $chat->image) }}" alt="Uploaded Image" class="mb-2 max-w-full rounded-lg">
+                                @endif
+                                <p class="text-lg">
+                                    {!! nl2br(formatLinks(e($chat->message))) !!}
+                                </p>
+                            </div>
+
+                            <!-- タイムスタンプ -->
+                            <div class="text-xs text-gray-400 mt-1 {{ Auth::id() == $chat->sender_id ? 'text-right' : 'text-left' }}">
+                                {{ $chat->created_at->setTimezone('Asia/Tokyo')->format('Y/m/d H:i') }}
+                            </div>
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
 
     <!-- メッセージ送信フォーム -->
     <form id="chat-form" method="POST" action="{{ route('meet_rooms.store', $meetRoom->id) }}" enctype="multipart/form-data" class="input-area mt-4">

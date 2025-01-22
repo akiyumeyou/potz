@@ -16,7 +16,7 @@
                 @if ($membershipId >= 3 && $acId === 2)
                 <a href="{{ route('supports.index') }}"
                 class="inline-block bg-orange-400 text-white font-bold py-4 px-20 rounded-lg hover:bg-orange-500 text-lg">
-                    {{ __('サポートを検索') }}
+                    {{ __('サポートに行く') }}
                 </a>
 
             @elseif ($membershipId >= 3 && $acId !== 2)
@@ -66,11 +66,11 @@
                         <table class="table-auto w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-gray-100">
-                                    <th class="px-4 py-2 border">カテゴリ</th>
-                                    <th class="px-4 py-2 border">状況</th>
+                                    <th class="px-4 py-2 border">サポート</th>
+                                    <th class="px-4 py-2 border">すること</th>
                                     <th class="px-4 py-2 border">日時</th>
                                     <th class="px-4 py-2 border">場所</th>
-                                    <th class="px-4 py-2 border">見込み金額</th>
+                                    <th class="px-4 py-2 border">金額</th>
                                     <th class="px-4 py-2 border">打ち合わせ</th>
                                 </tr>
                             </thead>
@@ -82,10 +82,10 @@
                                      <td class="border px-4 py-2">
                                         @php
                                             $statusLabels = [
-                                                1 => '新規依頼',
-                                                2 => '打ち合わせ中',
-                                                3 => 'マッチング確定',
-                                                4 => '終了',
+                                                1 => 'サポートさんをお待ちください',
+                                                2 => '打ち合わせをして確定してください',
+                                                3 => '当日をお待ちください',
+                                                4 => '終了しました',
                                             ];
                                         @endphp
                                         <span class="text-sm font-bold text-gray-800">{{ $statusLabels[$request->status_id] ?? '不明' }}</span>
@@ -116,7 +116,7 @@
                                         @else
                                         <a href="{{ route('receipts.generatePdf', ['request_id' => $request->id]) }}"
                                             class="text-blue-500 underline hover:text-blue-700">
-                                             領収書参照
+                                             領収書
                                         </a>
                                         <button
                                         class="thank-button {{ $request->is_liked ? 'liked' : '' }}"
@@ -149,8 +149,20 @@
                                 <p class="text-sm">{{ \Carbon\Carbon::parse($request->date)->isoFormat('YYYY年MM月DD日（dddd）') }} {{ \Carbon\Carbon::parse($request->time_start)->format('H:i') }}から
                                     {{ rtrim($request->time, '.0') }}時間</p>
                                 <p class="text-sm">場所: {{ $request->spot ?? '未指定' }}</p>
-                                <p class="text-sm">見込み金額: {{ number_format($request->estimate) }}円</p>
+                                <p class="text-sm">金額: {{ number_format($request->estimate) }}円</p>
                                 <div class="flex justify-between mt-2">
+                                     <!-- ステータス -->
+                                     <div class="border px-4 py-2">
+                                        @php
+                                            $statusLabels = [
+                                                1 => 'サポートさんをお待ちください',
+                                                2 => '打ち合わせをして確定してください',
+                                                3 => '当日をお待ちください',
+                                                4 => '終了しました',
+                                            ];
+                                        @endphp
+                                        <span class="text-sm font-bold text-gray-800">{{ $statusLabels[$request->status_id] ?? '不明' }}</span>
+                                     </div>
                                     <!-- 打ち合わせボタン -->
                                     <div class="relative">
                                         @if (in_array($request->status_id, [1, 2, 3]))
@@ -167,7 +179,7 @@
                                         <a href="{{ route('receipts.generatePdf', ['request_id' => $request->id]) }}"
                                             target="_blank"
                                             class="text-blue-500 underline hover:text-blue-700">
-                                            領収書参照
+                                            　領収書　
                                          </a>
                                          <button
                                          class="thank-button text-gray-700 border border-gray-300 rounded-lg px-4 py-2 {{ $request->is_liked ? 'bg-gray-200 cursor-not-allowed' : 'hover:bg-gray-100' }}"
@@ -177,7 +189,7 @@
                                          <span class="heart-icon">
                                              {{ $request->is_liked ? '❤️' : '🤍' }}
                                          </span>
-                                         {{ $request->is_liked ? '' : 'ありがとうを送る' }}
+                                         {{ $request->is_liked ? 'ありがとう送信済' : 'ありがとうを送る' }}
                                      </button>
                                         @endif
                                     </div>
