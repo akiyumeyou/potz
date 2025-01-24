@@ -44,11 +44,11 @@
             </a>
 
             <!-- シニア動画 -->
-            <div class="relative block bg-[#FFF8DC] hover:bg-[#FBE9A1] border border-gray-300 rounded-lg shadow-md p-4 opacity-50 cursor-not-allowed">
-                <div class="rounded-lg overflow-hidden">
-                    <img src="{{ asset('img/buttons/5.png') }}" alt="シニア動画" class="mx-auto">
-                </div>
+            <a href="{{ route('youtube.index') }}" class="relative block bg-[#FFF8DC] hover:bg-[#FBE9A1] border border-gray-300 rounded-lg shadow-md p-4">
+            <div class="rounded-lg overflow-hidden">
+                <img src="{{ asset('img/buttons/5.png') }}" alt="シニア動画" class="mx-auto">
             </div>
+            </a>
 
             <!-- シルバー川柳 -->
             <a href="{{ route('senryus.index') }}" class="relative block bg-[#FFF8DC] hover:bg-[#FBE9A1] border border-gray-300 rounded-lg shadow-md p-4">

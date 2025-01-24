@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\SenryuController;
+use App\Http\Controllers\YouTubeController;
 use App\Http\Controllers\RequestController;
 use App\Http\Controllers\MeetRoomController;
 use App\Http\Controllers\Admin\AdminController;
@@ -81,6 +82,12 @@ Route::middleware('auth')->group(function () {
 Route::resource('senryus', SenryuController::class);
 Route::post('/senryus/{id}/iine', [SenryuController::class, 'incrementIine'])->name('senryus.incrementIine');
 Route::get('/senryus', [SenryuController::class, 'index'])->name('senryus.index');
+
+//おすすめYoutube
+Route::get('/youtubes', [YouTubeController::class, 'index'])->name('youtube.index');
+Route::post('/youtubes', [YouTubeController::class, 'store'])->name('youtube.store');
+Route::post('/youtubes/{id}/likes', [YouTubeController::class, 'updateLikes'])->name('youtube.updateLikes');
+Route::delete('/youtubes/{id}', [YouTubeController::class, 'destroy'])->name('youtube.destroy');
 
 /// 認証が必要なルート
 Route::middleware(['auth'])->group(function () {
