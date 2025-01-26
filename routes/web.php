@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
@@ -20,8 +21,8 @@ use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
-
-
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\Admin\PostController as AdminPostController;
 
 
 Route::middleware(['auth'])->group(function () {
@@ -35,9 +36,11 @@ Route::middleware(['auth'])->group(function () {
 });
 
 
-
 Route::get('/', function () {
-    return view('auth.login');
+    if (Auth::check()) {
+        return redirect('/dashboard'); // ログイン中ならダッシュボードへ
+    }
+    return redirect('/login'); // 未ログインならログインページへ
 });
 
 Route::get('/dashboard', function () {
@@ -138,7 +141,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/categories', [AdminController::class, 'categories'])->name('categories');
     Route::resource('category3', Category3Controller::class)->except(['show']);
     Route::get('/supports', [AdminController::class, 'supports'])->name('supports');
+// 掲示板投稿に関するルート
+    Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
+    Route::get('/posts/create', [AdminPostController::class, 'create'])->name('posts.create');
+    Route::post('/posts', [AdminPostController::class, 'store'])->name('posts.store');
+    Route::get('/posts/{post}/edit', [AdminPostController::class, 'edit'])->name('posts.edit');
+    Route::put('/posts/{post}', [AdminPostController::class, 'update'])->name('posts.update');
+    Route::delete('/posts/{post}', [AdminPostController::class, 'destroy'])->name('posts.destroy');
 });
+// 一般ユーザー向けの掲示板表示用ルート
+Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
+
+
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::resource('supports', \App\Http\Controllers\Admin\AdminSupportController::class);
@@ -155,7 +169,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('auth');
 
 Route::get('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
-
 
 
 require __DIR__.'/auth.php';

@@ -19,7 +19,7 @@
         <a href="{{ route('admin.users.index') }}">ユーザー一覧</a>
         <a href="{{ route('admin.categories') }}">カテゴリ一覧</a>
         <a href="{{ route('admin.supports.index') }}">サポート一覧</a>
-
+        <a href="{{ route('admin.posts.create') }}">掲示板投稿</a>
         <a href="{{ route('logout') }}">ログアウト</a>
     </div>
     <div class="content">
