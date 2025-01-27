@@ -1,51 +1,74 @@
 <x-app-layout>
-    <!-- <!DOCTYPE html>
-    <html lang="ja">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet"> -->
+    <x-slot name="header">
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('シルバー川柳') }}
+            </h2>
+            <a href="{{ route('dashboard') }}"
+               class="px-4 py-2 bg-blue-900 text-white text-sm font-bold rounded shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                戻る
+            </a>
+        </div>
+    </x-slot>
         <style>
-            .senryu-text {
-                writing-mode: vertical-rl;
-                text-orientation: upright;
-                font-size: 28px;
-                margin-bottom: 1px;
-                display: flex;
-                flex-direction: column;
-                align-items: flex-start;
-                justify-content: flex-start;
-                height: 240px;
-                padding-left: 10px;
+        .senryu-text {
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            font-size: 28px;
+            margin-bottom: 1px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+            height: 240px;
+            padding-left: 10px;
+        }
+        .senryu-text p {
+            margin: 0;
+            margin-bottom: 3px;
+        }
+        .senryu-media {
+            width: 100%;
+            height: auto;
+            max-height: 280px;
+            object-fit: contain;
+            margin-top: 2px;
+        }
+        .senryu-meta {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 10px;
+            margin-top: 5px;
+        }
+        .senryu-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            width: 100%;
+            height: 560px;
+        }
+        .preview {
+            max-width: 100%;
+            max-height: 300px; /* プレビュー画像の最大高さを制限 */
+            display: block;
+            margin: 10px auto;
+        }
+
+        @media (max-width: 768px) {
+            .senryu-text, .iine {
+                font-size: 36px;
             }
-            .senryu-text p {
-                margin: 0;
-                margin-bottom: 3px;
+            .fieldset {
+                max-width: 100%; /* コンテンツの最大幅を制限 */
+                margin: auto; /* 中央寄せ */
             }
-            .senryu-media {
-                width: 100%;
-                height: auto;
-                max-height: 280px;
-                object-fit: contain;
-                margin-top: 2px;
+            #drop-area {
+                height: 200px;
             }
-            .senryu-meta {
-                display: flex;
-                justify-content: space-between;
-                width: 100%;
-                padding: 0 10px;
-                margin-top: 5px;
-            }
-            .senryu-item {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: flex-start;
-                width: 100%;
-                height: 560px;
-            }
-            .sort-buttons {
+}
+            /* .sort-buttons {
                 display: flex;
                 justify-content: center;
                 margin-bottom: 20px;
@@ -57,26 +80,32 @@
                 border: none;
                 border-radius: 5px;
                 margin: 0 10px;
-                cursor: pointer;
-            }
+                cursor: pointer; */
+            /* } */
         </style>
     <body class="bg-yellow-100 flex flex-col items-center justify-center min-h-screen py-20">
-        <header class="mb-10">
-            <h1 class="text-xl font-bold mb-6">シルバー川柳</h1>
-            <nav class="mt-4 flex justify-end pr-10">
+        <header class="mb-10 px-2">
+            <nav class="mt-4 flex justify-between items-center space-x-2">
+
+
+                <div class="sort-buttons flex space-x-2">
+                    <button id="sortNewest"
+                            class="px-6 py-3 text-white bg-green-800 hover:bg-green-400 rounded-lg shadow text-lg font-bold flex items-center justify-center">
+                        新着順
+                    </button>
+                    <button id="sortLikes"
+                            class="px-6 py-3 text-white bg-green-800 hover:bg-green-400 rounded-lg shadow text-lg font-bold flex items-center justify-center">
+                        いいね順
+                    </button>
+                </div>
                 @if (Auth::check() && Auth::user()->membership_id >= 2)
-                    <a href="{{ route('senryus.create') }}"
-                        class="text-white bg-orange-500 hover:bg-orange-400 px-6 py-2 rounded-lg shadow-lg text-lg font-bold">
-                        新規投稿
-                    </a>
-                @endif
+                <a href="{{ route('senryus.create') }}"
+                    class="text-white bg-orange-500 hover:bg-orange-400 px-6 py-3 rounded-lg shadow-lg text-lg font-bold flex items-center justify-center">
+                    投稿する
+                </a>
+            @endif
             </nav>
         </header>
-
-        <div class="sort-buttons">
-            <button id="sortNewest">新着順</button>
-            <button id="sortLikes">いいね順</button>
-        </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-11/12 mx-auto" id="senryuContainer">
             @foreach ($senryus as $senryu)

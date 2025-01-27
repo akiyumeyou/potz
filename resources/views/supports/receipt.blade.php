@@ -1,6 +1,16 @@
 <x-app-layout>
+    <x-slot name="header">
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('請求入金') }}
+            </h2>
+            <a href="{{ route('supports.index') }}"
+               class="px-4 py-2 bg-blue-900 text-white text-sm font-bold rounded shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                戻る
+            </a>
+        </div>
+    </x-slot>
     <div class="p-4 bg-white shadow sm:rounded-lg">
-        請求入金処理
         <div class="flex justify-between items-center mb-6">
             <form action="{{ route('receipts.update', ['request_id' => $matching->request_id]) }}" method="POST">
                 @csrf
@@ -19,15 +29,15 @@
                     @endif
                     </div>
                      <!-- 領収書リンク（完了時のみ表示） -->
-                    @if ($matching->status === 4)
-                    <div class="mt-4">
-                        <a href="{{ route('receipts.generatePdf', ['request_id' => $matching->request_id]) }}"
-                        class="px-6 py-3 bg-blue-500 text-white text-xl font-bold rounded shadow hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                        target="_blank">
-                            領収書を見る
-                        </a>
-                    </div>
-                    @endif
+                     @if ($matching->status === 4)
+                     <div class="mt-4 mb-4">
+                         <a href="{{ route('receipts.generatePdf', ['request_id' => $matching->request_id]) }}"
+                            class="px-6 py-3 bg-blue-500 text-white text-xl font-bold rounded shadow hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                            target="_blank">
+                             領収書を見る
+                         </a>
+                     </div>
+                     @endif
 
 
                     <!-- 内訳表 -->
@@ -79,9 +89,9 @@
                                 <td class="px-4 py-2 border">その他{{ $i }}</td>
                                 <td class="px-4 py-2 border">
                                     <input type="number" name="sonotacost{{ $i }}" id="sonotacost{{ $i }}Input"
-                                           value="{{ old("sonotacost{$i}", $matching->{'sonotacost'.$i} ?? 0) }}"
-                                           class="w-full px-2 py-1 border rounded text-right"
-                                           oninput="updateTotal()">
+                                    value="{{ old("sonotacost{$i}", (int) $matching->{'sonotacost'.$i} ?? 0) }}"
+                                    class="w-full px-2 py-1 border rounded text-right"
+                                    oninput="updateTotal()">
                                 </td>
                                 <td class="px-4 py-2 border text-right" id="sonotacost{{ $i }}Cell">
                                     {{ number_format($matching->{'sonotacost'.$i} ?? 0, 0) }}

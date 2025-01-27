@@ -112,7 +112,7 @@ $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), t
 
             <div class="google-signin">
                 <a href="{{ route('login.google') }}">
-                    <img src="https://developers.google.com/identity/images/btn_google_signin_dark_normal_web.png" alt="Sign in with Google">
+                    <img src="https://developers.google.com/identity/images/btn_google_signin_dark_normal_web.png" alt="Google でログイン">
                 </a>
             </div>
 

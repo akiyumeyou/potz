@@ -8,7 +8,7 @@ class YouTubeController extends Controller
 {
     public function index()
     {
-        $videos = YouTube::all();
+        $videos = YouTube::paginate(6);
         return view('youtube.index', compact('videos'));
     }
 

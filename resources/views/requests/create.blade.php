@@ -1,11 +1,16 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('サポートを頼む') }}
-        </h2>
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('サポートを頼む') }}
+            </h2>
+            <a href="{{ route('requests.index') }}"
+               class="px-4 py-2 bg-blue-900 text-white text-sm font-bold rounded shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                戻る
+            </a>
+        </div>
     </x-slot>
 
-    <!-- 履歴から依頼ボタンを中央に配置 -->
     @if (!request('from_request'))
     <!-- 履歴から依頼ボタンを中央に配置 -->
     <div class="flex justify-center my-6">
@@ -41,7 +46,7 @@
 @endif
 
 
-    <div class="py-12">
+    <div class="py-1">
 
         <div class="max-w-lg mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">

@@ -107,6 +107,10 @@ class SenryuController extends Controller
     public function destroy(Senryu $senryu)
     {
         try {
+            if ($senryu->img_path && basename($senryu->img_path) !== 'dummy.jpg' && file_exists(public_path($senryu->img_path))) {
+                unlink(public_path($senryu->img_path)); // 画像ファイルを削除
+            }
+
             $senryu->delete();
             return redirect()->route('senryus.index')->with('success', '川柳が削除されました');
         } catch (\Exception $e) {
