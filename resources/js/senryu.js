@@ -130,4 +130,10 @@ document.addEventListener('DOMContentLoaded', function () {
             e.target.appendChild(new FormData().append('img_path', defaultFilePath));
         }
     });
+    document.querySelector('form').addEventListener('submit', function (e) {
+        const theme = document.getElementById('theme');
+        if (theme.value === "") {
+            theme.value = "日常生活"; // デフォルト値を設定
+        }
+    });
 });

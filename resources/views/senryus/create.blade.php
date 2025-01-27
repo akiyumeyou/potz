@@ -143,26 +143,25 @@
 
             <form action="{{ route('senryus.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                <div class="theme-container" >
-                <select name="theme" id="theme" require>
-                    <option value="">テーマ：選択肢を選ぶ→</option>
-                    <option value="脳活">脳活</option>
-                    <option value="体力づくり">体力づくり</option>
-                    <option value="日常生活">日常生活</option>
-                </select>
-                </div>
                 <div class="senryu-container" >
                     <a>投稿　①テーマを選択　②川柳テキスト入力</a><a>③イメージ画像を選択　④投稿ボタンを押す</a>
+                    <select name="theme" id="theme" require>
+                        <option value="">テーマ：選択肢を選ぶ</option>
+                        <option value="脳活">脳活</option>
+                        <option value="体力づくり">体力づくり</option>
+                        <option value="日常生活">日常生活</option>
+                    </select>
+
                     <div class="mb-4">
-                        <input type="text" name="s_text1" id="s_text1" class="senryu-input w-full p-3 rounded border text-lg"
+                        <input type="text" name="s_text1" id="s_text1" class="senryu-input w-full p-3 rounded border text-lg required"
                                placeholder="上五 5文字" required maxlength="7">
                     </div>
                     <div class="mb-4">
-                        <input type="text" name="s_text2" id="s_text2" class="senryu-input w-full p-3 rounded border text-lg"
+                        <input type="text" name="s_text2" id="s_text2" class="senryu-input w-full p-3 rounded border text-lg required"
                                placeholder="中七 7文字" required maxlength="8">
                     </div>
                     <div class="mb-4">
-                        <input type="text" name="s_text3" id="s_text3" class="senryu-input w-full p-3 rounded border text-lg"
+                        <input type="text" name="s_text3" id="s_text3" class="senryu-input w-full p-3 rounded border text-lg required"
                                placeholder="下五 5文字" required maxlength="7">
                     </div>
                 </div>

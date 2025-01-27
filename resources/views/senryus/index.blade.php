@@ -30,9 +30,11 @@
         .senryu-media {
             width: 100%;
             height: auto;
+            object-fit: cover; /* 画像の比率を維持して拡縮 */
             max-height: 280px;
             object-fit: contain;
             margin-top: 2px;
+            display: block;
         }
         .senryu-meta {
             display: flex;
@@ -58,7 +60,8 @@
 
         @media (max-width: 768px) {
             .senryu-text, .iine {
-                font-size: 36px;
+                font-size: 24px; /* モバイル用フォントサイズ */
+                line-height: 1.6; /* モバイル用行間 */
             }
             .fieldset {
                 max-width: 100%; /* コンテンツの最大幅を制限 */

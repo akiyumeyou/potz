@@ -12,7 +12,7 @@
     <body class="bg-orange-100">
 
     <header class="text-green-800 p-4 flex items-center justify-between">
-        @if (Auth::check() && Auth::user()->membership_id >= 2)
+        @if (Auth::check() && Auth::user()->membership_id >= 3)
             <button id="postButton" class="bg-orange-600 text-white p-2 rounded hover:bg-orange-500">新規投稿</button>
         @endif
         <select id="sortOptions" class="bg-green-800 text-white p-2 rounded">
