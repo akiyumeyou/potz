@@ -14,8 +14,10 @@
                     <label for="content" class="block text-sm font-medium text-gray-700 mt-4">内容:</label>
                     <textarea id="content" name="content" required rows="4" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"></textarea>
 
-                    <label for="file" class="block text-sm font-medium text-gray-700 mt-4">ファイル（オプション）:</label>
-                    <input type="file" id="file" name="file" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                    <div class="mb-4">
+                        <label for="file" class="block text-gray-700 font-bold mb-2">PDFファイル:</label>
+                        <input type="file" name="file" id="file" class="w-full border-gray-300 rounded-lg shadow-sm">
+                    </div>
                 </div>
                 <div class="px-4 py-3 bg-gray-50 text-right sm:px-6">
                     <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">

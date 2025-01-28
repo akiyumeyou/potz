@@ -99,36 +99,40 @@
                                     <td class="border px-4 py-2 text-right">{{ number_format($request->estimate) }}円</td>
                                     <td class="border px-4 py-2 text-center">
                                         @if (in_array($request->status_id, [1, 2, 3]))
-                                        <div class="flex items-center justify-start space-x-2">
-                                            <!-- ボタン -->
-                                            <a href="{{ route('meet_rooms.show', $request->id) }}"
-                                               class="bg-blue-500 text-white px-6 py-3 rounded text-lg font-bold hover:bg-blue-600">
-                                                打ち合わせ
+                                            <div class="flex items-center justify-start space-x-2">
+                                                <!-- 打ち合わせボタン -->
+                                                <a href="{{ route('meet_rooms.show', $request->id) }}"
+                                                    class="bg-blue-500 text-white px-6 py-3 rounded-lg text-lg font-bold hover:bg-blue-600 focus:ring focus:ring-blue-300">
+                                                    打ち合わせ
+                                                </a>
+
+                                                <!-- 未読件数（赤丸表示） -->
+                                                @if ($request->unread_count > 0)
+                                                    <span class="flex items-center justify-center bg-red-500 text-white text-sm font-bold w-6 h-6 rounded-full shadow">
+                                                        {{ $request->unread_count }}
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <a href="{{ route('receipts.generatePdf', ['request_id' => $request->id]) }}"
+                                                class="text-blue-500 underline hover:text-blue-700">
+                                                領収書
                                             </a>
 
-                                            <!-- 未読件数 (赤丸) -->
-                                            @if ($request->unread_count > 0)
-                                                <span class="flex items-center justify-center bg-red-500 text-white text-sm font-bold w-6 h-6 rounded-full">
-                                                    {{ $request->unread_count }}
+                                            <!-- ありがとうボタン -->
+                                            <button
+                                                class="thank-button flex items-center justify-center text-gray-700 border border-gray-300 rounded-lg px-4 py-2 {{ $request->is_liked ? 'bg-gray-200 cursor-not-allowed' : 'hover:bg-gray-100' }}"
+                                                data-request-id="{{ $request->id }}"
+                                                {{ $request->is_liked ? 'disabled' : '' }}
+                                            >
+                                                <span class="heart-icon mr-2">
+                                                    {{ $request->is_liked ? '❤️' : '🤍' }}
                                                 </span>
-                                            @endif
-                                        </div>
-                                        @else
-                                        <a href="{{ route('receipts.generatePdf', ['request_id' => $request->id]) }}"
-                                            class="text-blue-500 underline hover:text-blue-700">
-                                             領収書
-                                        </a>
-                                        <button
-                                        class="thank-button {{ $request->is_liked ? 'liked' : '' }}"
-                                        data-request-id="{{ $request->id }}"
-                                        {{ $request->is_liked ? 'disabled' : '' }}
-                                    >
-                                        <span class="heart-icon">
-                                            {{ $request->is_liked ? '❤️' : '🤍' }}ありがとう
-                                        </span>
-                                        </button>
+                                                {{ $request->is_liked ? 'ありがとう送信済' : 'ありがとうを送る' }}
+                                            </button>
                                         @endif
                                     </td>
+
 
                                         <!-- <td class="border px-4 py-2 text-center">
                                             <a href="{{ route('requests.createFromRequest', ['from_request' => $request->id]) }}" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
@@ -155,44 +159,49 @@
                                      <div class="border px-4 py-2">
                                         @php
                                             $statusLabels = [
-                                                1 => 'サポートさんをお待ちください',
-                                                2 => '打ち合わせをして確定してください',
+                                                1 => 'サポートさん探し中',
+                                                2 => '確定してください',
                                                 3 => '当日をお待ちください',
                                                 4 => '終了しました',
                                             ];
                                         @endphp
                                         <span class="text-sm font-bold text-gray-800">{{ $statusLabels[$request->status_id] ?? '不明' }}</span>
                                      </div>
-                                    <!-- 打ち合わせボタン -->
-                                    <div class="relative">
+                                     <div class="relative">
                                         @if (in_array($request->status_id, [1, 2, 3]))
-                                        <a href="{{ route('meet_rooms.show', $request->id) }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                                            打ち合わせ
-                                        </a>
-                                        @if ($request->unread_count > 0)
-                                            <!-- 未読件数（赤丸） -->
-                                            <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
-                                                {{ $request->unread_count }}
-                                            </span>
-                                        @endif
+                                            <!-- 打ち合わせボタン -->
+                                            <a href="{{ route('meet_rooms.show', $request->id) }}"
+                                                class="bg-blue-500 text-white px-4 py-2 rounded-lg text-base font-bold hover:bg-blue-600 focus:ring focus:ring-blue-300">
+                                                打ち合わせ
+                                            </a>
+
+                                            <!-- 未読件数（赤丸表示） -->
+                                            @if ($request->unread_count > 0)
+                                                <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full shadow">
+                                                    {{ $request->unread_count }}
+                                                </span>
+                                            @endif
                                         @else
-                                        <a href="{{ route('receipts.generatePdf', ['request_id' => $request->id]) }}"
-                                            target="_blank"
-                                            class="text-blue-500 underline hover:text-blue-700">
-                                            　領収書　
-                                         </a>
-                                         <button
-                                         class="thank-button text-gray-700 border border-gray-300 rounded-lg px-4 py-2 {{ $request->is_liked ? 'bg-gray-200 cursor-not-allowed' : 'hover:bg-gray-100' }}"
-                                         data-request-id="{{ $request->id }}"
-                                         {{ $request->is_liked ? 'disabled' : '' }}
-                                     >
-                                         <span class="heart-icon">
-                                             {{ $request->is_liked ? '❤️' : '🤍' }}
-                                         </span>
-                                         {{ $request->is_liked ? 'ありがとう送信済' : 'ありがとうを送る' }}
-                                     </button>
+                                            <a href="{{ route('receipts.generatePdf', ['request_id' => $request->id]) }}"
+                                                target="_blank"
+                                                class="text-blue-500 underline hover:text-blue-700">
+                                                領収書
+                                            </a>
+
+                                            <!-- ありがとうボタン -->
+                                            <button
+                                                class="thank-button flex items-center justify-center text-gray-700 border border-gray-300 rounded-lg px-4 py-2 {{ $request->is_liked ? 'bg-gray-200 cursor-not-allowed' : 'hover:bg-gray-100' }}"
+                                                data-request-id="{{ $request->id }}"
+                                                {{ $request->is_liked ? 'disabled' : '' }}
+                                            >
+                                                <span class="heart-icon mr-2">
+                                                    {{ $request->is_liked ? '❤️' : '🤍' }}
+                                                </span>
+                                                {{ $request->is_liked ? 'ありがとう送信済' : 'ありがとうを送る' }}
+                                            </button>
                                         @endif
                                     </div>
+
 
                                     <!-- <a href="{{ route('requests.create', ['from_request' => $request->id]) }}" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
                                         再依頼

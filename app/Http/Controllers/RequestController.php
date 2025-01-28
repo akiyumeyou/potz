@@ -482,4 +482,18 @@ class RequestController extends Controller
         return response()->json(['success' => true, 'message' => 'Thank you added successfully!'], 200);
     }
 
+    public function sendThank($id)
+    {
+        $request = UserRequest::findOrFail($id);
+
+        if ($request->is_liked) {
+            return response()->json(['success' => false, 'message' => 'すでに「ありがとう」を送信済みです。']);
+        }
+
+        $request->is_liked = true;
+        $request->save();
+
+        return response()->json(['success' => true]);
+    }
+
 }

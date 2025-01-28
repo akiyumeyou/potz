@@ -6,9 +6,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // ボタンの状態を一時的に更新（UIの即時反応）
             const heartIcon = this.querySelector('.heart-icon');
+            const originalText = this.innerHTML;
             heartIcon.textContent = '❤️';
             this.classList.add('liked');
             this.disabled = true;
+            this.innerHTML = '<span class="heart-icon">❤️</span> ありがとう送信済';
 
             // APIリクエストで「ありがとう」を送信
             fetch(`/requests/${requestId}/thank`, {
@@ -18,23 +20,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json',
                 },
             })
-
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('サーバーエラー');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (!data.success) {
-                        // エラー時は元に戻す
-                        alert('エラーが発生しました。');
-                        heartIcon.textContent = '🤍';
+                        // サーバー側のエラー時は元に戻す
+                        alert('エラーが発生しました: ' + data.message);
+                        this.innerHTML = originalText;
                         this.classList.remove('liked');
                         this.disabled = false;
                     }
                 })
-                .catch(() => {
+                .catch(error => {
+                    // 通信エラー時は元に戻す
+                    console.error('通信エラー:', error);
                     alert('通信エラーが発生しました。');
-                    heartIcon.textContent = '🤍';
+                    this.innerHTML = originalText;
                     this.classList.remove('liked');
                     this.disabled = false;
                 });
         });
     });
 });
+

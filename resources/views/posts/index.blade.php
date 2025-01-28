@@ -16,12 +16,12 @@
                     <span class="hidden" id="full-content-{{ $post->id }}">{{ $post->content }}</span>
                     <button onclick="toggleContent({{ $post->id }})" class="text-blue-500 hover:text-blue-700">続きを見る</button>
                 </p>
-                @if ($post->file_path)
-                    <a href="{{ asset('storage/' . $post->file_path) }}" class="inline-block mt-3 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">ダウンロード</a>
-                @endif
-                @if (auth()->user()->membership_id == 5)
-                    <a href="{{ route('admin.posts.edit', $post->id) }}" class="inline-block mt-3 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">編集</a>
-                @endif
+                        @if ($post->file_path)
+                        <a href="{{ $post->getFileUrl() }}" target="_blank" class="text-blue-500 underline">ファイルを表示</a>
+                        @endif
+                        @if (auth()->user()->membership_id == 5)
+                        <a href="{{ route('admin.posts.edit', $post->id) }}" class="inline-block mt-3 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">編集</a>
+                        @endif
             </div>
         @endforeach
     </div>

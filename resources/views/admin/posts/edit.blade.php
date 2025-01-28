@@ -6,23 +6,40 @@
 
     <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
         <div class="mt-5 md:mt-0 md:col-span-2">
-            <form method="post" action="{{ route('admin.posts.update', $post) }}" enctype="multipart/form-data" class="shadow sm:rounded-md sm:overflow-hidden">
+            <form action="{{ route('admin.posts.update', $post->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
-                <div class="px-4 py-5 bg-white space-y-6 sm:p-6">
-                    <div>
-                        <label for="title" class="block text-sm font-medium text-gray-700">タイトル:</label>
-                        <input type="text" name="title" id="title" value="{{ $post->title }}" required class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                    </div>
-                    <div>
-                        <label for="content" class="block text-sm font-medium text-gray-700">内容:</label>
-                        <textarea id="content" name="content" rows="3" required class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">{{ $post->content }}</textarea>
-                    </div>
-                    <div>
-                        <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">更新する</button>
-                    </div>
+
+                <div class="mb-4">
+                    <label for="title" class="block text-gray-700 font-bold mb-2">タイトル:</label>
+                    <input type="text" name="title" id="title" value="{{ old('title', $post->title) }}" required
+                        class="w-full border-gray-300 rounded-lg shadow-sm">
                 </div>
+
+                <div class="mb-4">
+                    <label for="content" class="block text-gray-700 font-bold mb-2">内容:</label>
+                    <textarea name="content" id="content" required
+                        class="w-full border-gray-300 rounded-lg shadow-sm">{{ old('content', $post->content) }}</textarea>
+                </div>
+
+                @if ($post->file_path)
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-bold mb-2">現在のファイル:</label>
+                        <a href="{{ asset('storage/' . $post->file_path) }}" target="_blank"
+                            class="text-blue-500 underline">現在のファイルを表示</a>
+                    </div>
+                @endif
+
+                <div class="mb-4">
+                    <label for="file" class="block text-gray-700 font-bold mb-2">新しいファイル（任意）:</label>
+                    <input type="file" name="file" id="file" class="w-full border-gray-300 rounded-lg shadow-sm">
+                </div>
+
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    更新
+                </button>
             </form>
+
         </div>
 
         <div class="mt-5 md:mt-0 md:col-span-2">
