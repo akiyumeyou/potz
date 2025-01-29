@@ -24,4 +24,6 @@ yarn-error.log
 /public/hot
 /public/storage
 !/public/img
-
+storage/fonts/
+storage/app/*.pdf
+storage/app/public/*.pdf
