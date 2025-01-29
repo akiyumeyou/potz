@@ -55,7 +55,8 @@ return [
          *
          * Note: This directory must exist and be writable by the webserver process.
          */
-        'font_cache' => storage_path('fonts'),
+        // 'font_cache' => storage_path('fonts'),
+        'font_cache' => sys_get_temp_dir(),
 
         /**
          * The location of a temporary directory.
