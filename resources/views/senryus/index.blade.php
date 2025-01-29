@@ -20,7 +20,8 @@
             flex-direction: column;
             align-items: flex-start;
             justify-content: flex-start;
-            height: 240px;
+            height: 280px;
+            overflow: hidden;
             padding-left: 10px;
         }
         .senryu-text p {
@@ -31,7 +32,7 @@
             width: 100%;
             height: auto;
             object-fit: cover; /* 画像の比率を維持して拡縮 */
-            max-height: 280px;
+            max-height: 240px;
             object-fit: contain;
             margin-top: 2px;
             display: block;
@@ -53,7 +54,7 @@
         }
         .preview {
             max-width: 100%;
-            max-height: 300px; /* プレビュー画像の最大高さを制限 */
+            max-height: 280px; /* プレビュー画像の最大高さを制限 */
             display: block;
             margin: 10px auto;
         }

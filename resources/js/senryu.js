@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', function () {
     let fileNameDisplay = document.getElementById('file-name');
     let previewContainer = document.getElementById('preview-container');
     let reselectBtn = document.getElementById('reselect-btn');
-    let toukouBtn = document.getElementById('toukou-btn');
     let currentFileSelected = false; // 画像が選択されているかを示すフラグ
 
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -63,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
                     const maxWidth = 800;
-                    const maxHeight = 600;
+                    const maxHeight = 400; // 画像の高さ制限を低く設定
                     let width = img.width;
                     let height = img.height;
 
@@ -96,12 +95,15 @@ document.addEventListener('DOMContentLoaded', function () {
                         const resizedImg = document.createElement('img');
                         resizedImg.src = URL.createObjectURL(blob);
                         resizedImg.classList.add('preview');
-                        previewContainer.innerHTML = '';
+                        previewContainer.innerHTML = ''; // プレビューをクリア
                         previewContainer.appendChild(resizedImg);
 
                         dropArea.style.display = 'none';
                         reselectBtn.style.display = 'block';
-                    }, 'image/jpeg', 0.75);
+
+                        // メモリ解放
+                        canvas.remove();
+                    }, 'image/jpeg', 0.6); // 圧縮率を高めて容量を節約
                 };
             };
         } else if (file.type.startsWith('video/')) {
@@ -123,14 +125,13 @@ document.addEventListener('DOMContentLoaded', function () {
         fileNameDisplay.innerText = '';
     }
 
-    document.querySelector('form').addEventListener('submit', function(e) {
+    document.querySelector('form').addEventListener('submit', function (e) {
         if (!currentFileSelected) {
             fileElem.value = '';
             const defaultFilePath = 'public/img/dfo.jpg';
             e.target.appendChild(new FormData().append('img_path', defaultFilePath));
         }
-    });
-    document.querySelector('form').addEventListener('submit', function (e) {
+
         const theme = document.getElementById('theme');
         if (theme.value === "") {
             theme.value = "日常生活"; // デフォルト値を設定

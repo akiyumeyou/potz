@@ -145,7 +145,7 @@
                 @csrf
                 <div class="senryu-container" >
                     <a>投稿　①テーマを選択　②川柳テキスト入力</a><a>③イメージ画像を選択　④投稿ボタンを押す</a>
-                    <select name="theme" id="theme" require>
+                    <select name="theme" id="theme" required>
                         <option value="">テーマ：選択肢を選ぶ</option>
                         <option value="脳活">脳活</option>
                         <option value="体力づくり">体力づくり</option>
