@@ -1,9 +1,15 @@
 {{-- resources/views/posts/index.blade.php --}}
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="text-xl font-semibold leading-tight text-gray-800">
-            {{ __('POTZ使い方') }}
-        </h2>
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('POTZ使い方') }}
+            </h2>
+            <a href="{{ route('dashboard') }}"
+               class="px-4 py-2 bg-blue-900 text-white text-sm font-bold rounded shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                戻る
+            </a>
+        </div>
     </x-slot>
 
     <div class="py-6">

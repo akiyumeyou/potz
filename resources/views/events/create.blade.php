@@ -1,8 +1,17 @@
 <x-app-layout>
+    <x-slot name="header">
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('イベントを作成') }}
+            </h2>
+            <a href="{{ route('dashboard') }}"
+               class="px-4 py-2 bg-blue-900 text-white text-sm font-bold rounded shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                戻る
+            </a>
+        </div>
+    </x-slot>
     <body class="bg-gray-100">
-        <div class="container mx-auto px-4 py-8">
-            <h1 class="text-3xl font-bold mb-6">イベントを作成</h1>
-
+        <div class="container mx-auto px-4 py-1">
             @if (session('success'))
                 <div class="alert alert-success bg-green-100 text-green-800 p-4 rounded mb-4">
                     {{ session('success') }}

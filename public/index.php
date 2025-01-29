@@ -3,6 +3,13 @@
 use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
+// if (!isset($_SESSION['user_logged_in'])) {
+//     header('Location: /login');
+//     exit;
+// } else {
+//     header('Location: /dashboard');
+//     exit;
+// }
 
 // Determine if the application is in maintenance mode...
 if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
