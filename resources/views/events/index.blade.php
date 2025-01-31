@@ -30,52 +30,93 @@
                 </nav>
             </header>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                @forelse($events as $event)
-                    <div class="bg-white shadow-md rounded-lg p-4">
-                        <h2 class="text-2xl font-bold mb-2">{{ $event->title }}</h2>
-                        @if($event->image_path)
-                        <img src="{{ $event->getImageUrl() }}" alt="イベント画像" class="mb-4 rounded-lg">
-                    @endif
-                    <p class="text-xl font-bold mb-2">開催日: {{ $event->getFormattedDisplayEventDate() }}</p>
-                    <p class="text-lg font-bold mb-2">時間: {{ $event->getFormattedTime() }}</p>
-                    <p class="event-info">内容: {{ $event->content }}</p>
-                    <p class="mb-1">作成者: {{ $event->user->name }}</p>
-                    <p class="mb-4">参加費: 無料</p>
+            {{-- 今日のイベント（ある場合のみ表示） --}}
+            @if ($todayEvents->isNotEmpty())
+                <h2 class="text-xl font-semibold mb-2 text-red-600">今日のイベント</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    @foreach ($todayEvents as $event)
+                        <div class="bg-white shadow-md rounded-lg p-4">
+                            <h2 class="text-2xl font-bold mb-2">{{ $event->title }}</h2>
+                            @if($event->image_path)
+                                <img src="{{ $event->getImageUrl() }}" alt="イベント画像" class="mb-4 rounded-lg">
+                            @endif
+                            <p class="text-xl font-bold mb-2">開催日: {{ $event->getFormattedDisplayEventDate() }}</p>
+                            <p class="text-lg font-bold mb-2">時間: {{ $event->getFormattedTime() }}</p>
+                            <p class="event-info">内容: {{ $event->content }}</p>
+                            <p class="mb-1">作成者: {{ $event->user->name }}</p>
+                            <p class="mb-4">参加費: 無料</p>
 
-                @if(Auth::user()->membership_id == 1)
-                    <p class="text-red-500 font-bold mb-4">
-                        参加には <a href="{{ route('profile.edit') }}" class="text-blue-500 underline">POTZ会員</a> の登録をしてください。
-                    </p>
-                @else
-                    @if($event->isOngoing())
-                        <a href="{{ $event->zoom_url }}" class="bg-orange-500 text-white font-bold py-2 px-4 rounded hover:bg-orange-700">参加</a>
-                    @elseif($event->recurring && !$event->holiday)
-                        <p>次回開催日: {{ $event->getNextEventDate() }}</p>
-                        <button class="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700">準備中</button>
-                    @elseif($event->isUpcoming())
-                        <button class="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700">準備中</button>
-                    @else
-                        <button class="bg-gray-500 text-white font-bold py-2 px-4 rounded" disabled>終了しました</button>
-                    @endif
-                @endif
+                            @if(Auth::user()->membership_id == 1)
+                                <p class="text-red-500 font-bold mb-4">
+                                    参加には <a href="{{ route('profile.edit') }}" class="text-blue-500 underline">POTZ会員</a> の登録をしてください。
+                                </p>
+                            @else
+                                <a href="{{ $event->zoom_url }}" class="bg-orange-500 text-white font-bold py-2 px-4 rounded hover:bg-orange-700">参加</a>
+                            @endif
 
-                @if(Auth::user()->membership_id == 5)
-                <div class="mt-4">
-                    <a href="{{ route('events.edit', $event) }}" class="text-blue-500 hover:underline mr-2">編集</a>
-                    <form action="{{ route('events.destroy', $event) }}" method="POST" class="inline">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="text-red-500 hover:underline">削除</button>
-                    </form>
+                            @if(Auth::user()->membership_id == 5)
+                                <div class="mt-4">
+                                    <a href="{{ route('events.edit', $event) }}" class="text-blue-500 hover:underline mr-2">編集</a>
+                                    <form action="{{ route('events.destroy', $event) }}" method="POST" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-500 hover:underline">削除</button>
+                                    </form>
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
                 </div>
-                @endif
+            @endif
 
-                    </div>
-                @empty
-                    <p class="col-span-full text-center">現在、イベントはありません。</p>
-                @endforelse
-            </div>
+            {{-- 未来のイベント --}}
+            @if ($futureEvents->isNotEmpty())
+                <h2 class="text-xl font-semibold mt-6 mb-2">今後のイベント</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    @foreach ($futureEvents as $event)
+                        <div class="bg-white shadow-md rounded-lg p-4">
+                            <h2 class="text-2xl font-bold mb-2">{{ $event->title }}</h2>
+                            @if($event->image_path)
+                                <img src="{{ $event->getImageUrl() }}" alt="イベント画像" class="mb-4 rounded-lg">
+                            @endif
+                            <p class="text-xl font-bold mb-2">開催日: {{ $event->getFormattedDisplayEventDate() }}</p>
+                            <p class="text-lg font-bold mb-2">時間: {{ $event->getFormattedTime() }}</p>
+                            <p class="event-info">内容: {{ $event->content }}</p>
+                            <p class="mb-1">作成者: {{ $event->user->name }}</p>
+                            <p class="mb-4">参加費: 無料</p>
+
+                            @if(Auth::user()->membership_id == 1)
+                                <p class="text-red-500 font-bold mb-4">
+                                    参加には <a href="{{ route('profile.edit') }}" class="text-blue-500 underline">POTZ会員</a> の登録をしてください。
+                                </p>
+                            @else
+                                <button class="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700">準備中</button>
+                            @endif
+
+                            @if(Auth::user()->membership_id == 5)
+                                <div class="mt-4">
+                                    <a href="{{ route('events.edit', $event) }}" class="text-blue-500 hover:underline mr-2">編集</a>
+                                    <form action="{{ route('events.destroy', $event) }}" method="POST" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-500 hover:underline">削除</button>
+                                    </form>
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+
+                {{-- ページネーション --}}
+                <div class="mt-6 flex justify-center">
+                    {{ $futureEvents->links() }}
+                </div>
+            @endif
+
+            {{-- どちらのイベントもない場合 --}}
+            @if ($todayEvents->isEmpty() && $futureEvents->isEmpty())
+                <p class="col-span-full text-center">現在、イベントはありません。</p>
+            @endif
         </div>
     </body>
 </x-app-layout>

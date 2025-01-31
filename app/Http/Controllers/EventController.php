@@ -8,12 +8,24 @@ use Illuminate\Support\Facades\Storage;
 
 class EventController extends Controller
 {
-    // イベント一覧を表示するメソッド
     public function index()
     {
-        $events = Event::all();
-        return view('events.index', compact('events'));
+        $today = now()->toDateString(); // 今日の日付（例: "2025-01-31"）
+
+        // 今日のイベント（今日の日付のみ）
+        $todayEvents = Event::whereDate('event_date', $today)
+            ->orderBy('start_time', 'asc') // 開始時間順
+            ->get();
+
+        // 未来のイベント（今日より後）
+        $futureEvents = Event::whereDate('event_date', '>', $today)
+            ->orderBy('event_date', 'asc')
+            ->orderBy('start_time', 'asc')
+            ->paginate(6); // 6件ごとにページネーション
+
+        return view('events.index', compact('todayEvents', 'futureEvents'));
     }
+
 
     // イベント作成ページを表示するメソッド
     public function create()
@@ -57,8 +69,8 @@ class EventController extends Controller
     // イベント編集ページを表示するメソッド
     public function edit(Event $event)
     {
-        // 作成者以外のユーザーが編集ページにアクセスしようとした場合はリダイレクト
-        if (Auth::id() !== $event->user_id) {
+        // 作成者または管理者(membership_id == 5)のみ編集可能
+        if (Auth::id() !== $event->user_id && Auth::user()->membership_id !== 5) {
             return redirect()->route('events.index')->with('error', '編集権限がありません。');
         }
 
@@ -68,9 +80,10 @@ class EventController extends Controller
     // イベントを更新するメソッド
     public function update(Request $request, Event $event)
     {
-        if (Auth::id() !== $event->user_id) {
-            return redirect()->route('events.index')->with('error', '更新権限がありません。');
-        }
+    // 作成者または管理者(membership_id == 5)のみ更新可能
+    if (Auth::id() !== $event->user_id && Auth::user()->membership_id !== 5) {
+        return redirect()->route('events.index')->with('error', '更新権限がありません。');
+    }
 
         $request->validate([
             'title' => 'required|string|max:255',
@@ -112,9 +125,10 @@ class EventController extends Controller
     // イベントを削除するメソッド
     public function destroy(Event $event)
     {
-        if (Auth::id() !== $event->user_id) {
-            return redirect()->route('events.index')->with('error', '削除権限がありません。');
-        }
+     // 作成者または管理者(membership_id == 5)のみ削除可能
+     if (Auth::id() !== $event->user_id && Auth::user()->membership_id !== 5) {
+        return redirect()->route('events.index')->with('error', '削除権限がありません。');
+    }
 
         // イメージファイルが存在する場合は削除
         if ($event->image_path) {
