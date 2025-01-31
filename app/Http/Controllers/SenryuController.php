@@ -13,7 +13,7 @@ class SenryuController extends Controller
     // 一覧表示
     public function index()
     {
-        $senryus = Senryu::all();
+        $senryus = Senryu::orderBy('created_at', 'desc')->paginate(6); // 6件ごとにページネーション
         return view('senryus.index', compact('senryus'));
     }
 
@@ -65,6 +65,10 @@ class SenryuController extends Controller
     // 編集フォーム表示
     public function edit(Senryu $senryu)
     {
+        if (Auth::id() !== $senryu->user_id && Auth::user()->membership_id !== 5) {
+            return redirect()->route('senryus.index')->with('error', '編集権限がありません');
+        }
+
         return view('senryus.edit', compact('senryu'));
     }
 
@@ -81,6 +85,12 @@ class SenryuController extends Controller
 
     try {
         $senryu = Senryu::findOrFail($id);
+
+        // 投稿者または管理者のみ編集可能
+        if (Auth::id() !== $senryu->user_id && Auth::user()->membership_id !== 5) {
+            return redirect()->route('senryus.index')->with('error', '編集権限がありません');
+        }
+
         $data = $request->except('img_path');
 
         // ファイルアップロード処理
@@ -107,6 +117,10 @@ class SenryuController extends Controller
     public function destroy(Senryu $senryu)
     {
         try {
+            // 投稿者または管理者のみ削除可能
+            if (Auth::id() !== $senryu->user_id && Auth::user()->membership_id !== 5) {
+                return redirect()->route('senryus.index')->with('error', '削除権限がありません');
+            }
             if ($senryu->img_path && basename($senryu->img_path) !== 'dummy.jpg' && file_exists(public_path($senryu->img_path))) {
                 unlink(public_path($senryu->img_path)); // 画像ファイルを削除
             }

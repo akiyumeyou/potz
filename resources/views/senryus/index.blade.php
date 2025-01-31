@@ -14,7 +14,7 @@
         .senryu-text {
             writing-mode: vertical-rl;
             text-orientation: upright;
-            font-size: 28px;
+            font-size: 26px;
             margin-bottom: 1px;
             display: flex;
             flex-direction: column;
@@ -32,7 +32,7 @@
             width: 100%;
             height: auto;
             object-fit: cover; /* 画像の比率を維持して拡縮 */
-            max-height: 240px;
+            max-height: 2o0px;
             object-fit: contain;
             margin-top: 2px;
             display: block;
@@ -50,11 +50,11 @@
             align-items: center;
             justify-content: flex-start;
             width: 100%;
-            height: 560px;
+            height: 550px;
         }
         .preview {
             max-width: 100%;
-            max-height: 280px; /* プレビュー画像の最大高さを制限 */
+            max-height: 240px; /* プレビュー画像の最大高さを制限 */
             display: block;
             margin: 10px auto;
         }
@@ -129,21 +129,23 @@
                 @else
                     <img src="{{ asset('storage/senryus/dummy.jpg') }}" class="senryu-media">
                 @endif
-                    <div class="senryu-meta mt-2">
-                        @if (Auth::id() === $senryu->user_id)
-                            <a href="{{ route('senryus.edit', $senryu->id) }}" class="text-blue-500 hover:underline">{{ $senryu->user_name }}</a>
-                        @else
-                            <span>{{ $senryu->user_name }}</span>
-                        @endif
-                        <form action="{{ route('senryus.incrementIine', ['id' => $senryu->id]) }}" method="POST">
-                            @csrf
-                            <button type="submit" class="iine-btn bg-white-500 text-green-900 p-2 rounded">❤️ {{ $senryu->iine }}</button>
-                        </form>
-                    </div>
+                <div class="senryu-meta mt-2">
+                    @if (Auth::id() === $senryu->user_id || (Auth::check() && Auth::user()->membership_id === 5))
+                        <a href="{{ route('senryus.edit', $senryu->id) }}" class="text-blue-500 hover:underline">{{ $senryu->user_name }}</a>
+                    @else
+                        <span>{{ $senryu->user_name }}</span>
+                    @endif
+                    <form action="{{ route('senryus.incrementIine', ['id' => $senryu->id]) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="iine-btn bg-white-500 text-green-900 p-2 rounded">❤️ {{ $senryu->iine }}</button>
+                    </form>
+                </div>
                 </div>
             @endforeach
         </div>
-
+        <!-- ページネーションリンク -->
+        <div class="mt-6 flex justify-center">
+            {{ $senryus->links() }}
         <!-- <footer id="footer" class="w-full bg-green-800 text-white text-center p-2 fixed bottom-0">
             <img src="{{ asset('img/logo.png') }}" alt="potz" class="inline-block w-8 h-8">
             <a href="https://potz.jp/" class="text-white underline">https://potz.jp/</a>
