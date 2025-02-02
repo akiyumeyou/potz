@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Event extends Model
-{
+class Event extends Model {
+    use HasFactory;
+
     protected $fillable = [
         'title',
         'event_date',
@@ -18,7 +20,9 @@ class Event extends Model
         'holiday',
         'recurring_type',
         'user_id',
-        'image_path', // イメージ画像のパスを追加
+        'image_path',
+        'is_paid',
+        'price',
     ];
 
     // ユーザーとのリレーション
@@ -95,6 +99,16 @@ class Event extends Model
 
         return $eventDate->format('Y年m月d日') . ' (' . $weekdays[$eventDate->dayOfWeek] . ')';
     }
+    
+    public function getRecurringTypeLabel()
+{
+    return match ($this->recurring_type) {
+        'weekly' => '毎週',
+        'biweekly' => '隔週',
+        'monthly' => '毎月',
+        default => '単発',
+    };
+}
 
     // 時間をフォーマットして取得
     public function getFormattedTime()
@@ -126,5 +140,9 @@ class Event extends Model
     public function getImageUrl()
     {
         return $this->image_path ? asset('storage/' . $this->image_path) : null;
+    }
+    // 🔹 有料イベントの参加者リレーション
+    public function participants() {
+        return $this->hasMany(EventParticipant::class);
     }
 }

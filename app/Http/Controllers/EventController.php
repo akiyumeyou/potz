@@ -5,6 +5,10 @@ use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Models\EventParticipant;
+use Carbon\Carbon;
+
+use Illuminate\Support\Facades\Log;
 
 class EventController extends Controller
 {
@@ -45,6 +49,7 @@ class EventController extends Controller
             'zoom_url' => 'required|url',
             'recurring_type' => 'required|in:once,weekly,biweekly,monthly',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'price' => 'nullable|numeric|min:0',
         ]);
 
         $imagePath = $request->file('image') ? $request->file('image')->store('events', 'public') : null;
@@ -61,6 +66,9 @@ class EventController extends Controller
             'recurring_type' => $request->recurring_type,
             'user_id' => Auth::id(),
             'image_path' => $imagePath,
+            'price' => 0,
+            'is_paid' => 0,
+
         ]);
 
         return redirect()->route('events.index')->with('success', 'イベントが作成されました。');
@@ -80,45 +88,54 @@ class EventController extends Controller
     // イベントを更新するメソッド
     public function update(Request $request, Event $event)
     {
-    // 作成者または管理者(membership_id == 5)のみ更新可能
-    if (Auth::id() !== $event->user_id && Auth::user()->membership_id !== 5) {
-        return redirect()->route('events.index')->with('error', '更新権限がありません。');
-    }
-
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'event_date' => 'required|date',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i',
-            'content' => 'required|string',
-            'zoom_url' => 'required|url',
-            'recurring_type' => 'required|in:once,weekly,biweekly,monthly',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-        ]);
-
-        $imagePath = $event->image_path;
-
-        if ($request->hasFile('image')) {
-            if ($imagePath) {
-                Storage::disk('public')->delete($imagePath);
-            }
-            $imagePath = $request->file('image')->store('events', 'public');
+        if (Auth::id() !== $event->user_id && Auth::user()->membership_id !== 5) {
+            return redirect()->route('events.index')->with('error', '更新権限がありません。');
         }
 
-        $event->update([
-            'title' => $request->title,
-            'event_date' => $request->event_date,
-            'start_time' => $request->start_time,
-            'end_time' => $request->end_time,
-            'content' => $request->content,
-            'zoom_url' => $request->zoom_url,
-            'recurring' => $request->recurring_type !== 'once' ? 1 : 0,
-            'recurring_type' => $request->recurring_type,
-            'image_path' => $imagePath,
-            'holiday' => $request->has('holiday') ? 1 : 0,
-        ]);
+        // \Log::info('イベント更新処理が呼ばれました', ['data' => $request->all()]);
 
-        return redirect()->route('events.index')->with('success', 'イベントが更新されました。');
+        try {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'event_date' => 'required|date',
+                'start_time' => 'required|date_format:H:i:s', // 修正
+                'end_time' => 'required|date_format:H:i:s', // 修正
+                'content' => 'required|string',
+                'zoom_url' => 'required|url',
+                'recurring_type' => 'required|in:once,weekly,biweekly,monthly',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            ]);
+
+            // \Log::info('バリデーション通過後のデータ', $validated);
+
+            $imagePath = $event->image_path;
+
+            if ($request->hasFile('image')) {
+                if ($imagePath) {
+                    Storage::disk('public')->delete($imagePath);
+                }
+                $imagePath = $request->file('image')->store('events', 'public');
+            }
+
+            $updated = $event->update([
+                'title' => $request->title,
+                'event_date' => $request->event_date,
+                'start_time' => Carbon::parse($request->start_time)->format('H:i'), // H:i に変換
+                'end_time' => Carbon::parse($request->end_time)->format('H:i'), // H:i に変換
+                'content' => $request->content,
+                'zoom_url' => $request->zoom_url,
+                'recurring' => $request->recurring_type !== 'once' ? 1 : 0,
+                'recurring_type' => $request->recurring_type,
+                'image_path' => $imagePath,
+                'holiday' => $request->has('holiday') ? 1 : 0,
+            ]);
+
+            return redirect()->route('events.index')->with('success', 'イベントが更新されました。');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('バリデーションエラー', ['errors' => $e->errors()]);
+            return redirect()->back()->withErrors($e->errors())->withInput();
+        }
     }
 
 
@@ -139,4 +156,29 @@ class EventController extends Controller
 
         return redirect()->route('events.index')->with('success', 'イベントが削除されました。');
     }
+    public function participate(Request $request, Event $event)
+    {
+        $request->validate([
+            'payment_method' => 'required|in:銀行振込,PayPay,その他',
+        ]);
+
+        // すでに参加予約済みか確認
+        if (EventParticipant::where('event_id', $event->id)->where('user_id', Auth::id())->exists()) {
+            return response()->json(['success' => false, 'error' => 'すでに参加予約済みです。']);
+        }
+
+        // 参加予約を保存
+        EventParticipant::create([
+            'event_id' => $event->id,
+            'user_id' => Auth::id(),
+            'payment_method' => $request->payment_method,
+            'status' => 0, // 未承認
+            'payment_status' => 0, // 未払いで登録
+            'amount_paid' => $event->price, // イベントの参加費をセット
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+
 }

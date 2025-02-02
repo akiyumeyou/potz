@@ -23,6 +23,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\Admin\PostController as AdminPostController;
+use App\Http\Controllers\Admin\AdminEventController;
 
 
 Route::middleware(['auth'])->group(function () {
@@ -79,6 +80,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('events.edit');
     Route::patch('/events/{event}', [EventController::class, 'update'])->name('events.update');
     Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
+    Route::post('/events/{event}/participate', [EventController::class, 'participate'])->name('events.participate');
 });
 
 // 川柳
@@ -148,11 +150,28 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/posts/{post}/edit', [AdminPostController::class, 'edit'])->name('posts.edit');
     Route::put('/posts/{post}', [AdminPostController::class, 'update'])->name('posts.update');
     Route::delete('/posts/{post}', [AdminPostController::class, 'destroy'])->name('posts.destroy');
+
+    Route::get('/events', [EventController::class, 'index'])->name('events.index');
+    Route::get('/events', [AdminEventController::class, 'index'])->name('events.index');
+    Route::get('/events/create', [AdminEventController::class, 'create'])->name('events.create');
+    Route::post('/events', [AdminEventController::class, 'store'])->name('events.store');
+    Route::get('/events/{event}/participants', [AdminEventController::class, 'showParticipants'])
+    ->name('events.participants'); // 🔹 参加者確認ページ
+    Route::post('/events/{event}/add-participant', [AdminEventController::class, 'addParticipant'])
+    ->name('events.add-participant'); // 参加者追加
+    // 参加者の承認・入金状態の切り替え
+    Route::patch('/event-participants/{participant}/toggle-status',
+        [AdminEventController::class, 'toggleStatus'])
+        ->name('event-participants.toggle-status');
+
+    Route::patch('/event-participants/{participant}/toggle-payment',
+        [AdminEventController::class, 'togglePayment'])
+        ->name('event-participants.toggle-payment');
+
 });
+
 // 一般ユーザー向けの掲示板表示用ルート
 Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
-
-
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::resource('supports', \App\Http\Controllers\Admin\AdminSupportController::class);
