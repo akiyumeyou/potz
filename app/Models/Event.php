@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Event extends Model {
@@ -31,24 +31,27 @@ class Event extends Model {
         return $this->belongsTo(User::class);
     }
 
-    // 開催中かどうかを判定するメソッド
-    public function isOngoing()
-    {
-        $current = Carbon::now();
-        $eventStart = Carbon::parse($this->event_date . ' ' . $this->start_time);
-        $eventEnd = Carbon::parse($this->event_date . ' ' . $this->end_time);
+// ✅ 15分前から「開催中」と判定する
+public function isOngoing()
+{
+    $current = Carbon::now();
+    $eventStart = Carbon::parse("{$this->event_date} {$this->start_time}")->subMinutes(15);
+    $eventEnd = Carbon::parse("{$this->event_date} {$this->end_time}");
 
-        return $current->between($eventStart, $eventEnd);
-    }
+    return $current->between($eventStart, $eventEnd);
+}
 
-    // 開催前かどうかを判定するメソッド
-    public function isUpcoming()
-    {
-        $current = Carbon::now();
-        $eventStart = Carbon::parse($this->event_date . ' ' . $this->start_time);
+// ✅ イベントが終了しているか判定
+public function isFinished()
+{
+    return Carbon::now()->greaterThanOrEqualTo(Carbon::parse("{$this->event_date} {$this->end_time}"));
+}
 
-        return $current->lt($eventStart);
-    }
+// ✅ 開催前かどうかを判定
+public function isUpcoming()
+{
+    return !$this->isOngoing() && !$this->isFinished();
+}
 
     // 次回の日程を取得
     public function getNextEventDate()
@@ -99,7 +102,7 @@ class Event extends Model {
 
         return $eventDate->format('Y年m月d日') . ' (' . $weekdays[$eventDate->dayOfWeek] . ')';
     }
-    
+
     public function getRecurringTypeLabel()
 {
     return match ($this->recurring_type) {
@@ -145,4 +148,5 @@ class Event extends Model {
     public function participants() {
         return $this->hasMany(EventParticipant::class);
     }
+
 }

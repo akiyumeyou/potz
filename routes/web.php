@@ -24,6 +24,9 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Admin\AdminEventController;
+use App\Models\Event;
+use Carbon\Carbon;
+
 
 
 Route::middleware(['auth'])->group(function () {
@@ -35,7 +38,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
         ->name('verification.send');
 });
-
 
 Route::get('/', function () {
     if (Auth::check()) {
@@ -191,3 +193,7 @@ Route::get('/notifications/{id}/read', [NotificationController::class, 'markAsRe
 
 
 require __DIR__.'/auth.php';
+
+Route::get('/events/status', [EventController::class, 'status'])->name('events.status');
+
+

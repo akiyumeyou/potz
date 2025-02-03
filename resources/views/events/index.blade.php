@@ -65,60 +65,75 @@
                                     $participant = $event->participants()->where('user_id', Auth::id())->first();
                                 @endphp
 
-                                {{-- 無料イベント --}}
                                 @if (!$event->is_paid)
-                                    @if ($event->isOngoing())
-                                        <a href="{{ $event->zoom_url }}" class="bg-orange-500 text-white font-bold py-2 px-4 rounded text-center w-full hover:bg-orange-700">
-                                            参加
-                                        </a>
-                                    @elseif ($event->isUpcoming())
-                                        <button class="bg-blue-500 text-white font-bold py-2 px-4 rounded text-center w-full opacity-50 cursor-not-allowed">
-                                            参加
-                                        </button>
-                                    @else
-                                        <div class="bg-gray-300 text-gray-600 font-bold py-2 px-4 rounded text-center">
-                                            終了しました
-                                        </div>
-                                    @endif
-
-                                {{-- 有料イベント --}}
+                                {{-- 無料イベント --}}
+                                @if ($event->isOngoing())
+                                    <a id="event-button-{{ $event->id }}" href="{{ $event->zoom_url }}"
+                                       class="event-button bg-orange-500 text-white font-bold py-2 px-4 rounded text-center w-full hover:bg-orange-700"
+                                       data-event-id="{{ $event->id }}">
+                                        参加
+                                    </a>
+                                @elseif ($event->isUpcoming())
+                                    <button id="event-button-{{ $event->id }}"
+                                            class="event-button bg-blue-500 text-white font-bold py-2 px-4 rounded text-center w-full opacity-50 cursor-not-allowed"
+                                            data-event-id="{{ $event->id }}">
+                                        参加
+                                    </button>
                                 @else
-                                    @if ($participant)
-                                        @if ($participant->status == 0)
-                                            <p class="text-gray-600 font-bold mt-2">主催者の確認をお待ちください。</p>
-                                        @elseif ($participant->status == 1)
-                                            @if ($event->isOngoing())
-                                                <a href="{{ $event->zoom_url }}" class="bg-orange-500 text-white font-bold py-2 px-8 rounded text-center w-full hover:bg-orange-700">
-                                                    参加
-                                                </a>
-                                            @elseif ($event->isUpcoming())
-                                                <button class="bg-green-600 text-white font-bold py-2 px-4 rounded text-center w-full opacity-50 cursor-not-allowed">
-                                                    予約済み
-                                                </button>
-                                            @else
-                                                <div class="bg-gray-300 text-gray-600 font-bold py-2 px-4 rounded text-center">
-                                                    終了しました
-                                                </div>
-                                            @endif
-                                        @endif
-                                    @else
+                                    <div id="event-button-{{ $event->id }}"
+                                         class="event-button bg-gray-300 text-gray-600 font-bold py-2 px-4 rounded text-center w-full"
+                                         data-event-id="{{ $event->id }}">
+                                        終了しました
+                                    </div>
+                                @endif
+                            @else
+                                {{-- 有料イベント --}}
+                                @if ($participant)
+                                    @if ($participant->status == 0)
+                                        <p class="text-gray-600 font-bold mt-2">主催者の確認をお待ちください。</p>
+                                    @elseif ($participant->status == 1)
                                         @if ($event->isOngoing())
-                                            <button onclick="openPaymentModal({{ $event->id }})"
-                                                class="bg-blue-500 text-white font-bold py-2 px-4 rounded text-center w-full hover:bg-blue-700">
-                                                参加予約
-                                            </button>
+                                            <a id="event-button-{{ $event->id }}" href="{{ $event->zoom_url }}"
+                                               class="event-button bg-orange-500 text-white font-bold py-2 px-8 rounded text-center w-full hover:bg-orange-700"
+                                               data-event-id="{{ $event->id }}">
+                                                参加
+                                            </a>
                                         @elseif ($event->isUpcoming())
-                                            <button onclick="openPaymentModal({{ $event->id }})"
-                                                class="bg-blue-500 text-white font-bold py-2 px-4 rounded text-center w-full hover:bg-blue-700">
-                                                参加予約
+                                            <button id="event-button-{{ $event->id }}"
+                                                    class="event-button bg-green-600 text-white font-bold py-2 px-4 rounded text-center w-full opacity-50 cursor-not-allowed"
+                                                    data-event-id="{{ $event->id }}">
+                                                予約済み
                                             </button>
                                         @else
-                                            <div class="bg-gray-300 text-gray-600 font-bold py-2 px-4 rounded text-center">
+                                            <div id="event-button-{{ $event->id }}"
+                                                 class="event-button bg-gray-300 text-gray-600 font-bold py-2 px-4 rounded text-center w-full"
+                                                 data-event-id="{{ $event->id }}">
                                                 終了しました
                                             </div>
                                         @endif
                                     @endif
+                                @else
+                                    @if ($event->isUpcoming())
+                                        <button id="event-button-{{ $event->id }}" onclick="openPaymentModal({{ $event->id }})"
+                                                class="event-button bg-blue-500 text-white font-bold py-2 px-4 rounded text-center w-full hover:bg-blue-700"
+                                                data-event-id="{{ $event->id }}">
+                                            参加予約
+                                        </button>
+                                    @elseif ($event->isOngoing())
+                                        <a id="event-button-{{ $event->id }}" href="{{ $event->zoom_url }}"
+                                           class="event-button bg-orange-500 text-white font-bold py-2 px-8 rounded text-center w-full hover:bg-orange-700"
+                                           data-event-id="{{ $event->id }}">
+                                            参加
+                                        </a>
+                                    @else
+                                        <div id="event-button-{{ $event->id }}"
+                                             class="event-button bg-gray-300 text-gray-600 font-bold py-2 px-4 rounded text-center w-full"
+                                             data-event-id="{{ $event->id }}">
+                                            終了しました
+                                        </div>
+                                    @endif
                                 @endif
+                            @endif
                             @endif
                         </div>
                     @endforeach
@@ -164,7 +179,7 @@
                         </p>
                     @else
                         @if (!$event->is_paid)
-                            <button class="bg-blue-500 text-white font-bold py-2 px-4 rounded text-center w-full hover:bg-blue-700">
+                            <button class="bg-blue-200 text-white font-bold py-2 px-4 rounded text-center w-full hover:bg-blue-700">
                                 準備中
                             </button>
                         @else
@@ -185,7 +200,7 @@
                                     @endif
                                 @else
                                     <button onclick="openPaymentModal({{ $event->id }})"
-                                        class="bg-blue-500 text-white font-bold py-2 px-4 rounded text-center w-full hover:bg-blue-700">
+                                        class="bg-blue-700 text-white font-bold py-2 px-4 rounded text-center w-full hover:bg-blue-700">
                                         参加予約
                                     </button>
                                 @endif
@@ -279,5 +294,69 @@
         })
         .catch(error => console.error("Error:", error));
     }
-</script>
+    function fetchEventStatus() {
+    fetch('/events/status')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            data.events.forEach(event => {
+                let button = document.querySelector(`#event-button-${event.id}`);
+                if (button) {
+                    if (event.isOngoing) {
+                        button.classList.remove('bg-blue-500', 'bg-green-600', 'bg-gray-300', 'opacity-50', 'cursor-not-allowed');
+                        button.classList.add('bg-orange-500', 'text-white', 'hover:bg-orange-700');
+                        button.innerText = 'ここから参加';
+                        button.disabled = false;
 
+                        // ボタンが <button> の場合、 <a> に変換
+                        if (button.tagName === 'BUTTON') {
+                            let newButton = document.createElement('a');
+                            newButton.href = event.zoom_url;
+                            newButton.innerText = button.innerText;
+                            newButton.className = button.className;
+                            newButton.setAttribute('id', button.id);
+                            newButton.setAttribute('data-event-id', button.getAttribute('data-event-id'));
+                            newButton.classList.add('w-full', 'block', 'text-center', 'py-2', 'px-4');
+                            button.parentNode.replaceChild(newButton, button);
+                        }
+
+                    } else if (event.isFinished) {
+                        button.classList.remove('bg-blue-500', 'bg-green-600', 'bg-orange-500', 'hover:bg-orange-700');
+                        button.classList.add('bg-gray-300', 'text-gray-600');
+                        button.innerText = '終了しました';
+                        button.disabled = true;
+
+                        // ボタンが <a> の場合、 <div> に変換
+                        if (button.tagName === 'A') {
+                            let newDiv = document.createElement('div');
+                            newDiv.innerText = button.innerText;
+                            newDiv.className = button.className;
+                            newDiv.setAttribute('id', button.id);
+                            newDiv.setAttribute('data-event-id', button.getAttribute('data-event-id'));
+                            newDiv.classList.add('w-full', 'block', 'text-center', 'py-2', 'px-4');
+                            button.parentNode.replaceChild(newDiv, button);
+                        }
+
+                    } else if (event.isUpcoming) {
+                        button.classList.remove('bg-orange-500', 'bg-gray-300');
+                        button.classList.add('bg-blue-500', 'text-white', 'opacity-50', 'cursor-not-allowed');
+                        button.innerText = '開始をお待ちください';
+                        button.disabled = true;
+                    }
+                }
+            });
+        })
+        .catch(error => console.error("Error fetching event status:", error));
+}
+
+// **30秒ごとにイベント状態を更新**
+setInterval(fetchEventStatus, 15000);
+
+// **ページロード時に即時実行**
+document.addEventListener('DOMContentLoaded', fetchEventStatus);
+
+</script>

@@ -180,5 +180,19 @@ class EventController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function status()
+{
+    $events = Event::all()->map(function ($event) {
+        return [
+            'id' => $event->id,
+            'isOngoing' => $event->isOngoing(),
+            'isUpcoming' => !$event->isOngoing() && !$event->isFinished(),
+            'isFinished' => $event->isFinished(),
+            'zoom_url' => $event->zoom_url
+        ];
+    });
+
+    return response()->json(['events' => $events]);
+}
 
 }
