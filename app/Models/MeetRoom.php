@@ -15,12 +15,12 @@ class MeetRoom extends Model
 
     public function request()
     {
-        return $this->belongsTo(Userrequest::class);
+        return $this->belongsTo(UserRequest::class);
     }
 
     public function userrequest()
     {
-    return $this->belongsTo(Userrequest::class, 'request_id');
+    return $this->belongsTo(UserRequest::class, 'request_id');
     }
     public function meets()
     {
