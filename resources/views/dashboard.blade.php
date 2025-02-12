@@ -2,6 +2,53 @@
 
     <x-slot name="header">
         <div class="bg-[#FAF3E0] text-center py-4 text-lg font-bold text-gray-800">
+お知らせ
+            @if (session('message'))
+                <div class="alert alert-success">
+                    {{ session('message') }}
+                </div>
+            @endif
+
+            @php
+            $user = Auth::user();
+            $isGmailUser = Str::endsWith($user->email, '@gmail.com');
+            $hasNotifications = $user->unreadNotifications->isNotEmpty();
+        @endphp
+
+        {{-- メール認証メッセージ（ただしGmailログインユーザーには表示しない） --}}
+        @if (!$isGmailUser && !$user->hasVerifiedEmail())
+            <div class="alert alert-warning">
+                <p>あなたのメールアドレスはまだ認証されていません。</p>
+                <form method="POST" action="{{ route('verification.send') }}">
+                    @csrf
+                    <button type="submit" class="btn btn-primary">認証メールを再送信</button>
+                </form>
+            </div>
+        @endif
+
+            @php
+                $hasNotifications = auth()->user()->unreadNotifications->isNotEmpty();
+            @endphp
+
+            @if (!$hasNotifications && Auth::user()->hasVerifiedEmail())
+                <p>現在、お知らせはありません。</p>
+            @else
+                <ul>
+                    @foreach (auth()->user()->unreadNotifications as $notification)
+                        <li>
+                            <a href="{{ route('notifications.read', $notification->id) }}" class="text-blue-600 hover:underline">
+                                {{ $notification->data['message'] }}
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+
+        </div>
+    </x-slot>
+
+    <!-- <x-slot name="header">
+        <div class="bg-[#FAF3E0] text-center py-4 text-lg font-bold text-gray-800">
             <p>お知らせ</p>
             <ul>
                 @forelse (auth()->user()->unreadNotifications as $notification)
@@ -16,8 +63,7 @@
             </ul>
 
         </div>
-    </x-slot>
-
+    </x-slot> -->
 
     <div class="py-6">
         <!-- ボタンレイアウト -->

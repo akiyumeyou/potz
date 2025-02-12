@@ -27,17 +27,43 @@ use App\Http\Controllers\Admin\AdminEventController;
 use App\Models\Event;
 use Carbon\Carbon;
 
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Auth\VerifyEmailController;
 
-
+// ログイン後に認証が必要なルート
 Route::middleware(['auth'])->group(function () {
-    // メール認証を促すページ
-    Route::get('/email/verify', [EmailVerificationPromptController::class, '__invoke'])
-        ->name('verification.notice');
+    // メール認証を促すページ（未認証ユーザーがアクセスした際の通知）
+    Route::get('/email/verify', function () {
+        return view('auth.verify-email');
+    })->name('verification.notice');
 
     // 認証メールの再送信
-    Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
-        ->name('verification.send');
+    Route::post('/email/verification-notification', function (Request $request) {
+        if ($request->user()->hasVerifiedEmail()) {
+            return redirect()->route('dashboard')->with('message', 'すでに認証済みです。');
+        }
+
+        $request->user()->sendEmailVerificationNotification();
+
+        session()->flash('message', '認証メールを送信しました！');
+
+        dd(session()->all()); // セッションの内容を確認
+        return redirect()->route('dashboard');
+    })->name('verification.send');
+
 });
+
+
+// Route::middleware(['auth'])->group(function () {
+//     // メール認証を促すページ
+//     Route::get('/email/verify', [EmailVerificationPromptController::class, '__invoke'])
+//         ->name('verification.notice');
+
+//     // 認証メールの再送信
+//     Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
+//         ->name('verification.send');
+// });
 
 Route::get('/', function () {
     if (Auth::check()) {
