@@ -221,5 +221,3 @@ Route::get('/notifications/{id}/read', [NotificationController::class, 'markAsRe
 require __DIR__.'/auth.php';
 
 Route::get('/events/status', [EventController::class, 'status'])->name('events.status');
-
-

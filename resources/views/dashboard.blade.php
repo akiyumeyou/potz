@@ -17,11 +17,10 @@
 
         {{-- メール認証メッセージ（ただしGmailログインユーザーには表示しない） --}}
         @if (!$isGmailUser && !$user->hasVerifiedEmail())
-            <div class="alert alert-warning">
-                <p>あなたのメールアドレスはまだ認証されていません。</p>
+            <div class="alert alert-warning text-blue-500 hover:text-orange-600">
                 <form method="POST" action="{{ route('verification.send') }}">
                     @csrf
-                    <button type="submit" class="btn btn-primary">認証メールを再送信</button>
+                    <button type="submit" class="btn btn-primary">メール未認証です。ココをタップしてメールを確認してください</button>
                 </form>
             </div>
         @endif
@@ -47,23 +46,6 @@
         </div>
     </x-slot>
 
-    <!-- <x-slot name="header">
-        <div class="bg-[#FAF3E0] text-center py-4 text-lg font-bold text-gray-800">
-            <p>お知らせ</p>
-            <ul>
-                @forelse (auth()->user()->unreadNotifications as $notification)
-                    <li>
-                        <a href="{{ route('notifications.read', $notification->id) }}" class="text-blue-600 hover:underline">
-                            {{ $notification->data['message'] }}
-                        </a>
-                    </li>
-                @empty
-                    <li>現在、お知らせはありません。</li>
-                @endforelse
-            </ul>
-
-        </div>
-    </x-slot> -->
 
     <div class="py-6">
         <!-- ボタンレイアウト -->

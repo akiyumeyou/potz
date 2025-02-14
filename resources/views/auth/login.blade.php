@@ -136,6 +136,14 @@ $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), t
         <div class="logo">
             <img src="{{ asset('img/logo.png') }}" alt="Logo"> <!-- Ensure the correct path -->
         </div>
+        @if ($errors->any())
+    <div class="alert alert-danger">
+        @foreach ($errors->all() as $error)
+            <p>{{ $error }}</p>
+        @endforeach
+    </div>
+@endif
+
         <h2>Gmail</h2>
         <form method="POST" action="{{ route('login') }}">
             @csrf
