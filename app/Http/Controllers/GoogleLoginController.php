@@ -6,6 +6,7 @@ use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 use Exception;
 
 class GoogleLoginController extends Controller
@@ -37,8 +38,11 @@ class GoogleLoginController extends Controller
             // `email_verified_at` が NULL の場合、最初のログイン時に設定
             if (is_null($user->email_verified_at)) {
                 $user->email_verified_at = now();
-                $user->save(); // 更新を保存
             }
+            //  `last_login_at` を更新
+            $user->last_login_at = Carbon::now();
+            // 更新を保存
+            $user->save();
 
             // ユーザーをログイン
             Auth::login($user, true); // true: "Remember Me"を有効化
