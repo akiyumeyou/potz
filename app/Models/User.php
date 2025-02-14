@@ -28,7 +28,12 @@ class User extends Authenticatable implements MustVerifyEmail
         'birthday',
         'membership_id',
         'gender',
+        'last_login_at',
     ];
+    protected $casts = [
+        'last_login_at' => 'datetime', // ✅ 追加
+    ];
+
 
 // SupporterProfile リレーションを定義
 public function supporterProfile()
