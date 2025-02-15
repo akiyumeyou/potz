@@ -299,8 +299,8 @@ return [
     ],
     'custom_fonts' => [
     'migmix' => [
-        'R' => base_path('storage/fonts/migmix-1p-regular.ttf'), // 通常
-        'B' => base_path('storage/fonts/migmix-1p-bold.ttf'),    // 太字
+        'R' => base_path('fonts/migmix-1p-regular.ttf'), // 通常
+        'B' => base_path('fonts/migmix-1p-bold.ttf'),    // 太字
     ],
 ],
 
