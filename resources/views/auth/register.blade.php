@@ -21,7 +21,7 @@
             <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
             <x-input-error :messages="$errors->get('name')" class="mt-2" />
         </div>
-        
+
         <input type="text" name="honeypot" style="display: none;">
 
         <!-- Email Address -->
@@ -53,7 +53,7 @@
 
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
-
+        <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
         <div class="flex items-center justify-end mt-4">
             <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
                 {{ __('ログインに戻る') }}
@@ -65,3 +65,4 @@
         </div>
     </form>
 </x-guest-layout>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>

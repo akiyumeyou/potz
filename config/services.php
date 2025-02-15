@@ -42,6 +42,11 @@ return [
         'scopes' => ['openid', 'profile', 'email']
     ],
 
+    'recaptcha' => [
+        'site_key' => env('RECAPTCHA_SITE_KEY'),
+        'secret_key' => env('RECAPTCHA_SECRET_KEY'),
+    ],
+
     'youtube' => [
         'api_key' => env('YOUTUBE_API_KEY'),
     ],
