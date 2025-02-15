@@ -14,6 +14,11 @@
             font-family: 'migmix';
             src: url('{{ public_path("fonts/migmix-1p-regular.ttf") }}') format("truetype");
         }
+        @font-face {
+            font-family: 'migmix';
+            font-weight: bold;
+            src: url('{{ public_path("fonts/migmix-1p-bold.ttf") }}') format("truetype");
+        }
 
         body {
             font-family: 'migmix', sans-serif;
