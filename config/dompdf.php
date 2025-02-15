@@ -299,10 +299,10 @@ return [
     ],
     'custom_fonts' => [
     'migmix' => [
-        'R' => public_path('fonts/migmix-1p-regular.ttf'),
-        'B' => public_path('fonts/migmix-1p-bold.ttf'),
+        'R' => base_path('fonts/migmix-1p-regular.ttf'), // 通常
+        'B' => base_path('fonts/migmix-1p-bold.ttf'),    // 太字
     ],
 ],
-'default_font' => 'migmix',
+
 
 ];
