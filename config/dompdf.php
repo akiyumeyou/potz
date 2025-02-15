@@ -179,7 +179,9 @@ return [
          *
          * @var string
          */
-        'default_font' => 'serif',
+        // 'default_font' => 'serif',
+        'default_font' => 'migmix',
+
 
         /**
          * Image DPI setting
@@ -297,12 +299,20 @@ return [
          */
         'enable_html5_parser' => true,
     ],
-    'custom_fonts' => [
+//     'custom_fonts' => [
+//     'migmix' => [
+//         'R' => base_path('fonts/migmix-1p-regular.ttf'), // 通常
+//         'B' => base_path('fonts/migmix-1p-bold.ttf'),    // 太字
+//     ],
+// ],
+'custom_fonts' => [
     'migmix' => [
-        'R' => base_path('fonts/migmix-1p-regular.ttf'), // 通常
-        'B' => base_path('fonts/migmix-1p-bold.ttf'),    // 太字
+        'R' => public_path('fonts/migmix-1p-regular.ttf'),
+        'B' => public_path('fonts/migmix-1p-bold.ttf'),
     ],
 ],
+'default_font' => 'migmix',
 
 
 ];
+

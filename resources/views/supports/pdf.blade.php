@@ -6,10 +6,15 @@
     <title>領収書</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @font-face {
+        /* @font-face {
             font-family: 'migmix';
             src: url('{{ base_path("storage/fonts/migmix-1p-regular.ttf") }}') format('truetype');
+        } */
+        @font-face {
+            font-family: 'migmix';
+            src: url('{{ public_path("fonts/migmix-1p-regular.ttf") }}') format("truetype");
         }
+
         body {
             font-family: 'migmix', sans-serif;
             text-align: center; /* 全体中央寄せ */
