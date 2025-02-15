@@ -53,16 +53,25 @@
 
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
-        <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
+
         <div class="flex items-center justify-end mt-4">
             <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
                 {{ __('ログインに戻る') }}
             </a>
 
+            <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
             <x-primary-button class="ms-4">
                 {{ __('登録') }}
             </x-primary-button>
         </div>
     </form>
 </x-guest-layout>
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<!-- reCAPTCHA v3 のスクリプト -->
+<script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
+<script>
+    grecaptcha.ready(function() {
+        grecaptcha.execute("{{ config('services.recaptcha.site_key') }}", { action: "register" }).then(function(token) {
+            document.getElementById('g-recaptcha-response').value = token;
+        });
+    });
+</script>

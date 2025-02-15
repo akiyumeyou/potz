@@ -35,16 +35,20 @@ class RegisteredUserController extends Controller
             return back()->withErrors(['bot_detected' => 'スパム検出のため登録できません。']);
         }
 
-        // 🛑 ② reCAPTCHA の検証を追加（Google API を使用）
+        // 🛑 reCAPTCHA v3 の検証を実行
         $recaptchaResponse = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
             'secret' => config('services.recaptcha.secret_key'),
             'response' => $request->input('g-recaptcha-response'),
             'remoteip' => $request->ip(),
         ]);
 
-        if (!$recaptchaResponse->json('success')) {
-            return back()->withErrors(['captcha' => 'reCAPTCHA 認証に失敗しました。']);
+        $recaptchaData = $recaptchaResponse->json();
+
+        // reCAPTCHA のスコアが 0.5 未満の場合はスパムと判定
+        if (!$recaptchaData['success'] || $recaptchaData['score'] < 0.5) {
+            return back()->withErrors(['captcha' => 'reCAPTCHA 認証に失敗しました（スパムの可能性が高い）。']);
         }
+
 
         // 🛑 ③ ユーザー入力のバリデーション（既存機能）
         $request->validate([
