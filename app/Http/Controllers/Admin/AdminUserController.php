@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\SupporterProfile;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\AdminNotificationEmail;
 
 class AdminUserController extends Controller
 {
@@ -74,6 +76,25 @@ public function unapprove($id)
     $supporterProfile->update(['ac_id' => 5]);
 
     return redirect()->back()->with('success', 'サポーターの承認を解除しました。');
+}
+
+// メール送信処理
+public function sendEmail(Request $request)
+{
+    // 選択されたユーザーが存在することをバリデート
+    $request->validate([
+        'selected_users' => 'required|array',
+    ]);
+
+    $userIds = $request->input('selected_users');
+    $users = User::whereIn('id', $userIds)->get();
+
+    // 各ユーザーへメール送信（キューを利用）
+    foreach ($users as $user) {
+        Mail::to($user->email)->queue(new AdminNotificationEmail($user));
+    }
+
+    return redirect()->route('admin.users.index')->with('success', 'メール送信を開始しました。');
 }
 
 }

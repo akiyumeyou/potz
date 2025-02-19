@@ -171,6 +171,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/categories', [AdminController::class, 'categories'])->name('categories');
     Route::resource('category3', Category3Controller::class)->except(['show']);
     Route::get('/supports', [AdminController::class, 'supports'])->name('supports');
+    // 管理画面からのメール送信用ルート
+    Route::post('users/send_email', [AdminUserController::class, 'sendEmail'])->name('users.send_email');
 // 掲示板投稿に関するルート
     Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
     Route::get('/posts/create', [AdminPostController::class, 'create'])->name('posts.create');
