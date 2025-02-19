@@ -96,10 +96,13 @@ class SenryuController extends Controller
         // ファイルアップロード処理
         if ($request->hasFile('img_path')) {
             // 古いファイルの削除
-            if ($senryu->img_path && file_exists(public_path($senryu->img_path))) {
+            if (
+                $senryu->img_path
+                && basename($senryu->img_path) !== 'dummy.jpg' // dummy.jpg なら削除しない
+                && file_exists(public_path($senryu->img_path))
+            ) {
                 unlink(public_path($senryu->img_path));
             }
-
             // 新しいファイルをアップロード
             $filePath = $request->file('img_path')->store('senryus', 'public');
             $data['img_path'] = 'storage/' . $filePath; // パス形式を統一
