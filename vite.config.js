@@ -10,6 +10,7 @@ export default defineConfig({
                 'resources/js/senryu.js',
                 'resources/css/senryu.css',
                 'resources/js/thank.js',
+                'resources/js/img.js',
             ],
             refresh: true,
         }),

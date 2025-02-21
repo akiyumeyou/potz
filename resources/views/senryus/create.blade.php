@@ -3,6 +3,7 @@
     $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true);
     @endphp
     @vite(['resources/js/senryu.js'])
+    @vite(['resources/js/img.js'])
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
@@ -174,6 +175,30 @@
                 </div>
 
                 <div id="preview-container"></div>
+
+<!-- AI画像生成のボタン -->
+<div class="button-container">
+    <button type="button" id="ai-generate-toggle" class="ai-generate-btn">AI画像生成で作ってみる</button>
+</div>
+
+<!-- AI画像生成用の入力パネル（初期は非表示） -->
+<div id="ai-prompt-panel" class="flex justify-center" style="display: none;">
+    <!-- テキストエリア -->
+     <div class="flex justify-center">
+    <textarea id="user_comment" name="user_comment"
+        class="w-full max-w-xl h-16 border rounded-lg p-2 text-lg mb-4 text-center"
+        placeholder="作りたい画像のイメージをここに書く"></textarea>
+    </div>
+    <!-- 画像生成実行ボタン -->
+     <div class="flex justify-center">
+    <button type="button" id="generate-image-btn"
+        class="bg-orange-400 text-white font-bold py-4 max-w-xl w-full rounded-lg hover:bg-orange-500 text-lg text-center">
+        画像生成
+    </button></div>
+</div>
+<input type="hidden" id="generated_image_name" name="generated_image_name">
+
+
 
                 <button type="submit" class="toukou_btn" id="toukou-btn">投稿する</button>
                 <button type="button" class="reselect_btn" id="reselect-btn" style="display: none;">画像再選択</button>

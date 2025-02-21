@@ -5,6 +5,8 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\SenryuController;
+use App\Http\Controllers\AIImageController;
+
 use App\Http\Controllers\YouTubeController;
 use App\Http\Controllers\RequestController;
 use App\Http\Controllers\MeetRoomController;
@@ -115,6 +117,7 @@ Route::middleware('auth')->group(function () {
 Route::resource('senryus', SenryuController::class);
 Route::post('/senryus/{id}/iine', [SenryuController::class, 'incrementIine'])->name('senryus.incrementIine');
 Route::get('/senryus', [SenryuController::class, 'index'])->name('senryus.index');
+Route::post('/generate-image', [AIImageController::class, 'generateImage'])->name('generate.image');
 
 //おすすめYoutube
 Route::get('/youtubes', [YouTubeController::class, 'index'])->name('youtube.index');

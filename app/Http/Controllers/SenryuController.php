@@ -24,37 +24,48 @@ class SenryuController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'theme' => 'nullable|string|max:128',
-            's_text1' => 'nullable|string|max:10',
-            's_text2' => 'nullable|string|max:10',
-            's_text3' => 'nullable|string|max:10',
-            'img_path' => 'nullable|file|mimes:jpeg,png,jpg,gif,mp4,mov,avi|max:20480', // 最大20MB
-        ]);
+{
+    $request->validate([
+        'theme' => 'nullable|string|max:128',
+        's_text1' => 'nullable|string|max:10',
+        's_text2' => 'nullable|string|max:10',
+        's_text3' => 'nullable|string|max:10',
+        'img_path' => 'nullable|file|mimes:jpeg,png,jpg,gif,mp4,mov,avi|max:20480', // 最大20MB
+    ]);
 
-        try {
-            $data = $request->except('img_path');
-            $data['user_id'] = Auth::id();
-            $data['user_name'] = Auth::user()->name;
-            $data['iine'] = 0;
+    try {
+        $data = $request->except('img_path');
+        $data['user_id'] = Auth::id();
+        $data['user_name'] = Auth::user()->name;
+        $data['iine'] = 0;
 
-            if ($request->hasFile('img_path')) {
-                $filePath = $request->file('img_path')->store('senryus', 'public');
-                $data['img_path'] = 'storage/' . $filePath;
+        if ($request->has('generated_image_name') && !empty($request->input('generated_image_name'))) {
+            $tempPath = storage_path('app/public/tmp/' . $request->input('generated_image_name'));
+            $newFileName = 'senryus/generated_' . time() . '.jpg';
+            $storagePath = storage_path('app/public/' . $newFileName);
+
+            if (file_exists($tempPath)) {
+                rename($tempPath, $storagePath); // 画像を正式保存
+                $data['img_path'] = 'storage/' . $newFileName;
             } else {
-                $data['img_path'] = 'storage/senryus/dummy.jpg'; // ダミー画像
+                // \Log::warning("⚠️ 一時画像が見つかりません", ['tempPath' => $tempPath]);
+                $data['img_path'] = 'storage/senryus/dummy.jpg';
             }
-
-            Senryu::create($data);
-
-            return redirect()->route('senryus.index')->with('success', '投稿が成功しました');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'エラーが発生しました: ' . $e->getMessage());
+        } elseif ($request->hasFile('img_path')) {
+            $filePath = $request->file('img_path')->store('senryus', 'public');
+            $data['img_path'] = 'storage/' . $filePath;
+        } else {
+            $data['img_path'] = 'storage/senryus/dummy.jpg';
         }
+
+        Senryu::create($data);
+
+        return redirect()->route('senryus.index')->with('success', '投稿が成功しました');
+    } catch (\Exception $e) {
+        // \Log::error("🔥 投稿処理でエラー発生", ['exception' => $e->getMessage()]);
+        return redirect()->back()->with('error', 'エラーが発生しました: ' . $e->getMessage());
     }
-
-
+}
 
     // 詳細表示
     public function show(Senryu $senryu)

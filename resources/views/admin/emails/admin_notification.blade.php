@@ -1,5 +1,8 @@
 @component('mail::message')
 
+{{ $user->real_name ?? 'POTZゲストユーザー' }} 様
+
+
 # 新しいPOTZへのログイン方法
 
 以下のボタンをクリックすると、POTZのログイン画面が表示されます。
