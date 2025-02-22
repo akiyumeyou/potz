@@ -12,8 +12,8 @@ class AIImageController extends Controller
     public function generateImage(Request $request)
     {
         try {
-            Log::info("🖼️ AI 画像生成リクエスト受信");
-            Log::info("受信データ: " . json_encode($request->all()));
+            // Log::info("AI 画像生成リクエスト受信");
+            // Log::info("受信データ: " . json_encode($request->all()));
 
             // **データ取得**
             $theme = $request->input('theme');
@@ -35,7 +35,7 @@ class AIImageController extends Controller
                 Additional context: {$translatedComment}.
                 Imagine a bright and hopeful future, using soft and warm colors.";
 
-            Log::info("🎨 生成プロンプト: " . $prompt);
+            // Log::info("生成プロンプト: " . $prompt);
 
             // **画像生成APIの設定**
             $apiKey = env('STABILITY_API_KEY');
@@ -66,8 +66,8 @@ class AIImageController extends Controller
                 return response()->json(['error' => '画像データが取得できませんでした'], 500);
             }
 
-            // **ディレクトリがなければ作成**
-            $tmpDir = storage_path("app/public/tmp/");
+           // **ディレクトリがなければ作成**
+            $tmpDir = public_path("storage/tmp/");
             if (!is_dir($tmpDir)) {
                 mkdir($tmpDir, 0775, true);
                 chmod($tmpDir, 0775);
@@ -80,17 +80,15 @@ class AIImageController extends Controller
 
             // **画像を一時保存**
             if (!file_put_contents($tempPath, $imageData)) {
-                // Log::error("⚠️ 画像の保存に失敗しました", ['path' => $tempPath]);
                 return response()->json(['error' => '画像の保存に失敗しました'], 500);
             }
-
-            // Log::info("画像生成成功！", ['image_path' => $tempPath]);
 
             // **Webで表示可能なURLを返す**
             return response()->json([
                 'image_url' => asset("storage/tmp/{$tempFileName}"),
                 'image_name' => $tempFileName // 投稿時に利用する
             ]);
+
         } catch (\Exception $e) {
             Log::error("画像生成処理でエラー発生", ['exception' => $e->getMessage()]);
             return response()->json(['error' => '画像生成に失敗しました: ' . $e->getMessage()], 500);
@@ -107,20 +105,20 @@ private function translateText($text)
     }
 
     // **翻訳リクエストのログ**
-    Log::info("🔄 翻訳リクエスト送信: " . $text);
+    Log::info("翻訳リクエスト送信: " . $text);
 
     $response = Http::get("https://api.mymemory.translated.net/get", [
         'q' => $text,
         'langpair' => 'ja|en'
     ]);
 
-    // Log::info("📥 翻訳APIレスポンス: " . json_encode($response->json()));
+    // Log::info("翻訳APIレスポンス: " . json_encode($response->json()));
 
     if ($response->successful() && isset($response['responseData']['translatedText'])) {
         return $response['responseData']['translatedText'];
     }
 
-    Log::error("❌ 翻訳エラー: APIから適切なレスポンスが得られませんでした");
+    Log::error("翻訳エラー: APIから適切なレスポンスが得られませんでした");
     return "Translation error"; // **エラー時にエラーを明示する**
 }
 

@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(data => {
             if (data.image_url) {
                 document.getElementById("preview-container").innerHTML =
-                    `<img src="${data.image_url}" alt="生成画像" style="max-width: 100%; height: auto;">`;
+                    `<img src="${data.image_url}" alt="生成画像" style="max-width: 60%; height: auto;">`;
                 document.getElementById("generated_image_name").value = data.image_name;
             } else {
                 alert("画像生成に失敗しました: " + data.error);

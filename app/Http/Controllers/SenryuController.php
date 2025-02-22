@@ -40,9 +40,9 @@ class SenryuController extends Controller
         $data['iine'] = 0;
 
         if ($request->has('generated_image_name') && !empty($request->input('generated_image_name'))) {
-            $tempPath = storage_path('app/public/tmp/' . $request->input('generated_image_name'));
+            $tempPath = public_path('storage/tmp/' . $request->input('generated_image_name')); // 修正
             $newFileName = 'senryus/generated_' . time() . '.jpg';
-            $storagePath = storage_path('app/public/' . $newFileName);
+            $storagePath = public_path('storage/' . $newFileName); // 修正
 
             if (file_exists($tempPath)) {
                 rename($tempPath, $storagePath); // 画像を正式保存
