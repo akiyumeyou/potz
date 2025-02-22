@@ -14,6 +14,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 画像生成実行ボタンの処理
     generateImageBtn.addEventListener("click", function () {
+        // ① ボタンを無効化し、テキストを変更
+        generateImageBtn.disabled = true;
+        generateImageBtn.textContent = "生成中…";
+
         const userComment = document.getElementById("user_comment").value;
         const theme = document.getElementById("theme").value;
         const s_text1 = document.getElementById("s_text1").value;

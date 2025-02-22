@@ -110,7 +110,34 @@
     display: block;
     margin: 10px auto;
 }
+select#theme {
+    appearance: none; /* デフォルトの矢印を消す */
+    width: 100%;
+    font-size: 1.2rem; /* 文字サイズを維持 */
+    padding: 1rem 1rem; /* テキストを中央寄せ */
+    text-align: center; /* テキストを中央配置 */
+    border: 2px solid #555; /* 枠を強調 */
+    background-color: white; /* 選択後も視認しやすく */
+    border-radius: 8px;
+    min-height: 3rem; /* 押しやすいサイズ */
+    position: relative;
+}
 
+/* 選択後のテキスト */
+select#theme:focus {
+    background-color: #f8f8f8; /* 軽く色を変えて強調 */
+}
+
+/* 矢印を独自に設置 */
+select#theme::after {
+    content: "▼"; /* 矢印 */
+    font-size: 1rem;
+    position: absolute;
+    top: 10px; /* 上部に配置 */
+    right: 15px;
+    color: #333;
+    pointer-events: none; /* クリックを妨げない */
+}
 @media (max-width: 768px) {
     .senryu-text, .iine {
         font-size: 36px;
