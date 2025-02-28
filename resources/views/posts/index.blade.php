@@ -13,7 +13,7 @@
     </x-slot>
 
     <div class="py-6">
-        <h1 class="text-2xl font-bold">作成途中でごめんなさい</h1>
+        <h1 class="text-2xl font-bold">ご確認ください</h1>
         @foreach ($posts as $post)
             <div class="mt-4 p-4 bg-gray-100 rounded-lg shadow">
                 <h2 class="text-lg font-semibold text-gray-700">{{ $post->title }}</h2>

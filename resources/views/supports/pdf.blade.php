@@ -132,11 +132,14 @@
             </tbody>
         </table>
 
-        <!-- 領収日 -->
-        <div class="mt-6">
-            <p class="text-3xl">日付: {{ now()->format('Y年m月d日') }}</p>
-            <p class="text-2xl">但：上記金額を領収いたしました。</p>
-        </div>
+<!-- 領収日 -->
+<div class="mt-6">
+    <p class="text-3xl">日付:
+        {{ $receiptDate ?? now()->format('Y年m月d日') }}
+    </p>
+    <p class="text-2xl">但：上記金額を領収いたしました。</p>
+</div>
+
 
         <!-- サポーター名 -->
         <div class="text-right mt-4">

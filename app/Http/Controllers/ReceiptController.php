@@ -7,19 +7,31 @@ use App\Models\Matching;
 use App\Models\UserRequest; // 依頼テーブルモデルをインポート
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Notifications\ReceiptNotification;
+use Carbon\Carbon;
+
 
 class ReceiptController extends Controller
 {
-    // 領収書表示メソッド
     public function show($request_id)
     {
-        // マッチングデータを取得
         $matching = Matching::where('request_id', $request_id)->firstOrFail();
         $userRequest = UserRequest::findOrFail($request_id);
 
-        // 表示用ビューにデータを渡す
-        return view('supports.receipt', compact('matching'));
+        if ($matching->syousyu_flg == 1 && !empty($matching->closed_at)) {
+            try {
+                // `closed_at` が正しい日付ならパースする
+                $receiptDate = Carbon::parse($matching->closed_at)->format('Y年m月d日');
+            } catch (\Exception $e) {
+                // エラー時は `now()` にフォールバック
+                $receiptDate = now()->format('Y年m月d日');
+            }
+        } else {
+            $receiptDate = now()->format('Y年m月d日');
+        }
+
+        return view('supports.receipt', compact('matching', 'receiptDate'));
     }
+
 
     // 領収書更新メソッド
     public function update(Request $request, $request_id)
@@ -90,17 +102,24 @@ if ($requester) {
 
     // PDF生成メソッド
     public function generatePdf($request_id)
-    {
-        $matching = Matching::where('request_id', $request_id)->firstOrFail();
+{
+    $matching = Matching::where('request_id', $request_id)->firstOrFail();
+    $userRequest = UserRequest::findOrFail($request_id);
 
-        // PDFを生成し、フォントとサイズを設定
-        $pdf = Pdf::loadView('supports.pdf', compact('matching'))
-                  ->setPaper('a4', 'portrait'); // 縦A4サイズ
-
-        // カスタムフォント設定
-        $pdf->getDomPDF()->getOptions()->set('defaultFont', 'migmix');
-
-        return $pdf->stream('領収書_' . $request_id . '.pdf');
+    // `syousyu_flg` が 1 の場合は `closed_at` を使う
+    if ($matching->syousyu_flg == 1 && !empty($matching->closed_at)) {
+        try {
+            $receiptDate = Carbon::parse($matching->closed_at)->format('Y年m月d日');
+        } catch (\Exception $e) {
+            $receiptDate = now()->format('Y年m月d日');
+        }
+    } else {
+        $receiptDate = now()->format('Y年m月d日');
     }
+
+    $pdf = Pdf::loadView('supports.pdf', compact('matching', 'receiptDate'));
+
+    return $pdf->stream('領収書.pdf');
+}
 
 }
