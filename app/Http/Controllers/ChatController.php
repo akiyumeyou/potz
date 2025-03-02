@@ -26,8 +26,24 @@ class ChatController extends Controller
 
             $content = $request->content ?? '';
 
+            // if ($request->hasFile('image')) {
+            //     $path = $request->file('image')->store('uploads', 'public');
+            //     $content = "storage/" . $path;
+            // }
+
             if ($request->hasFile('image')) {
-                $path = $request->file('image')->store('uploads', 'public');
+                $file = $request->file('image');
+
+                \Log::info('アップロードされたファイル:', [
+                    'original_name' => $file->getClientOriginalName(),
+                    'mime' => $file->getMimeType(),
+                    'size' => $file->getSize(),
+                ]);
+
+                $path = $file->store('uploads', 'public');
+
+                \Log::info('保存先:', ['path' => $path]);
+
                 $content = "storage/" . $path;
             }
 
