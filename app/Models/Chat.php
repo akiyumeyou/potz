@@ -16,11 +16,6 @@ class Chat extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function images()
-    {
-        return $this->hasMany(ChatImage::class);
-    }
-
     public function reads()
     {
         return $this->hasMany(Read::class);
