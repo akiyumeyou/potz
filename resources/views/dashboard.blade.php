@@ -58,11 +58,11 @@
             </a>
 
             <!-- つながるチャットルーム -->
-            <div class="relative block bg-[#FFDAB9] hover:bg-[#FFB347] border border-gray-300 rounded-lg shadow-md p-4 opacity-50 cursor-not-allowed">
+            <a href="{{ route('chats.index') }}" class="relative block bg-[#FFF8DC] hover:bg-[#FBE9A1] border border-gray-300 rounded-lg shadow-md p-4">
                 <div class="rounded-lg overflow-hidden">
-                    <img src="{{ asset('img/buttons/3.png') }}" alt="つながるチャットルーム" class="mx-auto">
+                    <img src="{{ asset('img/buttons/3.png') }}" alt="デジとも広場" class="mx-auto">
                 </div>
-            </div>
+            </a>
 
             <!-- オンライン交流 -->
             <a href="{{ route('events.index') }}" class="relative block bg-[#FFF8DC] hover:bg-[#FBE9A1] border border-gray-300 rounded-lg shadow-md p-4">

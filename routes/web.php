@@ -28,6 +28,8 @@ use App\Http\Controllers\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Admin\AdminEventController;
 use App\Models\Event;
 use Carbon\Carbon;
+use App\Http\Controllers\ChatController;
+use App\Http\Controllers\ChatAIController;
 
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
@@ -124,6 +126,16 @@ Route::get('/youtubes', [YouTubeController::class, 'index'])->name('youtube.inde
 Route::post('/youtubes', [YouTubeController::class, 'store'])->name('youtube.store');
 Route::post('/youtubes/{id}/likes', [YouTubeController::class, 'updateLikes'])->name('youtube.updateLikes');
 Route::delete('/youtubes/{id}', [YouTubeController::class, 'destroy'])->name('youtube.destroy');
+
+//デジとも広場チャット
+Route::get('/chats', [ChatController::class, 'index'])->name('chats.index');
+Route::get('/chats.json', [ChatController::class, 'getChats'])->name('chats.json');
+Route::post('/chats', [ChatController::class, 'store'])->name('chats.store');
+Route::delete('/chats/{id}', [ChatController::class, 'destroy'])->name('chats.destroy');
+Route::post('/chats/read/{chat}', [ChatController::class, 'markAsRead'])->name('chats.read');
+
+Route::post('/ai-response', [ChatAIController::class, 'aiResponse'])->middleware('auth');
+
 
 /// 認証が必要なルート
 Route::middleware(['auth'])->group(function () {
