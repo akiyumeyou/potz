@@ -11,7 +11,6 @@ export default defineConfig({
                 'resources/css/senryu.css',
                 'resources/js/thank.js',
                 'resources/js/img.js',
-                'resources/js/chat.js',
                 'resources/js/chat_ai.js',
             ],
             refresh: true,
