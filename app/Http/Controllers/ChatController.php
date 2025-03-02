@@ -32,20 +32,16 @@ class ChatController extends Controller
             // }
 
             if ($request->hasFile('image')) {
-                $file = $request->file('image');
+                $path = $request->file('image')->store('uploads', 'public');
 
-                \Log::info('アップロードされたファイル:', [
-                    'original_name' => $file->getClientOriginalName(),
-                    'mime' => $file->getMimeType(),
-                    'size' => $file->getSize(),
+                \Log::info('✅ 画像アップロード成功:', [
+                    'path' => $path,
+                    'storage_path' => Storage::disk('public')->path($path)
                 ]);
-
-                $path = $file->store('uploads', 'public');
-
-                \Log::info('保存先:', ['path' => $path]);
 
                 $content = "storage/" . $path;
             }
+
 
             if (empty($content)) {
                 return response()->json(['error' => 'メッセージまたは画像が必要です。'], 400);
