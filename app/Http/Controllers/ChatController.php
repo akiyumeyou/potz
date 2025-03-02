@@ -28,7 +28,7 @@ class ChatController extends Controller
 
             if ($request->hasFile('image')) {
                 $path = $request->file('image')->store('uploads', 'public');
-                $content = asset("storage/" . $path);
+                $content = "storage/" . $path;
             }
 
             if (empty($content)) {
@@ -61,7 +61,7 @@ class ChatController extends Controller
     public function getChats()
     {
         $chats = Chat::orderBy('created_at', 'asc')->get();
-
+        \Log::info('getChats() のレスポンス:', ['chats' => $chats]);
         return response()->json($chats->map(function ($chat) {
             return [
                 'id' => $chat->id,

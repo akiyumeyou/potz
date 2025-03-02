@@ -14,26 +14,25 @@
         <div class="w-full max-w-md bg-white rounded-lg shadow-lg p-4 flex flex-col mx-auto h-[80vh]">
             <!-- チャットメッセージ表示エリア -->
             <div id="chat-container" class="flex flex-col space-y-4 overflow-y-auto flex-grow p-2">
-                @foreach ($chats as $chat)
+                <!-- @foreach ($chats as $chat)
                 <div class="message flex flex-col
                 {{ $chat->user_id == 2 ? 'items-start' : (Auth::id() == $chat->user_id ? 'items-end' : 'items-start') }}">
                     <p class="mb-1 text-sm text-gray-500">
-                        {{ $chat->user->name ?? '不明なユーザー' }}-
+                        {{ $chat->user->name ?? '不明なユーザー' }} -
                         {{ \Carbon\Carbon::parse($chat->created_at)->format('Y-m-d H:i') }}
                     </p>
 
-                    @if ($chat->content)
-                    <p class="p-3 rounded-lg text-lg {{ Auth::id() == $chat->user_id ? 'bg-green-500 text-white' : 'bg-white border border-gray-300' }}">
-                        {{ $chat->content }}
-                    </p>
+                    @if ($chat->message_type === 'image' && $chat->content)
+                        <a href="{{ asset($chat->content) }}" target="_blank">
+                            <img src="{{ asset($chat->content) }}" class="w-32 h-32 rounded-lg">
+                        </a>
+                    @elseif (!empty($chat->content))
+                        <p class="p-3 rounded-lg text-lg {{ Auth::id() == $chat->user_id ? 'bg-green-500 text-white' : 'bg-white border border-gray-300' }}">
+                            {{ $chat->content }}
+                        </p>
                     @endif
-                    @foreach ($chat->images as $image)
-                    <a href="{{ asset('storage/'.$image->image_path) }}" target="_blank">
-                        <img src="{{ asset('storage/'.$image->image_path) }}" class="w-32 h-32 rounded-lg">
-                    </a>
-                    @endforeach
                 </div>
-                @endforeach
+                @endforeach -->
             </div>
 
             <!-- メッセージ入力欄 -->
@@ -49,193 +48,227 @@
 
             </div>
         </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const loggedInUserId = @json(Auth::id());
+            const chatContainer = document.getElementById("chat-container");
+            const messageInput = document.getElementById("message-input");
+            const imageInput = document.getElementById("image-input");
+            const sendButton = document.getElementById("send-button");
+            const previewContainer = document.getElementById("image-preview-container");
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const loggedInUserId = @json(Auth::id());
-    const chatContainer = document.getElementById("chat-container");
-    const messageInput = document.getElementById("message-input");
-    const imageInput = document.getElementById("image-input");
-    const sendButton = document.getElementById("send-button");
-    const previewContainer = document.getElementById("image-preview-container");
+            let isUserScrolling = false;
 
-    function scrollToBottom() {
-        setTimeout(() => {
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }, 100);
-    }
-
-    function fetchChats() {
-        fetch("{{ route('chats.json') }}")
-            .then(response => response.json())
-            .then(chats => {
-                chatContainer.innerHTML = "";
-                chats.forEach(chat => appendMessage(chat));
-                scrollToBottom();
-            })
-            .catch(error => console.error("データ取得エラー:", error));
-    }
-
-    setInterval(fetchChats, 5000); // ✅ 5秒ごとにリアルタイム更新
-    window.fetchChats = fetchChats; // ✅ グローバル変数として登録
-
-
-    function formatMessageContent(content) {
-    if (!content) return "";
-
-    let urlRegex = /(https?:\/\/[^\s]+)/g;
-    let parts = content.split(urlRegex);
-    let formattedContent = "";
-
-    parts.forEach(part => {
-        if (urlRegex.test(part)) {
-            let link = `<a href="${part}" target="_blank" class="text-blue-500 underline">${part}</a>`;
-
-            if (part.includes("youtube.com/watch") || part.includes("youtu.be")) {
-                let videoId = extractYouTubeId(part);
-                if (videoId) {
-                    let iframe = `<iframe width="300" height="170" src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>`;
-                    formattedContent += iframe; // YouTube動画を優先して埋め込み
-                    return;
+            // **スクロールを一番下にする（ユーザーがスクロール中は実行しない）**
+            function scrollToBottom(force = false) {
+                if (!isUserScrolling || force) {
+                    setTimeout(() => {
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                    }, 100);
                 }
             }
 
-            formattedContent += link; // 通常のURLはリンクとして追加
-        } else {
-            formattedContent += part; // 通常のテキストを追加
-        }
-    });
+            // **スクロールイベントを監視し、スクロール中は更新を止める**
+            chatContainer.addEventListener("scroll", function () {
+                const atBottom = chatContainer.scrollHeight - chatContainer.scrollTop === chatContainer.clientHeight;
+                isUserScrolling = !atBottom;
+            });
 
-    return formattedContent;
-}
+            // **チャットを取得し、重複追加を防ぐ**
+            function fetchChats() {
+                if (isUserScrolling) return;
 
-// YouTubeの動画IDを取得
-function extractYouTubeId(url) {
-    let match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/);
-    return match ? match[1] : null;
-}
+                fetch("{{ route('chats.json') }}")
+                    .then(response => response.json())
+                    .then(chats => {
+                        console.log("fetchChats() 実行: 取得したチャット数 =", chats.length);
 
+                        let existingMessages = new Set();
+                        document.querySelectorAll("[data-chat-id]").forEach(msg => {
+                            existingMessages.add(msg.getAttribute("data-chat-id"));
+                        });
 
-    function appendMessage(chat) {
-    // ✅ **すでに追加されているメッセージはスキップ**
-    if (document.querySelector(`[data-chat-id="${chat.id}"]`)) {
-        return;
-    }
+                        chats.forEach(chat => {
+                            if (!existingMessages.has(chat.id.toString())) {
+                                console.log("appendMessage() 呼び出し (chat.id):", chat.id);
+                                appendMessage(chat);
+                            } else {
+                                console.log(`スキップ: すでに表示済み (chat.id: ${chat.id})`);
+                            }
+                        });
 
-    let messageDiv = document.createElement("div");
-    messageDiv.dataset.chatId = chat.id; // ✅ 重複防止のためIDを設定
-    messageDiv.classList.add("message", "flex", "flex-col", "mb-2");
+                        scrollToBottom();
+                    })
+                    .catch(error => console.error("データ取得エラー:", error));
+            }
 
-    if (chat.user_id === loggedInUserId) {
-        messageDiv.classList.add("items-end");
-    } else {
-        messageDiv.classList.add("items-start");
-    }
+            setInterval(fetchChats, 5000);
+            window.fetchChats = fetchChats;
 
-    let userInfo = document.createElement("p");
-    userInfo.classList.add("mb-1", "text-sm", "text-gray-500");
-    userInfo.innerText = `${chat.user_name || "不明なユーザー"} - ${chat.created_at}`;
+            // **YouTubeの動画IDを取得**
+            function extractYouTubeId(url) {
+                let match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/);
+                return match ? match[1] : null;
+            }
 
-    let messageContent = document.createElement("p");
-    messageContent.classList.add("p-3", "rounded-lg", "text-lg", "max-w-[75%]");
+            // **メッセージのフォーマット（URLリンク処理 & YouTubeプレビュー対応）**
+            function formatMessageContent(content) {
+                if (!content) return "";
 
-    if (chat.user_id === loggedInUserId) {
-        messageContent.classList.add("bg-green-500", "text-white");
-    } else {
-        messageContent.classList.add("bg-white", "border", "border-gray-300");
-    }
+                let urlRegex = /(https?:\/\/[^\s]+)/g;
+                let parts = content.split(urlRegex);
+                let formattedContent = "";
 
-    // ✅ **画像の判定と表示**
-    if (chat.message_type === "image" && chat.content) {
-        let img = document.createElement("img");
-        img.src = chat.content.startsWith("http") ? chat.content : "/storage/" + chat.content;
-        img.classList.add("w-32", "h-auto", "rounded-lg");
-        messageContent.innerHTML = "";
-        messageContent.appendChild(img);
-    } else {
-        messageContent.innerHTML = formatMessageContent(chat.content || "");
-    }
+                parts.forEach(part => {
+                    if (urlRegex.test(part)) {
+                        let link = `<a href="${part}" target="_blank" class="text-blue-500 underline">${part}</a>`;
 
-    messageDiv.appendChild(userInfo);
-    messageDiv.appendChild(messageContent);
-    chatContainer.appendChild(messageDiv);
-
-
-        // ✅ **削除ボタンを表示（ログインユーザーのみ）**
-        if (chat.user_id === loggedInUserId) {
-            let deleteBtn = document.createElement("button");
-            deleteBtn.innerHTML = "🗑";
-            deleteBtn.classList.add("text-red-500", "text-xs", "ml-2", "hover:underline");
-
-            deleteBtn.onclick = function () {
-                fetch(`/chats/${chat.id}`, {
-                    method: "DELETE",
-                    headers: {
-                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                        if (part.includes("youtube.com/watch") || part.includes("youtu.be")) {
+                            let videoId = extractYouTubeId(part);
+                            if (videoId) {
+                                let youtubePreview = `
+                                    <div class="border border-gray-300 rounded-lg p-2 bg-gray-100 mt-2">
+                                        <a href="https://www.youtube.com/watch?v=${videoId}" target="_blank">
+                                            <img src="https://img.youtube.com/vi/${videoId}/0.jpg" class="w-full rounded-lg">
+                                        </a>
+                                    </div>`;
+                                formattedContent += youtubePreview;
+                                return;
+                            }
+                        }
+                        formattedContent += link;
+                    } else {
+                        formattedContent += part;
                     }
+                });
+
+                return formattedContent;
+            }
+
+            // **メッセージを追加**
+            function appendMessage(chat) {
+                if (!chat) {
+                    console.error("chat オブジェクトが undefined です");
+                    return;
+                }
+
+                console.log("appendMessage() 実行 (chat.id):", chat.id);
+
+                if (document.querySelector(`[data-chat-id="${chat.id}"]`)) {
+                    console.log(`スキップ: すでに表示済み (chat.id: ${chat.id})`);
+                    return;
+                }
+
+                let messageDiv = document.createElement("div");
+                messageDiv.dataset.chatId = chat.id;
+                messageDiv.classList.add("message", "flex", "flex-col", "mb-2");
+
+                if (chat.user_id === loggedInUserId) {
+                    messageDiv.classList.add("items-end");
+                } else {
+                    messageDiv.classList.add("items-start");
+                }
+
+                let userInfo = document.createElement("p");
+                userInfo.classList.add("mb-1", "text-sm", "text-gray-500");
+                userInfo.innerText = `${chat.user_name || "不明なユーザー"} - ${chat.created_at}`;
+
+                let messageContent = document.createElement("p");
+                messageContent.classList.add("p-3", "rounded-lg", "text-lg", "max-w-[75%]");
+
+                if (chat.user_id === loggedInUserId) {
+                    messageContent.classList.add("bg-green-500", "text-white");
+                } else {
+                    messageContent.classList.add("bg-white", "border", "border-gray-300");
+                }
+
+                // **画像メッセージの処理**
+                if (chat.message_type === "image" && chat.content) {
+                    let img = document.createElement("img");
+                    let basePath = window.location.origin;
+
+                    let imageUrl = "";
+                    if (chat.content.startsWith("storage/")) {
+                        imageUrl = basePath + "/" + chat.content;
+                    } else if (chat.content.startsWith("uploads/")) {
+                        imageUrl = basePath + "/storage/" + chat.content;
+                    } else {
+                        console.error("画像URLの形式が不明:", chat.content);
+                        return;
+                    }
+
+                    console.log(`画像URL: ${imageUrl}`);
+                    img.src = imageUrl;
+                    img.classList.add("w-32", "h-auto", "rounded-lg");
+                    messageContent.innerHTML = "";
+                    messageContent.appendChild(img);
+                } else {
+                    messageContent.innerHTML = formatMessageContent(chat.content || "");
+                }
+
+                messageDiv.appendChild(userInfo);
+                messageDiv.appendChild(messageContent);
+                chatContainer.appendChild(messageDiv);
+            }
+
+            // **画像プレビュー機能**
+            imageInput.addEventListener("change", function () {
+            previewContainer.innerHTML = "";
+            const aiButton = document.getElementById("ai-button"); // ✅ 修正: `#ai-button` を取得
+
+            if (imageInput.files.length > 0) {
+                let file = imageInput.files[0];
+                let reader = new FileReader();
+                reader.onload = function (e) {
+                    let img = document.createElement("img");
+                    img.src = e.target.result;
+                    img.classList.add("w-16", "h-16", "rounded-lg", "border");
+                    previewContainer.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+
+                // ✅ 画像を選択したら「AIが返事」ボタンを非表示
+                if (aiButton) aiButton.style.display = "none";
+            } else {
+                // ✅ 画像を削除したら「AIが返事」ボタンを再表示
+                if (aiButton) aiButton.style.display = "block";
+            }
+            });
+
+
+            // **メッセージ送信**
+            sendButton.addEventListener("click", function () {
+                let formData = new FormData();
+                formData.append("content", messageInput.value.trim());
+                formData.append("_token", "{{ csrf_token() }}");
+
+                if (imageInput.files.length > 0) {
+                    formData.append("image", imageInput.files[0]);
+                }
+
+                fetch("{{ route('chats.store') }}", {
+                    method: "POST",
+                    body: formData
                 })
                 .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        fetchChats(); // ✅ 削除後にリロード
-                    } else {
-                        alert("削除に失敗しました");
-                    }
+                .then(chat => {
+                    appendMessage(chat);
+                    messageInput.value = "";
+                    imageInput.value = "";
+                    previewContainer.innerHTML = "";
+                    // ✅ AIボタンを再表示する
+                    const aiButton = document.getElementById("ai-button");
+                    if (aiButton) aiButton.style.display = "block";
+
+                    scrollToBottom(true);
                 })
-                .catch(error => console.error("削除エラー:", error));
-            };
+                .catch(error => console.error("送信エラー:", error));
+            });
 
-            messageDiv.appendChild(deleteBtn);
-        }
-
-        chatContainer.append(messageDiv);
-    }
-
-    // ✅ 画像プレビュー機能
-    imageInput.addEventListener("change", function () {
-        previewContainer.innerHTML = ""; // プレビューをリセット
-        if (imageInput.files.length > 0) {
-            let file = imageInput.files[0];
-            let reader = new FileReader();
-            reader.onload = function (e) {
-                let img = document.createElement("img");
-                img.src = e.target.result;
-                img.classList.add("w-16", "h-16", "rounded-lg", "border");
-                previewContainer.appendChild(img);
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-
-    sendButton.addEventListener("click", function () {
-        let formData = new FormData();
-        formData.append("content", messageInput.value.trim());
-        formData.append("_token", "{{ csrf_token() }}");
-
-        if (imageInput.files.length > 0) {
-            formData.append("image", imageInput.files[0]);
-        }
-
-        fetch("{{ route('chats.store') }}", {
-            method: "POST",
-            body: formData
-        })
-        .then(response => response.json())
-        .then(chat => {
-            appendMessage(chat);
-            messageInput.value = "";
-            imageInput.value = "";
-            previewContainer.innerHTML = ""; // ✅ 送信後にプレビューをリセット
-            scrollToBottom();
-        })
-        .catch(error => console.error("送信エラー:", error));
-    });
-
-    fetchChats();
-    scrollToBottom();
-});
-
-</script>
+            fetchChats();
+            scrollToBottom(true);
+        });
+        </script>
 @vite(['resources/js/chat_ai.js'])
 
     </body>
