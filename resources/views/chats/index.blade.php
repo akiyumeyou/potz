@@ -208,8 +208,36 @@
 
                 messageDiv.appendChild(userInfo);
                 messageDiv.appendChild(messageContent);
-                chatContainer.appendChild(messageDiv);
-            }
+
+                // **削除ボタン（ユーザー自身のメッセージのみ表示）**
+                if (chat.user_id === loggedInUserId) {
+                    let deleteBtn = document.createElement("button");
+                    deleteBtn.innerHTML = "🗑";
+                    deleteBtn.classList.add("text-red-500", "text-xs", "ml-2", "hover:underline");
+
+                    deleteBtn.onclick = function () {
+                        fetch(`/chats/${chat.id}`, {  // ✅ URLのクオートを修正
+                            method: "DELETE",
+                            headers: {
+                                "Content-Type": "application/json",  // ✅ 必要なヘッダーを追加
+                                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                messageDiv.remove();  // ✅ 削除後にメッセージを削除
+                            } else {
+                                alert("削除に失敗しました");
+                            }
+                        })
+                        .catch(error => console.error("削除エラー:", error));
+                    };
+
+                        messageDiv.appendChild(deleteBtn);  // ✅ メッセージ内に削除ボタンを追加
+                    }
+                    chatContainer.appendChild(messageDiv);
+                }
 
             // **画像プレビュー機能**
             imageInput.addEventListener("change", function () {
@@ -259,7 +287,6 @@
                     // ✅ AIボタンを再表示する
                     const aiButton = document.getElementById("ai-button");
                     if (aiButton) aiButton.style.display = "block";
-
                     scrollToBottom(true);
                 })
                 .catch(error => console.error("送信エラー:", error));
