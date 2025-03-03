@@ -27,3 +27,4 @@ yarn-error.log
 storage/fonts/
 storage/app/*.pdf
 storage/app/public/*.pdf
+config/filesystems.php
