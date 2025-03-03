@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("AI応答:", data);
 
             if (data.success && data.chat) {
-                appendMessage(data.chat); // ✅ AIのメッセージを直接追加
+                // appendMessage(data.chat); // ✅ AIのメッセージを直接追加
                 messageInput.value = "";
                 fetchChats(); // ✅ チャット更新
             } else {
