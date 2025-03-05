@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\SupporterProfile;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AdminNotificationEmail;
+use Illuminate\Support\Facades\Http;
 
 class AdminUserController extends Controller
 {
@@ -96,5 +97,58 @@ public function sendEmail(Request $request)
 
     return redirect()->route('admin.users.index')->with('success', 'メール送信を開始しました。');
 }
+public function updateCoordinates($id)
+{
+    try {
+        $supporterProfile = SupporterProfile::findOrFail($id);
+        $user = $supporterProfile->user;
+
+        // 住所を結合
+        $address = implode(' ', array_filter([
+            $user->prefecture,
+            $user->address1,
+            $user->address2
+        ]));
+
+        // 緯度経度を取得
+        [$latitude, $longitude] = $this->getCoordinates($address); // ✅ getCoordinates() を呼び出す
+
+        if ($latitude === null || $longitude === null) {
+            return redirect()->back()->with('error', '緯度経度を取得できませんでした。');
+        }
+
+        // 緯度経度を更新
+        $supporterProfile->update([
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+        ]);
+
+        return redirect()->back()->with('success', '緯度経度が更新されました。');
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', 'エラー: ' . $e->getMessage());
+    }
+}
+
+
+public function getCoordinates($address)
+{
+    $apiKey = env('GOOGLE_MAPS_API_KEY'); // `.env` に Google Maps API キーを設定する
+    $url = "https://maps.googleapis.com/maps/api/geocode/json";
+
+    $response = Http::get($url, [
+        'address' => $address,
+        'key' => $apiKey,
+    ]);
+
+    $data = $response->json();
+
+    if (!empty($data['results'])) {
+        $geometry = $data['results'][0]['geometry']['location'];
+        return [$geometry['lat'], $geometry['lng']];
+    }
+
+    return [null, null];
+}
+
 
 }

@@ -80,8 +80,8 @@
                     <label for="self_introduction" class="block text-gray-700">自己紹介</label>
                     <textarea name="self_introduction" id="self_introduction" class="form-input w-full">{{ $supporterProfile->self_introduction }}</textarea>
                 </div>
-               
-            @endif
+
+                @endif
 
             <div class="flex space-x-4">
                 <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">更新</button>

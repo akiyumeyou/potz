@@ -76,6 +76,14 @@
                 </form>
             @endif
         </div>
+            <!-- 緯度経度更新ボタン -->
+            <form action="{{ route('admin.users.update_coordinates', ['id' => $supporterProfile->id]) }}" method="POST" style="display:inline;">
+                @csrf
+
+                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 mt-2" onclick="return confirm('緯度経度を更新しますか？')">
+                    緯経更新
+                </button>
+            </form>
             <p><strong>自己紹介:</strong> {{ $supporterProfile->self_introduction ?? '未登録' }}</p>
             @for ($i = 1; $i <= 5; $i++)
                 <p><strong>スキル{{ $i }}:</strong> {{ $supporterProfile->{'skill' . $i} ?? '未登録' }}</p>

@@ -213,6 +213,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         [AdminEventController::class, 'togglePayment'])
         ->name('event-participants.toggle-payment');
 
+        Route::post('/users/{id}/update-coordinates', [AdminUserController::class, 'updateCoordinates'])
+        ->name('users.update_coordinates');  
 });
 
 // 一般ユーザー向けの掲示板表示用ルート
