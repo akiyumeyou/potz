@@ -38,9 +38,9 @@
             <div class="p-5 text-3xl text-green-900">
                 @if ($requiresProfileCompletion)
                     <div class="text-red-500">
-                        <p>プロフィール登録を完了してください。</p>
+                        <p>登録を完了してください。</p>
                         <a href="{{ route('profile.edit') }}" class="text-blue-500 hover:underline">
-                            プロフィールを登録する
+                            会員区分を変更し登録を完了させる
                         </a>
                     </div>
                 @else

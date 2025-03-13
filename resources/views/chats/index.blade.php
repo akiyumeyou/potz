@@ -60,12 +60,25 @@
             let isUserScrolling = false;
 
             // **スクロールを一番下にする（ユーザーがスクロール中は実行しない）**
+            // function scrollToBottom(force = false) {
+            //     if (!isUserScrolling || force) {
+            //         setTimeout(() => {
+            //             chatContainer.scrollTop = chatContainer.scrollHeight;
+            //         }, 100);
+            //     }
+            // }
             function scrollToBottom(force = false) {
-                if (!isUserScrolling || force) {
-                    setTimeout(() => {
-                        chatContainer.scrollTop = chatContainer.scrollHeight;
-                    }, 100);
-                }
+            let chatContainer = document.getElementById("chat-container");
+
+            if (!chatContainer) {
+                console.error("scrollToBottom() エラー: chatContainer が見つかりません");
+                return;
+            }
+
+            setTimeout(() => {
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                console.log("画面スクロールを最下部に移動");
+            }, 100);
             }
 
             // **スクロールイベントを監視し、スクロール中は更新を止める**
@@ -104,6 +117,15 @@
 
             setInterval(fetchChats, 5000);
             window.fetchChats = fetchChats;
+
+            function refreshChat() {
+            console.log("Blade 側で fetchChats() を実行");
+            fetchChats();
+            }
+            // ✅ **AI応答完了後に Blade 側で fetchChats() を実行**
+            window.addEventListener("ai-response-complete", function () {
+                refreshChat();
+            });
 
             // **YouTubeの動画IDを取得**
             function extractYouTubeId(url) {

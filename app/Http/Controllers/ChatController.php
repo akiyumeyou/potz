@@ -12,6 +12,13 @@ class ChatController extends Controller
 {
     public function index()
     {
+        $user = Auth::user();
+
+        // **会員区分 (membership_id) が 2 未満の場合、アクセスを拒否**
+        if ($user->membership_id < 2) {
+            return redirect('/')->with('error', 'マイページからPOTZ会員の登録をしてください。');
+        }
+
         $chats = Chat::orderBy('created_at', 'asc')->get();
         return view('chats.index', compact('chats'));
     }

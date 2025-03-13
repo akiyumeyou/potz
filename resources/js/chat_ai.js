@@ -43,6 +43,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 // appendMessage(data.chat); // ✅ AIのメッセージを直接追加
                 messageInput.value = "";
                 fetchChats(); // ✅ チャット更新
+                // ✅ **Blade 側に通知を送る**
+                window.dispatchEvent(new Event("ai-response-complete"));
             } else {
                 alert("AI応答エラー: " + (data.error || "不明なエラー"));
             }
@@ -54,22 +56,22 @@ document.addEventListener("DOMContentLoaded", function () {
         aiButton.disabled = false;
     });
 
-    function appendMessage(chat) {
-        let chatContainer = document.getElementById("chat-container");
-        let messageDiv = document.createElement("div");
-        messageDiv.classList.add("flex", "flex-col", "mb-2", "items-start"); // ✅ AIのメッセージは左寄せ
+    // function appendMessage(chat) {
+    //     let chatContainer = document.getElementById("chat-container");
+    //     let messageDiv = document.createElement("div");
+    //     messageDiv.classList.add("flex", "flex-col", "mb-2", "items-start"); // ✅ AIのメッセージは左寄せ
 
-        let userInfo = document.createElement("span");
-        userInfo.classList.add("text-sm", "text-gray-500");
-        userInfo.innerText = `${chat.user_name || "不明なユーザー"} - ${chat.created_at}`;
+    //     let userInfo = document.createElement("span");
+    //     userInfo.classList.add("text-sm", "text-gray-500");
+    //     userInfo.innerText = `${chat.user_name || "不明なユーザー"} - ${chat.created_at}`;
 
-        let messageContent = document.createElement("div");
-        messageContent.classList.add("p-3", "rounded-lg", "text-lg", "max-w-[75%]", "bg-white", "border", "border-gray-300");
-        messageContent.innerText = chat.content || "";
+    //     let messageContent = document.createElement("div");
+    //     messageContent.classList.add("p-3", "rounded-lg", "text-lg", "max-w-[75%]", "bg-white", "border", "border-gray-300");
+    //     messageContent.innerText = chat.content || "";
 
-        messageDiv.appendChild(userInfo);
-        messageDiv.appendChild(messageContent);
-        chatContainer.appendChild(messageDiv);
-    }
+    //     messageDiv.appendChild(userInfo);
+    //     messageDiv.appendChild(messageContent);
+    //     chatContainer.appendChild(messageDiv);
+    // }
 
 });
