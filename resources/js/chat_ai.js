@@ -41,13 +41,13 @@ document.addEventListener("DOMContentLoaded", function () {
             if (data.success && data.chat) {
                 messageInput.value = "";
 
-                // ✅ **fetchChats() でチャット更新を実行**
-                fetchChats();
+                // ✅ AIの応答を手動で追加しない
+                window.dispatchEvent(new Event("ai-response-complete"));
 
-                // ✅ **スクロールを最下部に移動**
                 setTimeout(() => {
                     scrollToBottom(true);
                 }, 500);
+
             } else {
                 alert("❌ AI応答エラー: " + (data.error || "不明なエラー"));
             }
