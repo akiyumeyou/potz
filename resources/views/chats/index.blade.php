@@ -78,63 +78,60 @@ document.getElementById("chat-container").addEventListener("scroll", function ()
     isUserScrolling = !atBottom;
 });
 
-            // **チャットを取得し、重複追加を防ぐ**
-            // function fetchChats() {
-            //     if (isUserScrolling) return;
+        //     function fetchChats() {
+        //     console.log("fetchChats() が実行されました");
 
-            //     fetch("{{ route('chats.json') }}")
-            //         .then(response => response.json())
-            //         .then(chats => {
-            //             console.log("fetchChats() 実行: 取得したチャット数 =", chats.length);
+        //     fetch("{{ route('chats.json') }}")
+        //         .then(response => response.text())  // **JSON ではなくテキストで取得**
+        //         .then(data => {
+        //             console.log("fetchChats() のレスポンス:", data);  // ✅ **レスポンスをログに出力**
 
-            //             let existingMessages = new Set();
-            //             document.querySelectorAll("[data-chat-id]").forEach(msg => {
-            //                 existingMessages.add(msg.getAttribute("data-chat-id"));
-            //             });
+        //             try {
+        //                 let chats = JSON.parse(data);  // **JSON に変換**
+        //                 console.log("fetchChats() の JSON 変換成功:", chats);
 
-            //             chats.forEach(chat => {
-            //                 if (!existingMessages.has(chat.id.toString())) {
-            //                     console.log("appendMessage() 呼び出し (chat.id):", chat.id);
-            //                     appendMessage(chat);
-            //                 } else {
-            //                     console.log(`スキップ: すでに表示済み (chat.id: ${chat.id})`);
-            //                 }
-            //             });
+        //                 let chatContainer = document.getElementById("chat-container");
+        //                 chatContainer.innerHTML = ""; // **画面をクリア**
 
-            //             scrollToBottom();
-            //         })
-            //         .catch(error => console.error("データ取得エラー:", error));
-            // }
-            function fetchChats() {
-            console.log("fetchChats() が実行されました");
+        //                 chats.forEach(chat => {
+        //                     appendMessage(chat);
+        //                 });
+
+        //                 scrollToBottom(false);
+        //             } catch (error) {
+        //                 console.error("JSON 変換エラー:", error);
+        //             }
+        //         })
+        //         .catch(error => console.error("fetchChats() データ取得エラー:", error));
+        // }
+
+// **チャットを取得**
+function fetchChats() {
+            console.log("📡 fetchChats() が実行されました");
 
             fetch("{{ route('chats.json') }}")
-                .then(response => response.text())  // **JSON ではなくテキストで取得**
-                .then(data => {
-                    console.log("fetchChats() のレスポンス:", data);  // ✅ **レスポンスをログに出力**
+                .then(response => response.json())
+                .then(chats => {
+                    console.log("✅ fetchChats() のレスポンス:", chats);
 
-                    try {
-                        let chats = JSON.parse(data);  // **JSON に変換**
-                        console.log("fetchChats() の JSON 変換成功:", chats);
+                    let existingMessages = new Set();
+                    document.querySelectorAll("[data-chat-id]").forEach(msg => {
+                        existingMessages.add(msg.getAttribute("data-chat-id"));
+                    });
 
-                        let chatContainer = document.getElementById("chat-container");
-                        chatContainer.innerHTML = ""; // **画面をクリア**
-
-                        chats.forEach(chat => {
+                    chats.forEach(chat => {
+                        if (!existingMessages.has(chat.id.toString())) {
+                            console.log("📝 appendMessage() 呼び出し:", chat.id);
                             appendMessage(chat);
-                        });
+                        } else {
+                            console.log(`⚠️ スキップ: すでに表示済み (chat.id: ${chat.id})`);
+                        }
+                    });
 
-                        scrollToBottom(false);
-                    } catch (error) {
-                        console.error("JSON 変換エラー:", error);
-                    }
+                    scrollToBottom(false);
                 })
-                .catch(error => console.error("fetchChats() データ取得エラー:", error));
+                .catch(error => console.error("❌ fetchChats() データ取得エラー:", error));
         }
-
-
-            // setInterval(fetchChats, 5000);
-            // window.fetchChats = fetchChats;
 
             // **YouTubeの動画IDを取得**
             function extractYouTubeId(url) {
