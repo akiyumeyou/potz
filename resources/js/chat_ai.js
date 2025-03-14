@@ -6,18 +6,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     aiButton.addEventListener("click", async function () {
-        console.log("✅ AIボタンがクリックされました");
+        console.log("🟠 AIボタンがクリックされました");
 
         const messageInput = document.getElementById("message-input");
-        const previewContainer = document.getElementById("image-preview-container"); // 画像プレビュー
         const message = messageInput.value.trim();
 
         if (!message) {
             console.warn("⚠️ メッセージが空です");
             return;
         }
-
-        console.log("📤 送信メッセージ:", message);
 
         aiButton.disabled = true;
         aiButton.innerText = "AI応答中...";
@@ -37,28 +34,21 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             const data = await response.json();
-            console.log("🤖 AI応答:", data);
+            console.log("✅ AI応答:", data);
 
             if (data.success && data.chat) {
-                messageInput.value = "";  // ✅ 入力欄をクリア
-                previewContainer.innerHTML = ""; // ✅ 画像プレビューをクリア
+                messageInput.value = "";
 
-                console.log("📡 Blade 側の fetchChats() を実行");
-
-                // **Blade 側の fetchChats() を実行**
-                if (typeof fetchChats === "function") {
-                    fetchChats();
-                    setTimeout(() => {
-                        window.scrollToBottom(true);
-                    }, 500);
-                } else {
-                    console.error("❌ fetchChats() 関数が定義されていません");
-                }
+                fetchChats().then(() => {
+                    console.log("✅ fetchChats() 完了後にスクロールを実行");
+                    window.scrollToBottom(true);
+                }).catch(error => {
+                    console.error("❌ fetchChats() エラー:", error);
+                });
 
             } else {
                 alert("⚠️ AI応答エラー: " + (data.error || "不明なエラー"));
             }
-
         } catch (error) {
             console.error("❌ AI応答エラー:", error);
         }
@@ -67,4 +57,3 @@ document.addEventListener("DOMContentLoaded", function () {
         aiButton.disabled = false;
     });
 });
-

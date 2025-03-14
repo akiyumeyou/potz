@@ -49,24 +49,32 @@
             //     }
             // }
 
-            window.scrollToBottom = function(force = false) {
-// function scrollToBottom(force = false) {
-    let chatContainer = document.getElementById("chat-container");
+            // window.scrollToBottom = function(force = false) {
+                function scrollToBottom(force = false) {
+            if (!chatContainer) {
+                console.error("❌ scrollToBottom() エラー: chatContainer が見つかりません");
+                return;
+            }
 
-    if (!chatContainer) {
-        console.error("scrollToBottom() エラー: chatContainer が見つかりません");
-        return;
-    }
+            if (!force) {
+                let atBottom = chatContainer.scrollTop + chatContainer.clientHeight >= chatContainer.scrollHeight - 10;
+                if (!atBottom) {
+                    console.log("🛑 ユーザーがスクロール中のためスクロールせず");
+                    return;
+                }
+            }
 
-    if (!isUserScrolling || force) {
-        setTimeout(() => {
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-            console.log("✅ 画面を最下部にスクロールしました");
-        }, 100);
-    } else {
-        console.log("⏳ ユーザーがスクロール中のため、scrollToBottom() を実行しません");
-    }
-}
+            setTimeout(() => {
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                console.log("⬇️ 画面を最下部にスクロール");
+            }, 100);
+        }
+
+        chatContainer.addEventListener("scroll", function () {
+            const atBottom = chatContainer.scrollHeight - chatContainer.scrollTop === chatContainer.clientHeight;
+            isUserScrolling = !atBottom;
+        });
+
 
 // ✅ **window に登録**
 window.scrollToBottom = scrollToBottom;
@@ -106,31 +114,42 @@ document.getElementById("chat-container").addEventListener("scroll", function ()
         // }
 
 // **チャットを取得**
-function fetchChats() {
-            console.log("📡 fetchChats() が実行されました");
+// ✅ チャットを取得（fetchChats を Promise にする）
+async function fetchChats() {
+    console.log("📡 fetchChats() が実行されました");
 
-            fetch("{{ route('chats.json') }}")
-                .then(response => response.json())
-                .then(chats => {
-                    console.log("✅ fetchChats() のレスポンス:", chats);
+    try {
+        let response = await fetch("{{ route('chats.json') }}");
+        let chats = await response.json();
 
-                    let existingMessages = new Set();
-                    document.querySelectorAll("[data-chat-id]").forEach(msg => {
-                        existingMessages.add(msg.getAttribute("data-chat-id"));
-                    });
+        console.log("✅ fetchChats() のレスポンス:", chats);
 
-                    chats.forEach(chat => {
-                        if (!existingMessages.has(chat.id.toString())) {
-                            console.log("📝 appendMessage() 呼び出し:", chat.id);
-                            appendMessage(chat);
-                        } else {
-                            console.log(`⚠️ スキップ: すでに表示済み (chat.id: ${chat.id})`);
-                        }
-                    });
+        let existingMessages = new Set();
+        document.querySelectorAll("[data-chat-id]").forEach(msg => {
+            existingMessages.add(msg.getAttribute("data-chat-id"));
+        });
 
-                    scrollToBottom(false);
-                })
-                .catch(error => console.error("❌ fetchChats() データ取得エラー:", error));
+        chats.forEach(chat => {
+            if (!existingMessages.has(chat.id.toString())) {
+                console.log("📝 appendMessage() 呼び出し:", chat.id);
+                appendMessage(chat);
+            } else {
+                console.log(`⚠️ スキップ: すでに表示済み (chat.id: ${chat.id})`);
+            }
+        });
+
+        scrollToBottom(false);
+    } catch (error) {
+        console.error("❌ fetchChats() データ取得エラー:", error);
+    }
+}
+
+        setInterval(fetchChats, 5000);
+        window.fetchChats = fetchChats;
+
+        function refreshChat() {
+            console.log("🔄 Blade 側で fetchChats() を実行");
+            fetchChats();
         }
 
             // **YouTubeの動画IDを取得**
@@ -319,8 +338,8 @@ function fetchChats() {
                 })
                 .catch(error => console.error("送信エラー:", error));
             });
-            setInterval(fetchChats, 5000); // ✅ **5秒ごとに fetchChats() を実行**
-            window.fetchChats = fetchChats;
+            // setInterval(fetchChats, 5000); // ✅ **5秒ごとに fetchChats() を実行**
+            // window.fetchChats = fetchChats;
 
             fetchChats();
             scrollToBottom(true);
