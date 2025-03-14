@@ -109,23 +109,29 @@ document.getElementById("chat-container").addEventListener("scroll", function ()
             console.log("fetchChats() が実行されました");
 
             fetch("{{ route('chats.json') }}")
-                .then(response => response.json())
-                .then(chats => {
-                    console.log("fetchChats() のレスポンス取得:", chats);
+                .then(response => response.text())  // **JSON ではなくテキストで取得**
+                .then(data => {
+                    console.log("fetchChats() のレスポンス:", data);  // ✅ **レスポンスをログに出力**
 
-                    let chatContainer = document.getElementById("chat-container");
+                    try {
+                        let chats = JSON.parse(data);  // **JSON に変換**
+                        console.log("fetchChats() の JSON 変換成功:", chats);
 
-                    chatContainer.innerHTML = ""; // **画面をクリア**
+                        let chatContainer = document.getElementById("chat-container");
+                        chatContainer.innerHTML = ""; // **画面をクリア**
 
-                    chats.forEach(chat => {
-                        console.log(`appendMessage() 呼び出し (chat.id=${chat.id})`);
-                        appendMessage(chat);
-                    });
+                        chats.forEach(chat => {
+                            appendMessage(chat);
+                        });
 
-                    scrollToBottom();
+                        scrollToBottom(false);
+                    } catch (error) {
+                        console.error("JSON 変換エラー:", error);
+                    }
                 })
                 .catch(error => console.error("fetchChats() データ取得エラー:", error));
         }
+
 
             // setInterval(fetchChats, 5000);
             // window.fetchChats = fetchChats;
