@@ -116,41 +116,33 @@ document.getElementById("chat-container").addEventListener("scroll", function ()
         // }
 
 // ✅ チャットを取得し、データが追加された場合のみスクロールする
-async function fetchChats() {
+function fetchChats() {
     console.log("📡 fetchChats() が実行されました");
 
-    try {
-        let response = await fetch("{{ route('chats.json') }}");
-        let chats = await response.json();
+    fetch("{{ route('chats.json') }}")
+        .then(response => response.json())
+        .then(chats => {
+            console.log("✅ fetchChats() のレスポンス:", chats);
 
-        console.log("✅ fetchChats() のレスポンス:", chats);
+            let existingMessages = new Set();
+            document.querySelectorAll("[data-chat-id]").forEach(msg => {
+                existingMessages.add(msg.getAttribute("data-chat-id"));
+            });
 
-        let existingMessages = new Set();
-        document.querySelectorAll("[data-chat-id]").forEach(msg => {
-            existingMessages.add(msg.getAttribute("data-chat-id"));
-        });
+            chats.forEach(chat => {
+                if (!existingMessages.has(chat.id.toString())) {
+                    console.log("📝 appendMessage() 呼び出し:", chat.id);
+                    appendMessage(chat);
+                } else {
+                    console.log(`⚠️ スキップ: すでに表示済み (chat.id: ${chat.id})`);
+                }
+            });
 
-        let newMessageAdded = false;
-
-        chats.forEach(chat => {
-            if (!existingMessages.has(chat.id.toString())) {
-                console.log("📝 appendMessage() 呼び出し:", chat.id);
-                appendMessage(chat);
-                newMessageAdded = true;
-            } else {
-                console.log(`⚠️ スキップ: すでに表示済み (chat.id: ${chat.id})`);
-            }
-        });
-
-        if (newMessageAdded) {
-            console.log("✅ 新しいメッセージが追加されたためスクロール実行");
-            scrollToBottom(true);
-        }
-
-    } catch (error) {
-        console.error("❌ fetchChats() データ取得エラー:", error);
-    }
+            scrollToBottom(false);
+        })
+        .catch(error => console.error("❌ fetchChats() データ取得エラー:", error));
 }
+
 
 // ✅ 5秒ごとに `fetchChats()` を実行（定期更新）
 setInterval(fetchChats, 5000);
