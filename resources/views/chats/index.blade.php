@@ -39,113 +39,122 @@
             const previewContainer = document.getElementById("image-preview-container");
 
             let isUserScrolling = false;
+// ✅ シンプルなスクロール制御（新しいメッセージが追加された場合は強制スクロール）
+function scrollToBottom(force = false) {
+    let chatContainer = document.getElementById("chat-container");
 
-            // **スクロールを一番下にする（ユーザーがスクロール中は実行しない）**
-            // function scrollToBottom(force = false) {
-            //     if (!isUserScrolling || force) {
-            //         setTimeout(() => {
-            //             chatContainer.scrollTop = chatContainer.scrollHeight;
-            //         }, 100);
-            //     }
-            // }
+    if (!chatContainer) {
+        console.error("❌ scrollToBottom() エラー: chatContainer が見つかりません");
+        return;
+    }
 
-            // window.scrollToBottom = function(force = false) {
-                function scrollToBottom(force = false) {
-            if (!chatContainer) {
-                console.error("❌ scrollToBottom() エラー: chatContainer が見つかりません");
-                return;
-            }
+    let atBottom = chatContainer.scrollTop + chatContainer.clientHeight >= chatContainer.scrollHeight - 20;
 
-            if (!force) {
-                let atBottom = chatContainer.scrollTop + chatContainer.clientHeight >= chatContainer.scrollHeight - 10;
-                if (!atBottom) {
-                    console.log("🛑 ユーザーがスクロール中のためスクロールせず");
-                    return;
-                }
-            }
+    if (!force && !atBottom) {
+        console.log("🛑 ユーザーがスクロール中のためスクロールせず");
+        return;
+    }
 
-            setTimeout(() => {
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-                console.log("⬇️ 画面を最下部にスクロール");
-            }, 100);
-        }
+    setTimeout(() => {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        console.log("⬇️ 画面を最下部にスクロール");
+    }, 100);
+}
 
-        chatContainer.addEventListener("scroll", function () {
-            const atBottom = chatContainer.scrollHeight - chatContainer.scrollTop === chatContainer.clientHeight;
-            isUserScrolling = !atBottom;
-        });
-
-
-// ✅ **window に登録**
+// ✅ window に登録（グローバル関数として使用）
 window.scrollToBottom = scrollToBottom;
 
-// ✅ **スクロールイベントを監視し、スクロール中は更新を止める**
+// ✅ **スクロールイベントを監視し、ユーザーが手動でスクロールしているか判定**
 document.getElementById("chat-container").addEventListener("scroll", function () {
-    const chatContainer = document.getElementById("chat-container");
-    const atBottom = chatContainer.scrollHeight - chatContainer.scrollTop === chatContainer.clientHeight;
+    let chatContainer = document.getElementById("chat-container");
+    let atBottom = chatContainer.scrollTop + chatContainer.clientHeight >= chatContainer.scrollHeight - 20;
     isUserScrolling = !atBottom;
 });
 
-            function fetchChats() {
-            console.log("fetchChats() が実行されました");
 
-            fetch("{{ route('chats.json') }}")
-                .then(response => response.text())  // **JSON ではなくテキストで取得**
-                .then(data => {
-                    // console.log("fetchChats() のレスポンス:", data);  
+//         chatContainer.addEventListener("scroll", function () {
+//             const atBottom = chatContainer.scrollHeight - chatContainer.scrollTop === chatContainer.clientHeight;
+//             isUserScrolling = !atBottom;
+//         });
 
-                    try {
-                        let chats = JSON.parse(data);  // **JSON に変換**
-                        console.log("fetchChats() の JSON 変換成功:", chats);
 
-                        let chatContainer = document.getElementById("chat-container");
-                        chatContainer.innerHTML = ""; // **画面をクリア**
+// // ✅ **window に登録**
+// window.scrollToBottom = scrollToBottom;
 
-                        chats.forEach(chat => {
-                            appendMessage(chat);
-                        });
+// // ✅ **スクロールイベントを監視し、スクロール中は更新を止める**
+// document.getElementById("chat-container").addEventListener("scroll", function () {
+//     const chatContainer = document.getElementById("chat-container");
+//     const atBottom = chatContainer.scrollHeight - chatContainer.scrollTop === chatContainer.clientHeight;
+//     isUserScrolling = !atBottom;
+// });
 
-                        scrollToBottom(false);
-                    } catch (error) {
-                        console.error("JSON 変換エラー:", error);
-                    }
-                })
-                .catch(error => console.error("fetchChats() データ取得エラー:", error));
+        //     function fetchChats() {
+        //     console.log("fetchChats() が実行されました");
+
+        //     fetch("{{ route('chats.json') }}")
+        //         .then(response => response.text())  // **JSON ではなくテキストで取得**
+        //         .then(data => {
+        //             // console.log("fetchChats() のレスポンス:", data);
+
+        //             try {
+        //                 let chats = JSON.parse(data);  // **JSON に変換**
+        //                 console.log("fetchChats() の JSON 変換成功:", chats);
+
+        //                 let chatContainer = document.getElementById("chat-container");
+        //                 chatContainer.innerHTML = ""; // **画面をクリア**
+
+        //                 chats.forEach(chat => {
+        //                     appendMessage(chat);
+        //                 });
+
+        //                 scrollToBottom(false);
+        //             } catch (error) {
+        //                 console.error("JSON 変換エラー:", error);
+        //             }
+        //         })
+        //         .catch(error => console.error("fetchChats() データ取得エラー:", error));
+        // }
+
+// ✅ チャットを取得し、データが追加された場合のみスクロールする
+async function fetchChats() {
+    console.log("📡 fetchChats() が実行されました");
+
+    try {
+        let response = await fetch("{{ route('chats.json') }}");
+        let chats = await response.json();
+
+        console.log("✅ fetchChats() のレスポンス:", chats);
+
+        let existingMessages = new Set();
+        document.querySelectorAll("[data-chat-id]").forEach(msg => {
+            existingMessages.add(msg.getAttribute("data-chat-id"));
+        });
+
+        let newMessageAdded = false;
+
+        chats.forEach(chat => {
+            if (!existingMessages.has(chat.id.toString())) {
+                console.log("📝 appendMessage() 呼び出し:", chat.id);
+                appendMessage(chat);
+                newMessageAdded = true;
+            } else {
+                console.log(`⚠️ スキップ: すでに表示済み (chat.id: ${chat.id})`);
+            }
+        });
+
+        if (newMessageAdded) {
+            console.log("✅ 新しいメッセージが追加されたためスクロール実行");
+            scrollToBottom(true);
         }
 
-// **チャットを取得**
-// ✅ チャットを取得（fetchChats を Promise にする）
-// async function fetchChats() {
-//     console.log("📡 fetchChats() が実行されました");
+    } catch (error) {
+        console.error("❌ fetchChats() データ取得エラー:", error);
+    }
+}
 
-//     try {
-//         let response = await fetch("{{ route('chats.json') }}");
-//         let chats = await response.json();
-
-//         console.log("✅ fetchChats() のレスポンス:", chats);
-
-//         let existingMessages = new Set();
-//         document.querySelectorAll("[data-chat-id]").forEach(msg => {
-//             existingMessages.add(msg.getAttribute("data-chat-id"));
-//         });
-
-//         chats.forEach(chat => {
-//             if (!existingMessages.has(chat.id.toString())) {
-//                 console.log("📝 appendMessage() 呼び出し:", chat.id);
-//                 appendMessage(chat);
-//             } else {
-//                 console.log(`⚠️ スキップ: すでに表示済み (chat.id: ${chat.id})`);
-//             }
-//         });
-
-//         scrollToBottom(false);
-//     } catch (error) {
-//         console.error("❌ fetchChats() データ取得エラー:", error);
-//     }
-// }
-
-        setInterval(fetchChats, 5000);
-        window.fetchChats = fetchChats;
+// ✅ 5秒ごとに `fetchChats()` を実行（定期更新）
+setInterval(fetchChats, 5000);
+window.fetchChats = fetchChats;
 
         function refreshChat() {
             console.log("🔄 Blade 側で fetchChats() を実行");

@@ -34,23 +34,28 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             const data = await response.json();
-            console.log("AI応答:", data);
+            console.log("✅ AI応答:", data);
 
             if (data.success && data.chat) {
                 messageInput.value = "";
 
-                    // fetchChats(); // ✅ **Method 1: fetchChats() を直接呼ぶ**
-                    window.dispatchEvent(new Event("ai-response-complete")); // ✅ **Method 2: イベント通知**
+                // ✅ **Method 2: イベント通知で fetchChats() を実行**
+                window.dispatchEvent(new Event("ai-response-complete"));
 
             } else {
                 alert("AI応答エラー: " + (data.error || "不明なエラー"));
             }
         } catch (error) {
-            console.error("AI応答エラー:", error);
+            console.error("❌ AI応答エラー:", error);
         }
 
         aiButton.innerText = "AIが返事";
         aiButton.disabled = false;
     });
-});
 
+    // ✅ AI応答完了時に `fetchChats()` を実行
+    window.addEventListener("ai-response-complete", function () {
+        console.log("✅ ai-response-complete イベントを受信。fetchChats() を実行");
+        fetchChats();
+    });
+});
