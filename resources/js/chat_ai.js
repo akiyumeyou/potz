@@ -43,9 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 // appendMessage(data.chat); // ✅ AIのメッセージを直接追加
                 messageInput.value = "";
                 fetchChats(); // ✅ チャット更新
-                scrollToBottom(true);
-                // ✅ **Blade 側に通知を送る**
-                // window.dispatchEvent(new Event("ai-response-complete"));
+                window.scrollToBottom(true);
             } else {
                 alert("AI応答エラー: " + (data.error || "不明なエラー"));
             }

@@ -49,8 +49,8 @@
             //     }
             // }
 
-
-function scrollToBottom(force = false) {
+            window.scrollToBottom = function(force = false) {
+// function scrollToBottom(force = false) {
     let chatContainer = document.getElementById("chat-container");
 
     if (!chatContainer) {
