@@ -126,6 +126,8 @@ Route::get('/youtubes', [YouTubeController::class, 'index'])->name('youtube.inde
 Route::post('/youtubes', [YouTubeController::class, 'store'])->name('youtube.store');
 Route::post('/youtubes/{id}/likes', [YouTubeController::class, 'updateLikes'])->name('youtube.updateLikes');
 Route::delete('/youtubes/{id}', [YouTubeController::class, 'destroy'])->name('youtube.destroy');
+Route::get('/youtubes/search', [YouTubeController::class, 'search'])->name('youtube.search');
+Route::get('/youtubes/stats/{videoId}', [YouTubeController::class, 'getVideoStats'])->name('youtube.stats');
 
 //デジとも広場チャット
 Route::get('/chats', [ChatController::class, 'index'])->name('chats.index');
